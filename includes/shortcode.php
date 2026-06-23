@@ -2,6 +2,8 @@
 /**
  * Zuno Docs Engine – Shortcode Handler
  *
+ * Uses precomputed doc graph for zero-latency rendering.
+ *
  * @package zuno_docs
  */
 
@@ -13,7 +15,7 @@ function zuno_docs_render_shortcode( $atts ) {
 
     $atts = shortcode_atts(
         array(
-            'product'   => 'shipox',
+            'product'   => '',
             'doc_id'    => '',
             'toc_depth' => '6',
         ),
@@ -21,92 +23,135 @@ function zuno_docs_render_shortcode( $atts ) {
         'zuno_docs'
     );
 
-    $allowed_products = array( 'shipox', 'express', 'storfox' );
-    $product          = sanitize_key( $atts['product'] );
-
-    if ( ! in_array( $product, $allowed_products, true ) ) {
-        return zuno_docs_error( "Unknown product {$product}. Allowed: " . implode( ', ', $allowed_products ) );
-    }
-
+    $product   = sanitize_key( $atts['product'] );
+    $doc_id    = (int) $atts['doc_id'];
     $toc_depth = max( 2, min( 6, (int) $atts['toc_depth'] ) );
 
-    /* ---------- Resolve the doc to display ------------------------- */
-    $doc_id       = (int) $atts['doc_id'];
+    /* ---------- Resolve the doc to display ---------- */
     $page_content = '';
-    $page_title   = zuno_docs_product_label( $product );
+    $page_title   = __( 'Documentation', 'zuno-docs' );
 
     if ( $doc_id ) {
         $doc_obj = get_post( $doc_id );
         if ( $doc_obj && 'publish' === $doc_obj->post_status && 'zuno_doc' === $doc_obj->post_type ) {
             $page_content = apply_filters( 'the_content', $doc_obj->post_content );
             $page_title   = get_the_title( $doc_obj );
-        }
-    } else {
-        $term = get_term_by( 'slug', $product, 'zuno_product' );
-        if ( $term ) {
-
-            $cache_key = 'zuno_docs_query_' . $product;
-            $doc_id    = get_transient( $cache_key );
-
-            if ( false === $doc_id ) {
-                $query = new WP_Query( array(
-                    'post_type'      => 'zuno_doc',
-                    'post_status'    => 'publish',
-                    'posts_per_page' => 1,
-                    'orderby'        => 'menu_order title',
-                    'order'          => 'ASC',
-                    'fields'         => 'ids',
-                    'tax_query'      => array(
-                        array(
-                            'taxonomy' => 'zuno_product',
-                            'field'    => 'slug',
-                            'terms'    => $product,
-                        ),
-                    ),
-                ) );
-                $doc_id = $query->have_posts() ? $query->posts[0] : 0;
-                set_transient( $cache_key, $doc_id, HOUR_IN_SECONDS * 6 );
+            if ( ! $product ) {
+                $terms = wp_get_post_terms( $doc_id, 'zuno_product', array( 'fields' => 'slugs' ) );
+                $product = $terms[0] ?? '';
             }
-
-            if ( $doc_id ) {
-                $doc_obj      = get_post( $doc_id );
+        }
+    } elseif ( $product ) {
+        $tree   = zuno_docs_get_product_graph( $product );
+        $list   = $tree['flat_list'];
+        if ( ! empty( $list ) ) {
+            $first = reset( $list );
+            $doc_obj = get_post( $first['id'] );
+            if ( $doc_obj && 'publish' === $doc_obj->post_status ) {
                 $page_content = apply_filters( 'the_content', $doc_obj->post_content );
                 $page_title   = get_the_title( $doc_obj );
+                $doc_id       = $first['id'];
             }
         }
     }
 
+    /* ---------- Breadcrumbs ---------- */
+    $breadcrumbs = array();
+    $adjacent    = array( 'prev' => null, 'next' => null );
+    $related     = array();
+
+    if ( $doc_id ) {
+        $graph      = zuno_docs_get_graph();
+        $breadcrumbs = zuno_docs_get_breadcrumbs( $doc_id, $graph );
+        if ( $product ) {
+            $adjacent = zuno_docs_get_adjacent( $doc_id, $product );
+            $related  = zuno_docs_get_related( $doc_id, $product );
+        }
+    }
+
+    /* ---------- Enqueue assets ---------- */
     wp_enqueue_style( 'zuno-docs' );
     wp_enqueue_script( 'zuno-docs' );
 
-    /* ----- Pass config and settings to JS ----- */
+    /* ---------- Pass config to JS ---------- */
+    $graph = zuno_docs_get_graph();
+    $search_data = array();
+    if ( $product && isset( $graph['search_index'] ) ) {
+        $search_data = zuno_docs_get_product_search_data( $product );
+    }
+
+    $display_settings = array(
+        'show_breadcrumbs' => 'yes' === ( $settings['zuno_docs_show_breadcrumbs'] ?? 'yes' ),
+        'show_previous'    => 'yes' === ( $settings['zuno_docs_show_previous'] ?? 'yes' ),
+        'show_next'        => 'yes' === ( $settings['zuno_docs_show_next'] ?? 'yes' ),
+        'show_navigation'  => 'yes' === ( $settings['zuno_docs_show_navigation'] ?? 'yes' ),
+        'show_related'     => 'yes' === ( $settings['zuno_docs_show_related_articles'] ?? 'yes' ),
+    );
+
     wp_localize_script(
         'zuno-docs',
         'ZUNODocsConfig',
         array(
-            'product'   => $product,
-            'tocDepth'  => $toc_depth,
-            'i18n'      => array(
+            'product'         => $product,
+            'docId'           => $doc_id,
+            'tocDepth'        => $toc_depth,
+            'restUrl'         => esc_url_raw( rest_url( 'zuno-docs/v1/search' ) ),
+            'restNonce'       => wp_create_nonce( 'wp_rest' ),
+            'searchIndex'     => $search_data,
+            'breadcrumbs'     => $breadcrumbs,
+            'adjacent'        => $adjacent,
+            'related'         => $related,
+            'display'         => $display_settings,
+            'i18n'            => array(
                 'searchPlaceholder' => __( 'Search docs…', 'zuno-docs' ),
                 'noResults'         => __( 'No results found.', 'zuno-docs' ),
                 'tocLabel'          => __( 'On this page', 'zuno-docs' ),
+                'prev'              => __( 'Previous', 'zuno-docs' ),
+                'next'              => __( 'Next', 'zuno-docs' ),
+                'related'           => __( 'Related articles', 'zuno-docs' ),
+                'tocNoResults'      => __( 'No matching sections found for "{query}"', 'zuno-docs' ),
             ),
         )
     );
 
-    /* ----- Pass dynamic settings to JS ----- */
     $settings = zuno_docs_get_settings();
-    wp_localize_script(
-        'zuno-docs',
-        'ZUNO_SETTINGS',
-        $settings
-    );
+    wp_localize_script( 'zuno-docs', 'ZUNO_SETTINGS', $settings );
 
-    /* ----- Inject dynamic CSS variables inline ----- */
+    /* ---------- Dynamic CSS ---------- */
     $css_vars = zuno_docs_get_dynamic_css( $settings );
 
+    /* ---------- Render ---------- */
     ob_start();
     echo '<style>' . $css_vars . '</style>';
     include ZUNO_DOCS_TEMPLATES . 'layout.php';
     return ob_get_clean();
+}
+
+/**
+ * Build a lightweight search index for a specific product, optimized for JS.
+ */
+function zuno_docs_get_product_search_data( $product_slug ) {
+    $graph = zuno_docs_get_graph();
+    if ( ! isset( $graph['doc_tree'][ $product_slug ] ) ) {
+        return array(
+            'docs'   => array(),
+            'tokens' => array(),
+        );
+    }
+
+    $tree = $graph['doc_tree'][ $product_slug ];
+    $docs = array();
+
+    foreach ( $tree['flat_list'] as $id => $info ) {
+        $docs[ $id ] = array(
+            'id'      => $id,
+            'title'   => $info['title'],
+            'excerpt' => $info['excerpt'],
+        );
+    }
+
+    return array(
+        'docs'   => $docs,
+        'tokens' => array(),
+    );
 }

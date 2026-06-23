@@ -4,7 +4,7 @@
  * Plugin URI:   https://zunulnoor.vercel.app
  * Description:  Full documentation CMS with custom post types, categories, TOC,
  *               client-side search, and multi-product support.
- * Version:      1.0.0
+ * Version:      2.0.0
  * Author:       Zun Ul Noor
  * Author URI:   https://zunulnoor.vercel.app
  * Text Domain:  zuno-docs
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /* -----------------------------------------------------------------------
  * Constants
  * --------------------------------------------------------------------- */
-define( 'ZUNO_DOCS_VERSION',     '1.0.0' );
+define( 'ZUNO_DOCS_VERSION',     '2.0.0' );
 define( 'ZUNO_DOCS_DIR',         plugin_dir_path( __FILE__ ) );
 define( 'ZUNO_DOCS_URL',         plugin_dir_url( __FILE__ ) );
 define( 'ZUNO_DOCS_ASSETS',      ZUNO_DOCS_URL . 'assets/' );
@@ -29,6 +29,7 @@ define( 'ZUNO_DOCS_INCLUDES',    ZUNO_DOCS_DIR . 'includes/' );
  * --------------------------------------------------------------------- */
 $zuno_docs_includes = array(
     'post-type.php',
+    'doc-graph.php',
     'shortcode.php',
     'admin-dashboard.php',
     'admin-new-doc.php',
@@ -195,21 +196,6 @@ function zuno_docs_product_label( $product ) {
 }
 
 /* -----------------------------------------------------------------------
- * Clear shortcode transient cache when a zuno_doc is saved
- * --------------------------------------------------------------------- */
-add_action( 'save_post_zuno_doc', 'zuno_docs_clear_cache' );
-function zuno_docs_clear_cache( $post_id ) {
-    $products = get_terms( array(
-        'taxonomy'   => 'zuno_product',
-        'hide_empty' => false,
-        'fields'     => 'slugs',
-    ) );
-    foreach ( $products as $slug ) {
-        delete_transient( 'zuno_docs_query_' . $slug );
-    }
-}
-
-/* -----------------------------------------------------------------------
  * Generate dynamic CSS variables from settings
  * --------------------------------------------------------------------- */
 function zuno_docs_get_dynamic_css( $settings = null ) {
@@ -252,6 +238,44 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
 ' . $heading_bg_rule;
 
     return $css;
+}
+
+/* -----------------------------------------------------------------------
+ * REST API endpoint for instant search
+ * --------------------------------------------------------------------- */
+add_action( 'rest_api_init', 'zuno_docs_register_search_route' );
+function zuno_docs_register_search_route() {
+    register_rest_route( 'zuno-docs/v1', '/search', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'zuno_docs_rest_search',
+        'permission_callback' => '__return_true',
+        'args'                => array(
+            'q' => array(
+                'required'          => true,
+                'sanitize_callback' => 'sanitize_text_field',
+            ),
+            'product' => array(
+                'sanitize_callback' => 'sanitize_key',
+            ),
+        ),
+    ) );
+}
+
+function zuno_docs_rest_search( $request ) {
+    $query   = $request->get_param( 'q' );
+    $product = $request->get_param( 'product' );
+
+    if ( mb_strlen( trim( $query ) ) < 2 ) {
+        return new WP_REST_Response( array( 'results' => array() ), 200 );
+    }
+
+    $results = zuno_docs_search( $query, $product );
+
+    return new WP_REST_Response( array(
+        'query'   => $query,
+        'results' => array_values( $results ),
+        'total'   => count( $results ),
+    ), 200 );
 }
 
 /* -----------------------------------------------------------------------

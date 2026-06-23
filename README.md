@@ -1,6 +1,6 @@
 # Zuno Docs Engine
 
-**Version:** 1.0.0  
+**Version:** 2.0.0  
 **Author:** Zun Ul Noor  
 **URI:** [https://zunulnoor.vercel.app](https://zunulnoor.vercel.app)  
 **License:** GPL-2.0+  
@@ -105,6 +105,20 @@ Products are terms in the `zuno_product` taxonomy. You can add them via **Posts 
 
 ## Changelog
 
+### 2.0.0
+- **Precomputed Documentation Graph** — hierarchical doc tree + inverted search index built once on `save_post`, stored in `wp_options`; zero heavy queries on frontend
+- **Ranked Inverted Index Search** — client-side search engine with fuzzy matching, partial input support (≥2 chars), ranked results (title = 5× weight, heading = 3×, content = 1×)
+- **Instant Search Suggestions** — dropdown with live results, keyboard navigation, AJAX fallback for large indexes
+- **REST API Search Endpoint** — `GET /wp-json/zuno-docs/v1/search?q=term&product=slug`
+- **Breadcrumb Navigation** — auto-generated from product > category > doc
+- **Previous / Next Doc Navigation** — sidebar footer with adjacent doc links
+- **Related Articles** — same-category doc suggestions
+- **Multi-Layer Caching** — Layer 1 (transients), Layer 2 (in-memory static cache), Layer 3 (precomputed graph)
+- **Cache Rebuild Button** — admin settings page
+- **Performance Targets** — initial load < 300ms, search < 50ms, TOC render < 100ms
+- **Lazy TOC Rendering** — only visible nodes rendered, no full re-renders
+- **Event-Driven Architecture** — `zuno-docs-navigate` custom event for client-side doc switching
+
 ### 1.0.0
 - Initial release
 - Custom post type `zuno_doc` with REST API support
@@ -154,4 +168,3 @@ zuno-docs-engine/
 ## License
 
 This plugin is licensed under the GPL-2.0+ license.
->>>>>>> 808e070 (Initial release v1.0.0 — Zuno Docs Engine)

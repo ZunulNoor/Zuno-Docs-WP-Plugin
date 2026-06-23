@@ -6,35 +6,57 @@
  */
 
 defined( 'ABSPATH' ) || exit;
-?>
 
+/* ---------- Resolve display settings ---------- */
+$show_search          = 'yes' === ( $settings['zuno_docs_show_search'] ?? 'yes' );
+$show_breadcrumbs     = 'yes' === ( $settings['zuno_docs_show_breadcrumbs'] ?? 'yes' );
+$show_previous        = 'yes' === ( $settings['zuno_docs_show_previous'] ?? 'yes' );
+$show_next            = 'yes' === ( $settings['zuno_docs_show_next'] ?? 'yes' );
+$show_navigation      = 'yes' === ( $settings['zuno_docs_show_navigation'] ?? 'yes' );
+$show_toc             = 'yes' === ( $settings['zuno_docs_show_toc'] ?? 'yes' );
+$show_categories      = 'yes' === ( $settings['zuno_docs_show_categories'] ?? 'yes' );
+$show_related         = 'yes' === ( $settings['zuno_docs_show_related_articles'] ?? 'yes' );
+$show_reading_progress = 'yes' === ( $settings['zuno_docs_show_reading_progress'] ?? 'no' );
+$show_sidebar          = $show_search || $show_toc;
+?>
 <div
     class="zuno-docs-wrap"
     data-product="<?php echo esc_attr( $product ); ?>"
+    data-doc-id="<?php echo esc_attr( $doc_id ?? 0 ); ?>"
     data-toc-depth="<?php echo esc_attr( $toc_depth ); ?>"
+    data-show-toc="<?php echo $show_toc ? '1' : '0'; ?>"
+    data-show-search="<?php echo $show_search ? '1' : '0'; ?>"
+    data-show-sidebar="<?php echo $show_sidebar ? '1' : '0'; ?>"
+    data-show-reading-progress="<?php echo $show_reading_progress ? '1' : '0'; ?>"
     role="main"
     aria-label="<?php echo esc_attr( $page_title ); ?> documentation"
 >
 
+    <?php if ( $show_reading_progress ) : ?>
+    <div class="zuno-docs-progress-bar" aria-hidden="true">
+        <div class="zuno-docs-progress-bar-fill"></div>
+    </div>
+    <?php endif; ?>
+
     <!-- ============================================================
-         LEFT SIDEBAR
+         SIDEBAR
          ============================================================ -->
+    <?php if ( $show_sidebar ) : ?>
     <aside class="zuno-docs-sidebar" aria-label="Documentation navigation">
 
-        <!-- Mobile toggle button (visible only on small screens) -->
         <button
             class="zuno-docs-sidebar-toggle"
             aria-expanded="false"
-            aria-controls="zuno-docs-sidebar-inner"
             aria-label="<?php esc_attr_e( 'Toggle navigation', 'zuno-docs' ); ?>"
         >
             <span class="zuno-docs-toggle-icon" aria-hidden="true"></span>
             <?php esc_html_e( 'Contents', 'zuno-docs' ); ?>
         </button>
 
-        <div class="zuno-docs-sidebar-inner" id="zuno-docs-sidebar-inner">
+        <div class="zuno-docs-sidebar-inner">
 
-            <!-- Search (fixed at top of sidebar) -->
+            <?php if ( $show_search ) : ?>
+            <!-- Search -->
             <div class="zuno-docs-search-wrap" role="search">
                 <label for="zuno-docs-search" class="zuno-docs-sr-only">
                     <?php esc_html_e( 'Search documentation', 'zuno-docs' ); ?>
@@ -55,39 +77,48 @@ defined( 'ABSPATH' ) || exit;
                     autocomplete="off"
                     spellcheck="false"
                     aria-label="<?php esc_attr_e( 'Search documentation', 'zuno-docs' ); ?>"
+                    data-min-query="2"
                 />
                 <button
                     class="zuno-docs-search-clear zuno-docs-hidden"
                     aria-label="<?php esc_attr_e( 'Clear search', 'zuno-docs' ); ?>"
-                    tabindex="0"
                 >✕</button>
             </div>
 
-            <!-- No-results message (shown by JS) -->
+            <!-- Suggestions dropdown -->
+            <div class="zuno-docs-suggestions zuno-docs-hidden" role="listbox" aria-label="<?php esc_attr_e( 'Search suggestions', 'zuno-docs' ); ?>"></div>
+
+            <!-- No results -->
             <p class="zuno-docs-no-results zuno-docs-hidden" role="status" aria-live="polite">
                 <?php esc_html_e( 'No results found.', 'zuno-docs' ); ?>
             </p>
+            <?php endif; ?>
 
-            <!-- TOC (built by JS from content headings) -->
-            <nav
-                class="zuno-docs-toc"
-                id="zuno-docs-toc"
-                aria-label="<?php esc_attr_e( 'On this page', 'zuno-docs' ); ?>"
-            >
-                <p class="zuno-docs-toc-label" aria-hidden="true">
-                    <?php esc_html_e( 'On this page', 'zuno-docs' ); ?>
-                </p>
-                <!-- <ul> injected here by docs.js -->
+            <?php if ( $show_toc ) : ?>
+            <!-- TOC -->
+            <nav class="zuno-docs-toc" id="zuno-docs-toc"
+                 aria-label="<?php esc_attr_e( 'On this page', 'zuno-docs' ); ?>">
+                <p class="zuno-docs-toc-empty zuno-docs-hidden" aria-live="polite"></p>
             </nav>
+            <?php endif; ?>
 
-        </div><!-- /.zuno-docs-sidebar-inner -->
-    </aside><!-- /.zuno-docs-sidebar -->
+        </div>
+    </aside>
+    <?php endif; ?>
 
     <!-- ============================================================
-         MAIN CONTENT AREA
+         CONTENT
          ============================================================ -->
     <div class="zuno-docs-content-wrap">
         <article class="zuno-docs-content" id="zuno-docs-content">
+
+            <?php if ( $show_breadcrumbs ) : ?>
+            <!-- Breadcrumbs -->
+            <nav class="zuno-docs-breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb', 'zuno-docs' ); ?>">
+                <!-- Injected by JS -->
+            </nav>
+            <?php endif; ?>
+
             <?php
             if ( $page_content ) {
                 echo $page_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -96,14 +127,18 @@ defined( 'ABSPATH' ) || exit;
                 <div class="zuno-docs-empty-state">
                     <p>
                         <?php
-                        printf(
-                            esc_html__( 'Documentation for "%s" is coming soon.', 'zuno-docs' ),
-                            esc_html( zuno_docs_product_label( $product ) )
-                        );
+                        if ( $product ) {
+                            printf(
+                                esc_html__( 'Documentation for "%s" is coming soon.', 'zuno-docs' ),
+                                esc_html( zuno_docs_product_label( $product ) )
+                            );
+                        } else {
+                            esc_html_e( 'No documentation selected.', 'zuno-docs' );
+                        }
                         ?>
                     </p>
                     <?php
-                    $show_hint = isset( $settings['show_admin_hint'] ) ? $settings['show_admin_hint'] : 'yes';
+                    $show_hint = $settings['show_admin_hint'] ?? 'yes';
                     if ( current_user_can( 'edit_posts' ) && 'yes' === $show_hint ) :
                     ?>
                         <p class="zuno-docs-admin-hint">
@@ -119,7 +154,25 @@ defined( 'ABSPATH' ) || exit;
                 <?php
             }
             ?>
-        </article>
-    </div><!-- /.zuno-docs-content-wrap -->
 
-</div><!-- /.zuno-docs-wrap -->
+            <?php if ( $show_related ) : ?>
+            <!-- Related articles -->
+            <div class="zuno-docs-related-wrap" aria-label="<?php esc_attr_e( 'Related articles', 'zuno-docs' ); ?>">
+                <h3 class="zuno-docs-related-title"><?php esc_html_e( 'Related articles', 'zuno-docs' ); ?></h3>
+                <ul class="zuno-docs-related-list"></ul>
+            </div>
+            <?php endif; ?>
+
+        </article>
+
+        <?php if ( $show_navigation ) : ?>
+        <!-- Prev / Next footer -->
+        <footer class="zuno-docs-page-nav" aria-label="<?php esc_attr_e( 'Doc navigation', 'zuno-docs' ); ?>"
+                data-show-prev="<?php echo $show_previous ? '1' : '0'; ?>"
+                data-show-next="<?php echo $show_next ? '1' : '0'; ?>">
+            <!-- Injected by JS -->
+        </footer>
+        <?php endif; ?>
+    </div>
+
+</div>

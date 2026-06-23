@@ -59,10 +59,25 @@ function zuno_docs_admin_dashboard() {
     $query = new WP_Query( $args );
     $docs  = $query->posts;
 
-    /* ----- Stats ----- */
-    $total     = count( $docs );
-    $published = count( wp_list_filter( $docs, array( 'post_status' => 'publish' ) ) );
-    $drafts    = count( wp_list_filter( $docs, array( 'post_status' => 'draft' ) ) );
+    /* ----- Stats from precomputed graph (fast) ----- */
+    $graph      = zuno_docs_get_graph();
+    $total      = 0;
+    $published  = 0;
+    $drafts     = 0;
+
+    foreach ( $docs as $doc ) {
+        $total++;
+        if ( 'publish' === $doc->post_status ) {
+            $published++;
+        } elseif ( 'draft' === $doc->post_status ) {
+            $drafts++;
+        }
+    }
+
+    $graph_total = 0;
+    foreach ( $graph['doc_tree'] as $slug => $tree ) {
+        $graph_total += count( $tree['flat_list'] );
+    }
 
     /* ----- Taxonomy terms for filter dropdowns ----- */
     $products   = get_terms( array( 'taxonomy' => 'zuno_product', 'hide_empty' => false ) );

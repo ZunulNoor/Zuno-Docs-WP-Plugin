@@ -40,6 +40,16 @@ function zuno_docs_get_settings() {
         'highlight_text'   => '#000000',
 
         'show_admin_hint'  => 'yes',
+
+        'zuno_docs_show_search'           => 'yes',
+        'zuno_docs_show_breadcrumbs'      => 'yes',
+        'zuno_docs_show_previous'         => 'yes',
+        'zuno_docs_show_next'             => 'yes',
+        'zuno_docs_show_navigation'       => 'yes',
+        'zuno_docs_show_toc'              => 'yes',
+        'zuno_docs_show_categories'       => 'yes',
+        'zuno_docs_show_related_articles' => 'yes',
+        'zuno_docs_show_reading_progress' => 'no',
     );
 
     $saved = get_option( 'zuno_docs_settings', array() );
@@ -58,6 +68,11 @@ function zuno_docs_admin_settings_page() {
     }
 
     $saved_notice = '';
+
+    if ( isset( $_POST['zuno_docs_rebuild_cache'] ) && wp_verify_nonce( $_POST['zuno_docs_rebuild_cache_nonce'], 'zuno_docs_rebuild_cache' ) ) {
+        zuno_docs_rebuild_graph();
+        $saved_notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Documentation cache rebuilt successfully.', 'zuno-docs' ) . '</p></div>';
+    }
 
     if ( isset( $_POST['zuno_docs_settings_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_settings_nonce'], 'zuno_docs_save_settings' ) ) {
 
@@ -92,6 +107,21 @@ function zuno_docs_admin_settings_page() {
 
         $s['show_admin_hint']  = ! empty( $_POST['show_admin_hint'] ) ? 'yes' : 'no';
 
+        $display_toggles = array(
+            'zuno_docs_show_search',
+            'zuno_docs_show_breadcrumbs',
+            'zuno_docs_show_previous',
+            'zuno_docs_show_next',
+            'zuno_docs_show_navigation',
+            'zuno_docs_show_toc',
+            'zuno_docs_show_categories',
+            'zuno_docs_show_related_articles',
+            'zuno_docs_show_reading_progress',
+        );
+        foreach ( $display_toggles as $key ) {
+            $s[ $key ] = ! empty( $_POST[ $key ] ) ? 'yes' : 'no';
+        }
+
         update_option( 'zuno_docs_settings', $s );
         $saved_notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'zuno-docs' ) . '</p></div>';
     }
@@ -112,6 +142,7 @@ function zuno_docs_admin_settings_page() {
                     <a href="#zuno-docs-tab-toc"><?php esc_html_e( 'TOC Colors', 'zuno-docs' ); ?></a>
                     <a href="#zuno-docs-tab-highlight"><?php esc_html_e( 'Highlight', 'zuno-docs' ); ?></a>
                     <a href="#zuno-docs-tab-behavior"><?php esc_html_e( 'Behavior', 'zuno-docs' ); ?></a>
+                    <a href="#zuno-docs-tab-display"><?php esc_html_e( 'Display', 'zuno-docs' ); ?></a>
                 </nav>
 
                 <!-- TYPOGRAPHY -->
@@ -281,6 +312,113 @@ function zuno_docs_admin_settings_page() {
                         </tr>
                     </table>
                 </section>
+                <!-- DISPLAY CONTROLS -->
+                <section id="zuno-docs-tab-display" class="zuno-docs-tab-panel">
+                    <h2><?php esc_html_e( 'Display Controls', 'zuno-docs' ); ?></h2>
+                    <p class="description"><?php esc_html_e( 'Show or hide frontend UI elements without editing code.', 'zuno-docs' ); ?></p>
+
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Search Bar', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_search" value="yes" <?php checked( $s['zuno_docs_show_search'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show search bar in the documentation sidebar', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Breadcrumbs', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_breadcrumbs" value="yes" <?php checked( $s['zuno_docs_show_breadcrumbs'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Display breadcrumb navigation above documentation content', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Previous Navigation', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_previous" value="yes" <?php checked( $s['zuno_docs_show_previous'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show the Previous button in the page navigation', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Next Navigation', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_next" value="yes" <?php checked( $s['zuno_docs_show_next'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show the Next button in the page navigation', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Navigation Block', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_navigation" value="yes" <?php checked( $s['zuno_docs_show_navigation'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show the entire Previous / Next navigation section at the bottom of each doc', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Table of Contents', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_toc" value="yes" <?php checked( $s['zuno_docs_show_toc'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show the table of contents in the sidebar', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Doc Categories', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_categories" value="yes" <?php checked( $s['zuno_docs_show_categories'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show the category section in the documentation sidebar', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Related Articles', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_related_articles" value="yes" <?php checked( $s['zuno_docs_show_related_articles'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show the related articles section at the bottom of each doc', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Reading Progress', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_reading_progress" value="yes" <?php checked( $s['zuno_docs_show_reading_progress'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Display a reading progress bar at the top of the page', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>
+                </section>
             </div>
 
             <p class="submit">
@@ -311,6 +449,26 @@ function zuno_docs_admin_settings_page() {
                 <tr><td><strong><?php esc_html_e( 'Products', 'zuno-docs' ); ?></strong></td><td><code>zuno_product</code></td></tr>
                 <tr><td><strong><?php esc_html_e( 'PHP Required', 'zuno-docs' ); ?></strong></td><td>7.4+</td></tr>
             </table>
+
+            <h2><?php esc_html_e( 'Documentation Cache', 'zuno-docs' ); ?></h2>
+            <?php
+            $graph = zuno_docs_get_graph();
+            $cache_time = isset( $graph['built'] ) ? $graph['built'] : 0;
+            $total_docs = 0;
+            foreach ( $graph['doc_tree'] as $slug => $tree ) {
+                $total_docs += count( $tree['flat_list'] );
+            }
+            ?>
+            <p><?php esc_html_e( 'The plugin uses a precomputed documentation graph for instant page loads. The cache is rebuilt automatically when docs are saved.', 'zuno-docs' ); ?></p>
+            <table class="widefat fixed" style="width:auto">
+                <tr><td><strong><?php esc_html_e( 'Cached Docs', 'zuno-docs' ); ?></strong></td><td><?php echo esc_html( $total_docs ); ?></td></tr>
+                <tr><td><strong><?php esc_html_e( 'Last Built', 'zuno-docs' ); ?></strong></td><td><?php echo $cache_time ? esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $cache_time ) ) : '—'; ?></td></tr>
+            </table>
+            <br>
+            <form method="post" action="" style="display:inline">
+                <?php wp_nonce_field( 'zuno_docs_rebuild_cache', 'zuno_docs_rebuild_cache_nonce' ); ?>
+                <button type="submit" name="zuno_docs_rebuild_cache" class="button"><?php esc_html_e( 'Rebuild Cache Now', 'zuno-docs' ); ?></button>
+            </form>
         </div>
     </div>
 

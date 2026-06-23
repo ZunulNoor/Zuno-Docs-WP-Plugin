@@ -294,3 +294,10 @@
 .zuno-docs-docs-table th {
     white-space: nowrap;
 }
+
+/* -----------------------------------------------------------------------
+ * Settings — cache info
+ * --------------------------------------------------------------------- */
+.zuno-docs-settings-info .button {
+    margin-right: 8px;
+}
