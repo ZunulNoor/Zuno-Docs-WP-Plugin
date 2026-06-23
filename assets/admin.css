@@ -1,0 +1,296 @@
+/*
+ * Zuno Docs Engine — Admin Styles
+ */
+
+/* -----------------------------------------------------------------------
+ * Dashboard
+ * --------------------------------------------------------------------- */
+.zuno-docs-dashboard h1 {
+    margin-bottom: 20px;
+}
+
+.zuno-docs-stats-grid {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.zuno-docs-stat-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 20px 28px;
+    min-width: 160px;
+    flex: 1;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.zuno-docs-stat-number {
+    display: block;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #1d2327;
+}
+
+.zuno-docs-stat-label {
+    display: block;
+    font-size: 13px;
+    color: #646970;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.zuno-docs-section-title {
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.zuno-docs-empty-admin {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 40px;
+    text-align: center;
+}
+
+.zuno-docs-empty-admin p {
+    font-size: 15px;
+    color: #646970;
+    margin-bottom: 16px;
+}
+
+/* Status badges */
+.zuno-docs-status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.zuno-docs-status-published {
+    background: #edf7ed;
+    color: #2a7a2a;
+}
+
+.zuno-docs-status-draft {
+    background: #f0f0f1;
+    color: #646970;
+}
+
+/* Actions column */
+.zuno-docs-actions {
+    white-space: nowrap;
+}
+
+.zuno-docs-actions .button {
+    margin-right: 4px;
+}
+
+.button-link-delete {
+    color: #b32d2e !important;
+    border-color: #b32d2e !important;
+}
+
+.button-link-delete:hover {
+    background: #b32d2e !important;
+    color: #fff !important;
+}
+
+/* -----------------------------------------------------------------------
+ * Add New Doc
+ * --------------------------------------------------------------------- */
+.zuno-docs-new-doc .zuno-docs-new-doc-layout {
+    display: flex;
+    gap: 32px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.zuno-docs-new-doc .zuno-docs-quick-form {
+    flex: 2;
+    min-width: 400px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 24px;
+}
+
+.zuno-docs-new-doc .zuno-docs-full-editor-link {
+    flex: 1;
+    min-width: 240px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 24px;
+    text-align: center;
+    align-self: flex-start;
+}
+
+.zuno-docs-new-doc .zuno-docs-full-editor-link h2 {
+    margin-top: 0;
+}
+
+/* -----------------------------------------------------------------------
+ * Categories
+ * --------------------------------------------------------------------- */
+.zuno-docs-categories .zuno-docs-cats-layout {
+    display: flex;
+    gap: 32px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.zuno-docs-categories .zuno-docs-cats-form {
+    flex: 1;
+    min-width: 320px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 24px;
+}
+
+.zuno-docs-categories .zuno-docs-cats-list {
+    flex: 2;
+    min-width: 400px;
+}
+
+.zuno-docs-categories .zuno-docs-cats-list h2 {
+    margin-top: 0;
+}
+
+/* -----------------------------------------------------------------------
+ * Settings
+ * --------------------------------------------------------------------- */
+.zuno-docs-settings .form-table th {
+    width: 180px;
+}
+
+.zuno-docs-settings .zuno-docs-settings-info {
+    margin-top: 32px;
+}
+
+.zuno-docs-settings .zuno-docs-settings-info pre {
+    background: #f0f0f1;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 12px 16px;
+    overflow-x: auto;
+}
+
+.zuno-docs-settings .zuno-docs-settings-info code {
+    font-size: 13px;
+}
+
+/* -----------------------------------------------------------------------
+ * Filter bar
+ * --------------------------------------------------------------------- */
+.zuno-docs-filter-bar {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+}
+
+.zuno-docs-filter-bar form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.zuno-docs-filter-bar select {
+    min-width: 160px;
+}
+
+.zuno-docs-sr-admin {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+}
+
+/* -----------------------------------------------------------------------
+ * Settings page — tabbed layout
+ * --------------------------------------------------------------------- */
+.zuno-docs-settings-page .zuno-docs-settings-tabs {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    margin-top: 16px;
+    overflow: hidden;
+}
+
+.zuno-docs-tab-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #dcdcde;
+    background: #f6f7f7;
+}
+
+.zuno-docs-tab-nav a {
+    display: block;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #50575e;
+    font-weight: 500;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s ease;
+}
+
+.zuno-docs-tab-nav a:hover {
+    color: #1d2327;
+    background: #fff;
+}
+
+.zuno-docs-tab-nav a.zuno-docs-tab-active {
+    color: #E8500A;
+    border-bottom-color: #E8500A;
+    background: #fff;
+}
+
+.zuno-docs-tab-panel {
+    display: none;
+    padding: 24px;
+}
+
+.zuno-docs-tab-panel.zuno-docs-tab-active {
+    display: block;
+}
+
+.zuno-docs-tab-panel h2 {
+    margin-top: 0;
+    font-size: 16px;
+}
+
+.zuno-docs-settings-page .form-table th {
+    width: 200px;
+}
+
+.zuno-docs-settings-page input[type="color"] {
+    width: 50px;
+    height: 30px;
+    padding: 1px;
+    cursor: pointer;
+}
+
+/* -----------------------------------------------------------------------
+ * Docs table
+ * --------------------------------------------------------------------- */
+.zuno-docs-docs-table .column-title {
+    width: 28%;
+}
+
+.zuno-docs-docs-table th {
+    white-space: nowrap;
+}

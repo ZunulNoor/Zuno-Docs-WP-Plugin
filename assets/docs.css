@@ -1,0 +1,716 @@
+/*
+ * Zuno Docs Engine — Stylesheet
+ * SaaS-style documentation layout (Notion / GitBook inspired)
+ *
+ * Design tokens:
+ *   --zuno-docs-navy    : primary brand dark
+ *   --zuno-docs-orange  : primary brand accent
+ *
+ * Breakpoints:
+ *   < 768px  : mobile  (sidebar collapses to drawer)
+ *   768–1439 : tablet  (proportional 30/70)
+ *   ≥ 1440px : desktop (max-width container)
+ */
+
+/* -----------------------------------------------------------------------
+ * 1. Custom Properties (scoped to plugin root)
+ * --------------------------------------------------------------------- */
+.zuno-docs-wrap {
+    --zuno-docs-navy: #0D1B3E;
+    --zuno-docs-orange: #E8500A;
+    --zuno-docs-orange-hover: #c94508;
+
+    --zuno-docs-bg: #ffffff;
+    --zuno-docs-bg-sidebar: #f8f9fb;
+    --zuno-docs-bg-hover: #f0f2f5;
+    --zuno-docs-bg-active: #fef0e9;
+
+    --zuno-docs-border: #e4e7ed;
+    --zuno-docs-border-light: #eef0f3;
+
+    --zuno-docs-text-primary: #0f172a;
+    --zuno-docs-text-secondary: #475569;
+    --zuno-docs-text-muted: #94a3b8;
+    --zuno-docs-text-link: #E8500A;
+
+    --zuno-docs-toc-active-bg: #fef0e9;
+    --zuno-docs-toc-active-color: #993C1D;
+    --zuno-docs-toc-active-bar: #E8500A;
+
+    --zuno-docs-sidebar-top: 0px;
+    --zuno-docs-content-max: 820px;
+
+    --zuno-docs-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+    --zuno-docs-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+    --zuno-docs-transition: 150ms ease;
+}
+
+/* -----------------------------------------------------------------------
+ * 2. Layout Root — 1440px max-width container
+ * --------------------------------------------------------------------- */
+.zuno-docs-wrap {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    min-height: 100vh;
+    background: var(--zuno-docs-bg);
+    font-family: var(--zuno-docs-font);
+    color: var(--zuno-docs-text-primary);
+    font-size: 16px;
+    line-height: 1.7;
+    box-sizing: border-box;
+}
+
+.zuno-docs-wrap *,
+.zuno-docs-wrap *::before,
+.zuno-docs-wrap *::after {
+    box-sizing: inherit;
+}
+
+/* -----------------------------------------------------------------------
+ * 3. Sidebar — 30% width, sticky
+ * --------------------------------------------------------------------- */
+.zuno-docs-sidebar {
+    width: var(--zuno-docs-sidebar-w, 30%);
+    flex-shrink: 0;
+    position: sticky;
+    top: var(--zuno-docs-sidebar-top, 0px);
+    height: 100vh;
+    overflow: hidden;
+    background: var(--zuno-docs-toc-bg, #f8f9fb);
+    border: 1px solid var(--zuno-docs-border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.zuno-docs-sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.zuno-docs-sidebar-toggle {
+    display: none;
+}
+
+/* -----------------------------------------------------------------------
+ * 4. Search
+ * --------------------------------------------------------------------- */
+.zuno-docs-search-wrap {
+    position: relative;
+    flex-shrink: 0;
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--zuno-docs-border-light);
+    box-shadow: 3px 3px 6px #c5c5c5, -3px -3px 6px #ffffff;
+}
+
+.zuno-docs-search-icon {
+    position: absolute;
+    left: 26px;
+    top: 55%;
+    transform: translateY(-50%);
+    color: var(--zuno-docs-text-muted);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+.zuno-docs-search-input {
+    width: 100%;
+    padding: 8px 32px 8px 34px;
+    border: 1px solid var(--zuno-docs-border);
+    border-radius: 6px;
+    background: var(--zuno-docs-bg);
+    font-family: var(--zuno-docs-font);
+    font-size: 13.5px;
+    color: var(--zuno-docs-text-primary);
+    outline: none;
+    transition: border-color var(--zuno-docs-transition), box-shadow var(--zuno-docs-transition);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.zuno-docs-search-input:focus {
+    border-color: var(--zuno-docs-orange);
+    box-shadow: 0 0 0 3px rgba(232, 80, 10, 0.12);
+}
+
+.zuno-docs-search-input::placeholder {
+    color: var(--zuno-docs-text-muted);
+}
+
+.zuno-docs-search-input::-webkit-search-cancel-button {
+    display: none;
+}
+
+.zuno-docs-search-clear {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--zuno-docs-text-muted);
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color var(--zuno-docs-transition);
+}
+
+.zuno-docs-search-clear:hover {
+    color: var(--zuno-docs-text-primary);
+}
+
+/* -----------------------------------------------------------------------
+ * 5. TOC Navigation
+ * --------------------------------------------------------------------- */
+.zuno-docs-toc {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0 32px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--zuno-docs-border) transparent;
+}
+
+.zuno-docs-toc::-webkit-scrollbar {
+    width: 4px;
+}
+
+.zuno-docs-toc::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.zuno-docs-toc::-webkit-scrollbar-thumb {
+    background: var(--zuno-docs-border);
+    border-radius: 2px;
+}
+
+.zuno-docs-toc-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--zuno-docs-text-muted);
+    padding: 0 16px 8px;
+    margin: 0;
+}
+
+.zuno-docs-toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.zuno-docs-toc-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 5px 16px 5px 14px;
+    font-size: 13.5px;
+    color: var(--zuno-docs-toc-text, var(--zuno-docs-text-secondary));
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: background var(--zuno-docs-transition), color var(--zuno-docs-transition),
+        border-color var(--zuno-docs-transition);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.zuno-docs-toc-link:hover {
+    background: var(--zuno-docs-toc-hover, var(--zuno-docs-bg-hover));
+    color: var(--zuno-docs-text-primary);
+}
+
+.zuno-docs-toc-link.is-active {
+    background: var(--zuno-docs-toc-active-bg, transparent);
+    color: var(--zuno-docs-toc-active-text, var(--zuno-docs-text-primary));
+    border-left-color: var(--zuno-docs-toc-active-bar, #E8500A);
+    font-weight: 500;
+}
+
+.zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link {
+    padding-left: 14px;
+    font-weight: 500;
+    font-size: 13.5px;
+}
+
+.zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link {
+    padding-left: 26px;
+    font-size: 13px;
+}
+
+.zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link {
+    padding-left: 38px;
+    font-size: 12.5px;
+}
+
+.zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link {
+    padding-left: 50px;
+    font-size: 12.5px;
+}
+
+.zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link {
+    padding-left: 62px;
+    font-size: 12px;
+}
+
+.zuno-docs-toc li>ul {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 250ms ease;
+}
+
+.zuno-docs-toc li.is-open>ul {
+    max-height: 9999px;
+}
+
+.zuno-docs-toc-toggle {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: transform var(--zuno-docs-transition), opacity var(--zuno-docs-transition);
+    color: inherit;
+}
+
+li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
+    transform: rotate(90deg);
+    opacity: 1;
+}
+
+.zuno-docs-no-results {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--zuno-docs-text-muted);
+    font-style: italic;
+    margin: 0;
+}
+
+/* -----------------------------------------------------------------------
+ * 6. Content Area — 70% width
+ * --------------------------------------------------------------------- */
+.zuno-docs-content-wrap {
+    width: calc(100% - var(--zuno-docs-sidebar-w, 30%));
+    min-width: 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.zuno-docs-content {
+    width: 100%;
+    max-width: var(--zuno-docs-content-max);
+    padding: 48px 56px 96px;
+}
+
+/* ------ Typography inside content ------------------------------------ */
+
+.zuno-docs-content h1,
+.zuno-docs-content h2,
+.zuno-docs-content h3,
+.zuno-docs-content h4,
+.zuno-docs-content h5,
+.zuno-docs-content h6 {
+    font-family: var(--zuno-docs-font);
+    font-weight: 600;
+    color: var(--zuno-docs-text-primary);
+    line-height: 1.3;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    scroll-margin-top: 24px;
+}
+
+.zuno-docs-content h1 {
+    font-size: var(--zuno-docs-h1-size, 32px);
+    margin-top: 0;
+    border-bottom: 1px solid var(--zuno-docs-border);
+    padding-bottom: 0.5rem;
+}
+
+.zuno-docs-content h2 {
+    font-size: var(--zuno-docs-h2-size, 24px);
+    border-bottom: 1px solid var(--zuno-docs-border-light);
+    padding-bottom: 0.4rem;
+}
+
+.zuno-docs-content h3 {
+    font-size: var(--zuno-docs-h3-size, 19px);
+}
+
+.zuno-docs-content h4 {
+    font-size: var(--zuno-docs-h4-size, 17px);
+}
+
+.zuno-docs-content h5 {
+    font-size: 0.95rem;
+}
+
+.zuno-docs-content h6 {
+    font-size: 0.875rem;
+    color: var(--zuno-docs-text-secondary);
+}
+
+.zuno-docs-content p {
+    font-size: var(--zuno-docs-p-size, 16px);
+    line-height: var(--zuno-docs-line-height, 1.7);
+    margin: 0 0 1.1em;
+    color: var(--zuno-docs-text-secondary);
+}
+
+.zuno-docs-content a {
+    color: var(--zuno-docs-text-link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.zuno-docs-content a:hover {
+    color: var(--zuno-docs-orange-hover);
+}
+
+.zuno-docs-content ul,
+.zuno-docs-content ol {
+    margin: 0 0 1.1em 1.5em;
+    color: var(--zuno-docs-text-secondary);
+}
+
+.zuno-docs-content li {
+    margin-bottom: 0.3em;
+}
+
+.zuno-docs-content strong {
+    color: var(--zuno-docs-text-primary);
+    font-weight: 600;
+}
+
+.zuno-docs-content blockquote {
+    margin: 1.5em 0;
+    padding: 0.75em 1.25em;
+    border-left: 3px solid var(--zuno-docs-orange);
+    background: #fef9f7;
+    color: var(--zuno-docs-text-secondary);
+    border-radius: 0 4px 4px 0;
+}
+
+.zuno-docs-content code {
+    font-family: var(--zuno-docs-font-mono);
+    font-size: 0.875em;
+    background: #f1f5f9;
+    color: #c7254e;
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    border: 1px solid var(--zuno-docs-border-light);
+}
+
+.zuno-docs-content pre {
+    background: var(--zuno-docs-navy);
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 1.25em 1.5em;
+    overflow-x: auto;
+    margin: 1.5em 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.zuno-docs-content pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+}
+
+.zuno-docs-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--zuno-docs-border-light);
+    margin: 1em 0;
+}
+
+.zuno-docs-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    font-size: 14px;
+}
+
+.zuno-docs-content th {
+    background: var(--zuno-docs-bg-sidebar);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--zuno-docs-text-muted);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid var(--zuno-docs-border);
+}
+
+.zuno-docs-content td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--zuno-docs-border-light);
+    color: var(--zuno-docs-text-secondary);
+    vertical-align: top;
+}
+
+.zuno-docs-content tr:hover td {
+    background: #fafafa;
+}
+
+.zuno-docs-content iframe {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 1em 0;
+}
+
+.zuno-docs-content .wp-block-embed__wrapper,
+.zuno-docs-content .zuno-docs-video-wrap {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.zuno-docs-content .wp-block-embed__wrapper iframe,
+.zuno-docs-content .zuno-docs-video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    margin: 0;
+}
+
+/* -----------------------------------------------------------------------
+ * 7. Search Highlight — yellow mark style
+ * --------------------------------------------------------------------- */
+.zuno-docs-highlight {
+    background: var(--zuno-docs-highlight-bg, #ffcc00);
+    color: var(--zuno-docs-highlight-text, #000);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.zuno-docs-highlight-first {
+    animation: zuno-docs-pulse 0.8s ease-in-out 2;
+}
+
+@keyframes zuno-docs-pulse {
+    0% {
+        background: var(--zuno-docs-highlight-bg, #ffcc00);
+    }
+
+    50% {
+        background: var(--zuno-docs-highlight-bg, #ffcc00);
+        box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.4);
+    }
+
+    100% {
+        background: var(--zuno-docs-highlight-bg, #ffcc00);
+    }
+}
+
+/* Section visibility for search */
+.zuno-docs-section-hidden {
+    display: none !important;
+}
+
+/* -----------------------------------------------------------------------
+ * 8. Empty / error states
+ * --------------------------------------------------------------------- */
+.zuno-docs-empty-state {
+    padding: 3rem 0;
+    text-align: center;
+    color: var(--zuno-docs-text-muted);
+}
+
+.zuno-docs-admin-hint {
+    margin-top: 0.75em;
+    font-size: 13px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75em 1em;
+    color: #92400e;
+    text-align: left;
+    display: inline-block;
+}
+
+/* -----------------------------------------------------------------------
+ * 9. Accessibility helpers
+ * --------------------------------------------------------------------- */
+.zuno-docs-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.zuno-docs-hidden {
+    display: none !important;
+}
+
+/* -----------------------------------------------------------------------
+ * 10. Responsive — Tablet (768px – 1439px)
+ * --------------------------------------------------------------------- */
+@media (max-width: 1439px) {
+    .zuno-docs-content {
+        padding: 36px 36px 72px;
+    }
+}
+
+/* -----------------------------------------------------------------------
+ * 11. Responsive — Mobile (< 768px)
+ * --------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .zuno-docs-wrap {
+        max-width: 100%;
+        flex-direction: column;
+    }
+
+    .zuno-docs-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--zuno-docs-border);
+        overflow: visible;
+    }
+
+    .zuno-docs-sidebar-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--zuno-docs-bg-sidebar);
+        border: none;
+        cursor: pointer;
+        font-family: var(--zuno-docs-font);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--zuno-docs-text-primary);
+    }
+
+    .zuno-docs-toggle-icon {
+        width: 18px;
+        height: 2px;
+        background: currentColor;
+        position: relative;
+        transition: background var(--zuno-docs-transition);
+    }
+
+    .zuno-docs-toggle-icon::before,
+    .zuno-docs-toggle-icon::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        left: 0;
+        transition: transform var(--zuno-docs-transition);
+    }
+
+    .zuno-docs-toggle-icon::before {
+        top: -5px;
+    }
+
+    .zuno-docs-toggle-icon::after {
+        top: 5px;
+    }
+
+    .zuno-docs-sidebar-toggle[aria-expanded="true"] .zuno-docs-toggle-icon {
+        background: transparent;
+    }
+
+    .zuno-docs-sidebar-toggle[aria-expanded="true"] .zuno-docs-toggle-icon::before {
+        transform: rotate(45deg) translate(3px, 4px);
+    }
+
+    .zuno-docs-sidebar-toggle[aria-expanded="true"] .zuno-docs-toggle-icon::after {
+        transform: rotate(-45deg) translate(3px, -4px);
+    }
+
+    .zuno-docs-sidebar-inner {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 300ms ease;
+    }
+
+    .zuno-docs-sidebar.is-open .zuno-docs-sidebar-inner {
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+
+    .zuno-docs-toc {
+        max-height: none;
+    }
+
+    .zuno-docs-content-wrap {
+        width: 100%;
+    }
+
+    .zuno-docs-content {
+        padding: 24px 20px 48px;
+    }
+
+    .zuno-docs-content h1 {
+        font-size: 1.6rem;
+    }
+
+    .zuno-docs-content h2 {
+        font-size: 1.3rem;
+    }
+}
+
+/* -----------------------------------------------------------------------
+ * 12. WordPress Admin Bar offset
+ * --------------------------------------------------------------------- */
+.admin-bar .zuno-docs-sidebar {
+    top: var(--zuno-docs-adminbar-h, 32px);
+    height: calc(100vh - var(--zuno-docs-adminbar-h, 32px));
+}
+
+@media (max-width: 782px) {
+    .admin-bar .zuno-docs-sidebar {
+        top: var(--zuno-docs-adminbar-h, 46px);
+        height: calc(100vh - var(--zuno-docs-adminbar-h, 46px));
+    }
+}
+
+/* -----------------------------------------------------------------------
+ * 13. Print
+ * --------------------------------------------------------------------- */
+@media print {
+    .zuno-docs-sidebar {
+        display: none;
+    }
+
+    .zuno-docs-content-wrap {
+        width: 100%;
+    }
+
+    .zuno-docs-content {
+        max-width: 100%;
+        padding: 0;
+    }
+}
