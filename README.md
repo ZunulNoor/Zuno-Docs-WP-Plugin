@@ -5,7 +5,7 @@
 **URI:** [https://zunulnoor.vercel.app](https://zunulnoor.vercel.app)  
 **License:** GPL-2.0+  
 **Requires at least:** WordPress 5.8  
-**Tested up to:** WordPress 6.4  
+**Tested up to:** WordPress 6.7  
 **Requires PHP:** 7.4+
 
 ---
@@ -19,22 +19,31 @@ A standalone documentation CMS for WordPress that lets you create, manage, and d
 - **Custom Post Type** (`zuno_doc`) — dedicated docs content type, independent of WordPress Pages
 - **Product Taxonomies** (`zuno_product`) — tag docs by product (e.g., Shipox, Storfox)
 - **Category Taxonomies** (`zuno_doc_category`) — organize docs into sections (Getting Started, Guides, Troubleshooting)
-- **Client-Side Search** — TreeWalker-based text-node–safe highlight engine, debounced at 250ms, no server requests
-- **Sticky Table of Contents** — auto-generated from headings, scroll-spy with IntersectionObserver, collapsible nested tree
+- **Precomputed Doc Graph** — hierarchical tree + inverted search index cached in `wp_options`, zero-latency frontend
+- **Client-Side Search** — instant suggestions, in-content highlighting with TreeWalker, TOC filtering, AJAX fallback
+- **Hierarchical Table of Contents** — auto-generated from heading tags, collapsible sections, scroll-spy with IntersectionObserver
 - **Admin Dashboard** — stats cards, product/category filters, full doc table with Edit/View/Delete
 - **Categories CRUD** — add, edit, delete categories with nonce verification
-- **Settings Panel** — tabbed UI for typography, layout, TOC colors, highlight colors, and behavior
+- **Tabbed Settings Panel** — appearance, typography, layout, TOC colors, highlight, behavior, display toggles
 - **Meta Box** — assign Product, Category, and Order directly in the Gutenberg/post editor
 - **Dynamic CSS** — settings-driven CSS variables injected inline, no rebuild required
-- **Transient Caching** — 6-hour TTL on shortcode queries, cleared on doc save
-- **Mobile Responsive** — collapsible sidebar, full-width content on smaller screens
+- **Reading Progress Bar** — optional progress indicator at the top of each doc
+- **Breadcrumbs** — automatic product > category > doc navigation
+- **Prev / Next Navigation** — sequential doc navigation through the product tree
+- **Related Articles** — auto-suggested same-category docs
+- **REST API** — `GET /wp-json/zuno-docs/v1/search?q=term&product=slug`
+- **Centralized Settings** — singleton service class with lazy loading, backward compatible
+- **Version Upgrade Support** — automated migration callbacks (1.0.0 → 2.0.0+)
+- **Uninstall Cleanup** — full data removal on plugin deletion, with `ZUNO_DOCS_PRESERVE_DATA` constant
+- **Mobile Responsive** — collapsible sidebar drawer, full-width content on smaller screens
+- **Accessibility** — ARIA labels, keyboard-navigable search, focus management, screen reader support
 - **No Dependencies** — zero jQuery, zero external libraries, zero page builders
 
 ---
 
 ## Installation
 
-1. Download the plugin and upload the `zuno-docs-engine` folder to `/wp-content/plugins/`
+1. Upload the `zuno-docs-engine` folder to `/wp-content/plugins/` or install via WordPress plugin admin
 2. Activate **Zuno Docs Engine** from the WordPress **Plugins** screen
 3. Seed terms (products & categories) are created automatically on activation
 4. Go to **Zuno Docs → Add New** to create your first documentation article
@@ -54,9 +63,9 @@ A standalone documentation CMS for WordPress that lets you create, manage, and d
 | ---------- | -------------------------------------------------- | ------- |
 | `product`  | Product slug — filters docs by `zuno_product` term | —       |
 | `doc_id`   | Specific doc ID to display                         | —       |
-| `category` | Category slug — filters by `zuno_doc_category`     | —       |
+| `toc_depth` | Maximum heading depth for TOC (2–6)               | `6`     |
 
-If no `product` is given, all docs are shown.
+If no `product` is given and no `doc_id` is specified, a fallback message is displayed.
 
 ### Admin Menu
 
@@ -65,7 +74,7 @@ If no `product` is given, all docs are shown.
 | Zuno Docs      | Dashboard — stats, filters, doc table    |
 | Add New        | Quick-create form or link to Gutenberg   |
 | Categories     | Manage doc categories (CRUD)             |
-| Settings       | Typography, layout, TOC colors, behavior |
+| Settings       | Tabbed settings panel                    |
 
 ### Post Type & Taxonomies
 
@@ -74,12 +83,6 @@ If no `product` is given, all docs are shown.
 | Docs (CPT)          | `zuno_doc`              | `zuno-docs`           |
 | Doc Categories      | `zuno_doc_category`     | `zuno-doc-categories` |
 | Products            | `zuno_product`          | `zuno-products`       |
-
----
-
-## Screenshots
-
-*Coming soon.*
 
 ---
 
@@ -95,45 +98,51 @@ Yes. The shortcode only modifies the content area — your theme's header, foote
 
 ### Does search require a server request?
 
-No. Search is fully client-side. It uses a TreeWalker to safely highlight matches in text nodes without breaking HTML.
+No. Search is fully client-side for small-to-medium doc sets. For large indexes (1000+ docs), the plugin automatically falls back to the REST API search endpoint.
 
 ### How do I add a new product?
 
-Products are terms in the `zuno_product` taxonomy. You can add them via **Posts → Products** in the admin or programmatically.
+Products are terms in the `zuno_product` taxonomy. You can add them via Zuno Docs → Products or programmatically.
+
+### Will my data be preserved if I delete the plugin?
+
+By default, all plugin data is removed on deletion. To preserve data, define `define('ZUNO_DOCS_PRESERVE_DATA', true);` in your `wp-config.php`.
 
 ---
 
 ## Changelog
 
 ### 2.0.0
-- **Precomputed Documentation Graph** — hierarchical doc tree + inverted search index built once on `save_post`, stored in `wp_options`; zero heavy queries on frontend
-- **Ranked Inverted Index Search** — client-side search engine with fuzzy matching, partial input support (≥2 chars), ranked results (title = 5× weight, heading = 3×, content = 1×)
-- **Instant Search Suggestions** — dropdown with live results, keyboard navigation, AJAX fallback for large indexes
-- **REST API Search Endpoint** — `GET /wp-json/zuno-docs/v1/search?q=term&product=slug`
-- **Breadcrumb Navigation** — auto-generated from product > category > doc
-- **Previous / Next Doc Navigation** — sidebar footer with adjacent doc links
-- **Related Articles** — same-category doc suggestions
-- **Multi-Layer Caching** — Layer 1 (transients), Layer 2 (in-memory static cache), Layer 3 (precomputed graph)
-- **Cache Rebuild Button** — admin settings page
-- **Performance Targets** — initial load < 300ms, search < 50ms, TOC render < 100ms
-- **Lazy TOC Rendering** — only visible nodes rendered, no full re-renders
-- **Event-Driven Architecture** — `zuno-docs-navigate` custom event for client-side doc switching
+- **Precomputed Documentation Graph** — hierarchical doc tree + inverted search index, zero heavy queries on frontend
+- **Ranked Inverted Index Search** — fuzzy matching, partial input (≥2 chars), weighted results (title 5×, heading 3×, content 1×)
+- **Instant Search Suggestions** — dropdown with keyboard navigation, AJAX fallback for large indexes
+- **Hierarchical TOC** — collapsible nested sections, scroll-spy with IntersectionObserver
+- **REST API Search Endpoint** — `GET /wp-json/zuno-docs/v1/search`
+- **Breadcrumb, Prev/Next, Related Articles** — auto-generated navigation
+- **Reading Progress Bar** — optional top-of-page progress indicator
+- **Centralized Settings Service** — `Zuno_Docs_Settings` singleton, lazy-loaded
+- **Version Upgrade Support** — automated migration callbacks
+- **Uninstall Cleanup** — full data removal with `ZUNO_DOCS_PRESERVE_DATA` constant
+- **Security Hardening** — PHP 8.0+ multibyte safety, escaped dynamic CSS, single `wp_localize_script`
+- **Accessibility** — `aria-expanded` on toggles, keyboard-only focus indicators, hash-activated scroll-spy
+- **WordPress.org Submission** — `readme.txt`, coding standards compliance
+- **Performance** — precomputed graph eliminates dynamic queries
 
 ### 1.0.0
 - Initial release
 - Custom post type `zuno_doc` with REST API support
 - `zuno_product` and `zuno_doc_category` taxonomies
-- Shortcode `[zuno_docs]` with product, category, and doc_id filters
+- Shortcode `[zuno_docs]` with product and doc_id filters
 - Client-side search with TreeWalker-based highlight engine
-- Auto-generated sticky table of contents with scroll spy
+- Auto-generated table of contents with scroll spy
 - Admin dashboard with stats, filters, and doc management
-- Categories CRUD page (add, edit, delete)
-- Settings panel (typography, layout, TOC colors, highlight, behavior)
-- Doc Settings meta box (product, category, order)
-- Transient caching (6-hour TTL, cleared on save)
+- Categories CRUD page
+- Settings panel
+- Doc Settings meta box
+- Transient caching
 - Dynamic CSS via CSS custom properties
-- Mobile-responsive layout with collapsible sidebar
-- Seed terms: Shipox, Shipox Express, Storfox; Getting Started, Guides, Troubleshooting
+- Mobile-responsive layout
+- Seed terms: Shipox, Shipox Express, Storfox
 
 ---
 
@@ -146,21 +155,25 @@ The plugin follows WordPress coding standards and is compatible with PHP 7.4+.
 ```
 zuno-docs-engine/
 ├── assets/
-│   ├── admin.css          # Admin dashboard & settings styles
-│   ├── docs.css           # Frontend documentation styles
-│   └── docs.js            # Frontend JS (TOC, search, scroll spy, mobile sidebar)
+│   ├── admin.css              # Admin dashboard & settings styles
+│   ├── docs.css               # Frontend documentation styles
+│   └── docs.js                # Frontend JS (TOC, search, scroll spy, mobile)
 ├── includes/
-│   ├── admin-categories.php   # Categories CRUD admin page
-│   ├── admin-dashboard.php    # Dashboard with stats & doc table
-│   ├── admin-meta-box.php     # Doc Settings meta box
-│   ├── admin-new-doc.php      # Add New Doc page
-│   ├── admin-settings.php     # Settings panel & defaults
+│   ├── class-settings.php     # Centralized settings service (Zuno_Docs_Settings)
 │   ├── post-type.php          # CPT & taxonomy registration
-│   └── shortcode.php          # Shortcode handler, cache, template
+│   ├── doc-graph.php          # Precomputed doc graph builder & search index
+│   ├── shortcode.php          # Shortcode handler, JS config, rendering
+│   ├── admin-dashboard.php    # Dashboard with stats & doc table
+│   ├── admin-new-doc.php      # Add New Doc page
+│   ├── admin-categories.php   # Categories CRUD admin page
+│   ├── admin-settings.php     # Settings panel
+│   └── admin-meta-box.php     # Doc Settings meta box
 ├── templates/
 │   └── layout.php             # Frontend two-column layout template
-├── zuno-docs-engine.php       # Main plugin bootstrap
-└── README.md
+├── uninstall.php              # Full data cleanup on plugin deletion
+├── readme.txt                 # WordPress.org plugin readme
+├── README.md
+└── zuno-docs-engine.php       # Main plugin bootstrap
 ```
 
 ---

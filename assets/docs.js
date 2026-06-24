@@ -2,7 +2,6 @@
     'use strict';
 
     var CFG = window.ZUNODocsConfig || {};
-    var SETTINGS = window.ZUNO_SETTINGS || {};
     var DEBOUNCE_MS = 150;
     var MIN_QUERY = 2;
     var MAX_SUGGESTIONS = 8;
@@ -282,18 +281,21 @@
                     toggle.setAttribute('role', 'button');
                     toggle.setAttribute('tabindex', '0');
                     toggle.setAttribute('aria-label', 'Toggle section');
+                    toggle.setAttribute('aria-expanded', 'false');
                     toggle.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1l3 3-3 3"/></svg>';
 
                     toggle.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.preventDefault();
-                        li.classList.toggle('is-open');
+                        var isOpen = li.classList.toggle('is-open');
+                        this.setAttribute('aria-expanded', String(isOpen));
                     });
 
                     toggle.addEventListener('keydown', function (e) {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            li.classList.toggle('is-open');
+                            var isOpen = li.classList.toggle('is-open');
+                            this.setAttribute('aria-expanded', String(isOpen));
                         }
                     });
 
@@ -301,6 +303,7 @@
 
                     if (node.treeDepth === 1) {
                         li.classList.add('is-open');
+                        toggle.setAttribute('aria-expanded', 'true');
                     }
                 }
 
@@ -338,6 +341,8 @@
             while (cur && cur !== this._tocEl) {
                 if (cur.tagName === 'LI') {
                     cur.classList.add('is-open');
+                    var toggle = qs('.zuno-docs-toc-toggle', cur);
+                    if (toggle) toggle.setAttribute('aria-expanded', 'true');
                 }
                 cur = cur.parentElement;
             }
@@ -1041,6 +1046,7 @@
                     var offset = document.body.classList.contains('admin-bar') ? ADMIN_BAR_H + 20 : 20;
                     var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
                     window.scrollTo({ top: top, behavior: 'smooth' });
+                    ScrollSpy.activateHeading(hash);
                 }, 150);
             }
         }

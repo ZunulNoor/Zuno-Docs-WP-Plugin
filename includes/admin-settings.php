@@ -7,59 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Return the full settings array merged with defaults.
- */
-function zuno_docs_get_settings() {
-    $defaults = array(
-        'zuno_docs_theme_color' => '#2563EB',
-        'h1_size'          => 28,
-        'h2_size'          => 26,
-        'h3_size'          => 24,
-        'h4_size'          => 22,
-        'h5_size'          => 20,
-        'h6_size'          => 18,
-        'p_size'           => 16,
-        'line_height'      => 1.7,
-
-        'toc_depth'        => 6,
-
-        'toc_position'     => 'left',
-        'sidebar_width'    => 30,
-
-        'toc_bg'           => '#ffffff',
-        'toc_text'         => '#6B7280',
-        'toc_hover'        => '#EEF2FF',
-        'toc_active_text'  => '#111827',
-        'enable_active_bg' => 'no',
-        'toc_active_bg'    => '#ffffff',
-        'toc_active_bar'   => '#2563EB',
-        'enable_heading_bg' => 'no',
-        'toc_heading_bg'   => '#f0f2f5',
-
-        'highlight_bg'     => '#FEF3C7',
-        'highlight_text'   => '#111827',
-
-        'show_admin_hint'  => 'yes',
-
-        'zuno_docs_show_search'           => 'yes',
-        'zuno_docs_show_breadcrumbs'      => 'yes',
-        'zuno_docs_show_previous'         => 'yes',
-        'zuno_docs_show_next'             => 'yes',
-        'zuno_docs_show_navigation'       => 'yes',
-        'zuno_docs_show_toc'              => 'yes',
-        'zuno_docs_show_categories'       => 'yes',
-        'zuno_docs_show_related_articles' => 'yes',
-        'zuno_docs_show_reading_progress' => 'no',
-    );
-
-    $saved = get_option( 'zuno_docs_settings', array() );
-    if ( ! is_array( $saved ) ) {
-        $saved = array();
-    }
-    return array_merge( $defaults, $saved );
-}
-
 /* -----------------------------------------------------------------------
  * Settings page
  * --------------------------------------------------------------------- */
@@ -478,8 +425,10 @@ function zuno_docs_admin_settings_page() {
             $graph = zuno_docs_get_graph();
             $cache_time = isset( $graph['built'] ) ? $graph['built'] : 0;
             $total_docs = 0;
-            foreach ( $graph['doc_tree'] as $slug => $tree ) {
-                $total_docs += count( $tree['flat_list'] );
+            if ( isset( $graph['doc_tree'] ) && is_array( $graph['doc_tree'] ) ) {
+                foreach ( $graph['doc_tree'] as $slug => $tree ) {
+                    $total_docs += isset( $tree['flat_list'] ) ? count( $tree['flat_list'] ) : 0;
+                }
             }
             ?>
             <p><?php esc_html_e( 'The plugin uses a precomputed documentation graph for instant page loads. The cache is rebuilt automatically when docs are saved.', 'zuno-docs' ); ?></p>

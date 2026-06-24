@@ -46,7 +46,7 @@ function zuno_docs_get_graph() {
 
 function zuno_docs_get_product_graph( $product_slug ) {
     $graph = zuno_docs_get_graph();
-    if ( isset( $graph['doc_tree'][ $product_slug ] ) ) {
+    if ( is_array( $graph ) && isset( $graph['doc_tree'][ $product_slug ] ) ) {
         return $graph['doc_tree'][ $product_slug ];
     }
     return array(
@@ -218,6 +218,13 @@ function zuno_docs_on_delete_graph( $post_id ) {
 }
 
 /* -----------------------------------------------------------------------
+ * Helper: check if a string contains only ASCII characters
+ * --------------------------------------------------------------------- */
+function zuno_docs_is_ascii( $str ) {
+    return (bool) preg_match( '/^[\x00-\x7f]*$/', $str );
+}
+
+/* -----------------------------------------------------------------------
  * Tokenizer with n-gram fuzzy support
  * --------------------------------------------------------------------- */
 function zuno_docs_tokenize( $text ) {
@@ -281,9 +288,12 @@ function zuno_docs_search( $query, $product_slug = '' ) {
             }
         }
 
-        // Fuzzy / prefix match
+        // Fuzzy / prefix match (only for ASCII — levenshtein is not multibyte-safe)
         foreach ( $index as $key => $entries ) {
             if ( $key === $token ) {
+                continue;
+            }
+            if ( ! zuno_docs_is_ascii( $token ) || ! zuno_docs_is_ascii( $key ) ) {
                 continue;
             }
             if ( false !== mb_strpos( $key, $token ) || false !== mb_strpos( $token, $key ) ) {
@@ -333,6 +343,10 @@ function zuno_docs_search( $query, $product_slug = '' ) {
 function zuno_docs_get_doc_info( $doc_id, $graph = null ) {
     if ( null === $graph ) {
         $graph = zuno_docs_get_graph();
+    }
+
+    if ( empty( $graph['doc_tree'] ) || ! is_array( $graph['doc_tree'] ) ) {
+        return null;
     }
 
     foreach ( $graph['doc_tree'] as $slug => $tree ) {
@@ -390,12 +404,12 @@ function zuno_docs_get_breadcrumbs( $doc_id, $graph = null ) {
 
     $crumbs = array(
         array(
-            'label' => $info['product_name'],
-            'slug'  => $info['product_slug'],
+            'label' => isset( $info['product_name'] ) ? $info['product_name'] : __( 'Documentation', 'zuno-docs' ),
+            'slug'  => isset( $info['product_slug'] ) ? $info['product_slug'] : '',
         ),
     );
 
-    if ( $info['category'] && isset( $graph['category_map'][ $info['category'] ] ) ) {
+    if ( ! empty( $info['category'] ) && isset( $graph['category_map'][ $info['category'] ] ) ) {
         $cat = $graph['category_map'][ $info['category'] ];
         $crumbs[] = array(
             'label' => $cat['name'],
@@ -416,7 +430,7 @@ function zuno_docs_get_breadcrumbs( $doc_id, $graph = null ) {
  * --------------------------------------------------------------------- */
 function zuno_docs_get_adjacent( $doc_id, $product_slug ) {
     $tree = zuno_docs_get_product_graph( $product_slug );
-    $list = $tree['flat_list'];
+    $list = isset( $tree['flat_list'] ) ? $tree['flat_list'] : array();
 
     if ( empty( $list ) ) {
         return array( 'prev' => null, 'next' => null );
@@ -440,20 +454,21 @@ function zuno_docs_get_adjacent( $doc_id, $product_slug ) {
  * --------------------------------------------------------------------- */
 function zuno_docs_get_related( $doc_id, $product_slug, $max = 3 ) {
     $tree   = zuno_docs_get_product_graph( $product_slug );
-    $info   = $tree['flat_list'][ $doc_id ] ?? null;
+    $flat   = isset( $tree['flat_list'] ) ? $tree['flat_list'] : array();
+    $info   = isset( $flat[ $doc_id ] ) ? $flat[ $doc_id ] : null;
 
-    if ( ! $info || ! $info['category'] ) {
+    if ( ! $info || empty( $info['category'] ) ) {
         return array();
     }
 
     $cat_id = $info['category'];
     $related = array();
 
-    foreach ( $tree['flat_list'] as $id => $entry ) {
+    foreach ( $flat as $id => $entry ) {
         if ( $id === $doc_id ) {
             continue;
         }
-        if ( $entry['category'] === $cat_id ) {
+        if ( isset( $entry['category'] ) && $entry['category'] === $cat_id ) {
             $related[] = $entry;
             if ( count( $related ) >= $max ) {
                 break;

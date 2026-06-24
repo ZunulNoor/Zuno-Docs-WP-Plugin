@@ -218,7 +218,8 @@
         border-color .2s ease,
         padding .2s ease;
     line-height: 1.5;
-    word-break: break-word;
+    word-break: keep-all;
+    overflow-wrap: break-word;
     border-radius: 0;
 }
 

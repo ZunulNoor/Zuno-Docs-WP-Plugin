@@ -1,0 +1,98 @@
+=== Zuno Docs Engine ===
+Contributors: zunulnoor
+Donate link: https://zunulnoor.vercel.app
+Tags: documentation, docs, knowledge base, documentation management, docs engine
+Requires at least: 5.8
+Tested up to: 6.7
+Requires PHP: 7.4
+Stable tag: 2.0.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Full documentation CMS with custom post types, categories, hierarchical TOC, client-side search, and multi-product support.
+
+== Description ==
+
+Zuno Docs Engine transforms WordPress into a full-featured documentation platform. Perfect for product documentation, knowledge bases, help centers, and developer docs.
+
+= Key Features =
+
+* **Custom Post Type** — Dedicated `zuno_doc` post type keeps docs separate from blog posts.
+* **Hierarchical Table of Contents** — Auto-generated from heading tags (H1-H6), collapsible sections, scroll-spy active tracking.
+* **Client-Side Search** — Instant on-page search with suggestions, in-content highlighting, and TOC filtering.
+* **Multi-Product Support** — Organize docs under product taxonomies (e.g., Shipox, Express, Storfox) with separate doc trees.
+* **Precomputed Doc Graph** — Zero-latency page loads via cached data structures rebuilt on save.
+* **Reading Progress Bar** — Optional progress indicator at the top of each doc.
+* **Breadcrumbs** — Automatic breadcrumb navigation shows product > category > doc path.
+* **Prev / Next Navigation** — Sequential doc navigation through the product doc tree.
+* **Related Articles** — Auto-suggested related docs from the same category.
+* **Fully Customizable** — Theme color, typography, sidebar width, TOC depth, and colors all adjustable from Settings.
+* **Shortcode** — Simple `[zuno_docs product="shipox"]` embeds documentation anywhere.
+* **Gutenberg Compatible** — Full block editor support for rich doc content.
+* **REST API** — Public search endpoint for headless or AJAX integration.
+
+= Shortcode Examples =
+
+`[zuno_docs product="shipox"]`
+`[zuno_docs product="express" doc_id="123"]`
+`[zuno_docs product="storfox" toc_depth="4"]`
+
+= Privacy =
+
+This plugin does not collect or transmit any personal data. All data stays on your server.
+
+== Installation ==
+
+1. Upload the `zuno-docs-engine` folder to `/wp-content/plugins/` or install via WordPress plugin admin.
+2. Activate the plugin through the 'Plugins' screen.
+3. Go to Zuno Docs → Settings to configure appearance.
+4. Use `[zuno_docs product="shipox"]` shortcode on any page/post to display documentation.
+5. Create docs under Zuno Docs → Add New, assign product tags.
+
+== Frequently Asked Questions ==
+
+= Can I use multiple products? =
+
+Yes. Create product terms under Zuno Docs → Products, then tag each doc with the appropriate product.
+
+= Does this work with caching plugins? =
+
+Yes. The precomputed doc graph avoids dynamic queries, making it compatible with most caching solutions.
+
+= Can I customize colors? =
+
+Yes. All visual settings are available under Zuno Docs → Settings, including theme color, TOC colors, typography, and highlight colors.
+
+= Is it translation-ready? =
+
+Yes. All frontend strings use WordPress i18n functions and the `zuno-docs` text domain.
+
+== Screenshots ==
+
+1. Frontend documentation layout with sidebar TOC, search, and content
+2. Admin dashboard with stats and doc management
+3. Settings panel with tabbed interface
+4. Meta box for per-doc product, category, and ordering
+
+== Changelog ==
+
+= 2.0.0 =
+* Major: SaaS-grade upgrade with hierarchical TOC, collapsible sections, scroll-spy
+* Major: Precomputed doc graph for instant page loads
+* Major: Client-side search with content highlighting
+* Major: Multi-product support
+* Major: Reading progress bar, breadcrumbs, prev/next navigation, related articles
+* Enhancement: Mobile-responsive sidebar with drawer behavior
+* Enhancement: Tabbed settings panel with color pickers
+* Enhancement: Admin dashboard with stats and filters
+* Enhancement: Gutenberg editor meta box for doc settings
+* Security: Nonce protection on all admin actions
+* Security: Input sanitization and output escaping throughout
+
+= 1.0.0 =
+* Initial release
+
+== Upgrade Notice ==
+
+= 2.0.0 =
+This is a major upgrade with significant database changes. The doc graph is rebuilt automatically on activation. Settings from v1.0.0 are preserved.

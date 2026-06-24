@@ -75,8 +75,10 @@ function zuno_docs_admin_dashboard() {
     }
 
     $graph_total = 0;
-    foreach ( $graph['doc_tree'] as $slug => $tree ) {
-        $graph_total += count( $tree['flat_list'] );
+    if ( isset( $graph['doc_tree'] ) && is_array( $graph['doc_tree'] ) ) {
+        foreach ( $graph['doc_tree'] as $slug => $tree ) {
+            $graph_total += isset( $tree['flat_list'] ) ? count( $tree['flat_list'] ) : 0;
+        }
     }
 
     /* ----- Taxonomy terms for filter dropdowns ----- */

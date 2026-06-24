@@ -28,6 +28,7 @@ define( 'ZUNO_DOCS_INCLUDES',    ZUNO_DOCS_DIR . 'includes/' );
  * Safely load includes
  * --------------------------------------------------------------------- */
 $zuno_docs_includes = array(
+    'class-settings.php',
     'post-type.php',
     'doc-graph.php',
     'shortcode.php',
@@ -71,25 +72,56 @@ function zuno_docs_deactivate() {
 }
 
 /* -----------------------------------------------------------------------
- * Version upgrade check — seeds categories on update without reactivation
+ * Version upgrade routine — seeds categories on update, runs migrations
  * --------------------------------------------------------------------- */
 add_action( 'admin_init', 'zuno_docs_version_upgrade' );
 function zuno_docs_version_upgrade() {
     $stored = get_option( 'zuno_docs_version', '' );
-    if ( $stored !== ZUNO_DOCS_VERSION ) {
-        if ( ! post_type_exists( 'zuno_doc' ) ) {
-            zuno_docs_register_post_type();
-        }
-        if ( ! taxonomy_exists( 'zuno_doc_category' ) ) {
-            zuno_docs_register_taxonomy();
-        }
-        if ( ! taxonomy_exists( 'zuno_product' ) ) {
-            zuno_docs_register_product_taxonomy();
-        }
-        zuno_docs_seed_default_terms();
-        update_option( 'zuno_docs_version', ZUNO_DOCS_VERSION );
-        flush_rewrite_rules();
+    if ( $stored === ZUNO_DOCS_VERSION ) {
+        return;
     }
+
+    // Register post types and taxonomies if they don't exist yet.
+    if ( ! post_type_exists( 'zuno_doc' ) ) {
+        zuno_docs_register_post_type();
+    }
+    if ( ! taxonomy_exists( 'zuno_doc_category' ) ) {
+        zuno_docs_register_taxonomy();
+    }
+    if ( ! taxonomy_exists( 'zuno_product' ) ) {
+        zuno_docs_register_product_taxonomy();
+    }
+
+    // Seed default terms on fresh install.
+    zuno_docs_seed_default_terms();
+
+    // Run version-specific migrations.
+    $version_map = array(
+        '1.0.0' => 'zuno_docs_upgrade_100_to_200',
+    );
+
+    foreach ( $version_map as $version => $callback ) {
+        if ( version_compare( $stored, $version, '<' ) && function_exists( $callback ) ) {
+            call_user_func( $callback );
+        }
+    }
+
+    update_option( 'zuno_docs_version', ZUNO_DOCS_VERSION );
+    flush_rewrite_rules();
+}
+
+/**
+ * Migration: 1.0.0 → 2.0.0
+ * Ensures settings defaults are present for all new 2.0.0 keys.
+ */
+function zuno_docs_upgrade_100_to_200() {
+    $settings = get_option( 'zuno_docs_settings', array() );
+    if ( ! is_array( $settings ) ) {
+        $settings = array();
+    }
+    $defaults = Zuno_Docs_Settings::get_defaults();
+    $settings = array_merge( $defaults, $settings );
+    update_option( 'zuno_docs_settings', $settings );
 }
 
 /* -----------------------------------------------------------------------
@@ -208,7 +240,7 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
     $direction = 'left' === $settings['toc_position'] ? 'row' : 'row-reverse';
     $active_bg = 'yes' === $settings['enable_active_bg'] ? $settings['toc_active_bg'] : 'transparent';
     $heading_bg_rule = 'yes' === $settings['enable_heading_bg']
-        ? '.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link { background: ' . $settings['toc_heading_bg'] . '; border-radius: 6px; }'
+        ? '.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link { background: ' . esc_attr( $settings['toc_heading_bg'] ) . '; border-radius: 6px; }'
         : '';
 
     $theme_color = $settings['zuno_docs_theme_color'] ?? '#2563EB';
@@ -216,7 +248,7 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
 
     $css = '
 .zuno-docs-wrap {
-    --zuno-theme-color: ' . $theme_color . ';
+    --zuno-theme-color: ' . esc_attr( $theme_color ) . ';
     --zuno-theme-color-rgb: ' . esc_attr( $theme_rgb ) . ';
     --zuno-docs-h1-size: ' . (int) $settings['h1_size'] . 'px;
     --zuno-docs-h2-size: ' . (int) $settings['h2_size'] . 'px;
@@ -225,17 +257,17 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
     --zuno-docs-h5-size: ' . (int) $settings['h5_size'] . 'px;
     --zuno-docs-h6-size: ' . (int) $settings['h6_size'] . 'px;
     --zuno-docs-p-size: ' . (int) $settings['p_size'] . 'px;
-    --zuno-docs-line-height: ' . $settings['line_height'] . ';
-    --zuno-docs-toc-bg: ' . $settings['toc_bg'] . ';
-    --zuno-docs-toc-text: ' . $settings['toc_text'] . ';
-    --zuno-docs-toc-hover: ' . $settings['toc_hover'] . ';
-    --zuno-docs-toc-active-text: ' . $settings['toc_active_text'] . ';
-    --zuno-docs-toc-active-bg: ' . $active_bg . ';
-    --zuno-docs-toc-active-bar: ' . $settings['toc_active_bar'] . ';
-    --zuno-docs-highlight-bg: ' . $settings['highlight_bg'] . ';
-    --zuno-docs-highlight-text: ' . $settings['highlight_text'] . ';
+    --zuno-docs-line-height: ' . esc_attr( $settings['line_height'] ) . ';
+    --zuno-docs-toc-bg: ' . esc_attr( $settings['toc_bg'] ) . ';
+    --zuno-docs-toc-text: ' . esc_attr( $settings['toc_text'] ) . ';
+    --zuno-docs-toc-hover: ' . esc_attr( $settings['toc_hover'] ) . ';
+    --zuno-docs-toc-active-text: ' . esc_attr( $settings['toc_active_text'] ) . ';
+    --zuno-docs-toc-active-bg: ' . esc_attr( $active_bg ) . ';
+    --zuno-docs-toc-active-bar: ' . esc_attr( $settings['toc_active_bar'] ) . ';
+    --zuno-docs-highlight-bg: ' . esc_attr( $settings['highlight_bg'] ) . ';
+    --zuno-docs-highlight-text: ' . esc_attr( $settings['highlight_text'] ) . ';
     --zuno-docs-sidebar-w: ' . $sidebar_w . '%;
-    flex-direction: ' . $direction . ';
+    flex-direction: ' . esc_attr( $direction ) . ';
 }
 .zuno-docs-content-wrap {
     width: ' . $content_w . '%;
