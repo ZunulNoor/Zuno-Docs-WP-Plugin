@@ -103,7 +103,7 @@ function zuno_docs_render_shortcode( $atts ) {
             'related'         => $related,
             'display'         => $display_settings,
             'i18n'            => array(
-                'searchPlaceholder' => __( 'Search docs…', 'zuno-docs' ),
+                'searchPlaceholder' => __( 'Search documentation…', 'zuno-docs' ),
                 'noResults'         => __( 'No results found.', 'zuno-docs' ),
                 'tocLabel'          => __( 'On this page', 'zuno-docs' ),
                 'prev'              => __( 'Previous', 'zuno-docs' ),

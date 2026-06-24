@@ -12,13 +12,14 @@ defined( 'ABSPATH' ) || exit;
  */
 function zuno_docs_get_settings() {
     $defaults = array(
-        'h1_size'          => 32,
-        'h2_size'          => 24,
-        'h3_size'          => 19,
-        'h4_size'          => 17,
-        'h5_size'          => 16,
-        'h6_size'          => 15,
-        'p_size'           => 14,
+        'zuno_docs_theme_color' => '#2563EB',
+        'h1_size'          => 28,
+        'h2_size'          => 26,
+        'h3_size'          => 24,
+        'h4_size'          => 22,
+        'h5_size'          => 20,
+        'h6_size'          => 18,
+        'p_size'           => 16,
         'line_height'      => 1.7,
 
         'toc_depth'        => 6,
@@ -26,18 +27,18 @@ function zuno_docs_get_settings() {
         'toc_position'     => 'left',
         'sidebar_width'    => 30,
 
-        'toc_bg'           => '#f8f9fb',
-        'toc_text'         => '#475569',
-        'toc_hover'        => '#f0f2f5',
-        'toc_active_text'  => '#993C1D',
-        'enable_active_bg' => 'yes',
-        'toc_active_bg'    => '#fef0e9',
-        'toc_active_bar'   => '#E8500A',
+        'toc_bg'           => '#ffffff',
+        'toc_text'         => '#6B7280',
+        'toc_hover'        => '#EEF2FF',
+        'toc_active_text'  => '#111827',
+        'enable_active_bg' => 'no',
+        'toc_active_bg'    => '#ffffff',
+        'toc_active_bar'   => '#2563EB',
         'enable_heading_bg' => 'no',
         'toc_heading_bg'   => '#f0f2f5',
 
-        'highlight_bg'     => '#ffcc00',
-        'highlight_text'   => '#000000',
+        'highlight_bg'     => '#FEF3C7',
+        'highlight_text'   => '#111827',
 
         'show_admin_hint'  => 'yes',
 
@@ -105,6 +106,8 @@ function zuno_docs_admin_settings_page() {
         $s['highlight_bg']     = sanitize_hex_color( $_POST['highlight_bg'] ?? '#ffcc00' ) ?: '#ffcc00';
         $s['highlight_text']   = sanitize_hex_color( $_POST['highlight_text'] ?? '#000000' ) ?: '#000000';
 
+        $s['zuno_docs_theme_color'] = sanitize_hex_color( $_POST['zuno_docs_theme_color'] ?? '#2563EB' ) ?: '#2563EB';
+
         $s['show_admin_hint']  = ! empty( $_POST['show_admin_hint'] ) ? 'yes' : 'no';
 
         $display_toggles = array(
@@ -127,6 +130,9 @@ function zuno_docs_admin_settings_page() {
     }
 
     $s = zuno_docs_get_settings();
+
+    wp_enqueue_style( 'wp-color-picker' );
+    wp_enqueue_script( 'wp-color-picker' );
     ?>
     <div class="wrap zuno-docs-settings-page">
         <h1><?php esc_html_e( 'Zuno Docs Settings', 'zuno-docs' ); ?></h1>
@@ -137,7 +143,8 @@ function zuno_docs_admin_settings_page() {
 
             <div class="zuno-docs-settings-tabs">
                 <nav class="zuno-docs-tab-nav">
-                    <a href="#zuno-docs-tab-typography" class="zuno-docs-tab-active"><?php esc_html_e( 'Typography', 'zuno-docs' ); ?></a>
+                    <a href="#zuno-docs-tab-appearance" class="zuno-docs-tab-active"><?php esc_html_e( 'Appearance', 'zuno-docs' ); ?></a>
+                    <a href="#zuno-docs-tab-typography"><?php esc_html_e( 'Typography', 'zuno-docs' ); ?></a>
                     <a href="#zuno-docs-tab-layout"><?php esc_html_e( 'Layout', 'zuno-docs' ); ?></a>
                     <a href="#zuno-docs-tab-toc"><?php esc_html_e( 'TOC Colors', 'zuno-docs' ); ?></a>
                     <a href="#zuno-docs-tab-highlight"><?php esc_html_e( 'Highlight', 'zuno-docs' ); ?></a>
@@ -145,8 +152,35 @@ function zuno_docs_admin_settings_page() {
                     <a href="#zuno-docs-tab-display"><?php esc_html_e( 'Display', 'zuno-docs' ); ?></a>
                 </nav>
 
+                <!-- APPEARANCE -->
+                <section id="zuno-docs-tab-appearance" class="zuno-docs-tab-panel zuno-docs-tab-active">
+                    <h2><?php esc_html_e( 'Appearance', 'zuno-docs' ); ?></h2>
+                    <p class="description"><?php esc_html_e( 'Control the visual appearance of your documentation.', 'zuno-docs' ); ?></p>
+
+                    <table class="form-table">
+                        <tr>
+                            <th><label for="zuno_docs_theme_color"><?php esc_html_e( 'Theme Accent Color', 'zuno-docs' ); ?></label></th>
+                            <td>
+                                <input type="text" id="zuno_docs_theme_color" name="zuno_docs_theme_color" value="<?php echo esc_attr( $s['zuno_docs_theme_color'] ); ?>" class="zuno-docs-color-picker" data-default-color="#2563EB" />
+                                <p class="description"><?php esc_html_e( 'Controls active TOC indicators, progress bar color, search focus, and link colors.', 'zuno-docs' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><?php esc_html_e( 'Reading Progress Bar', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_reading_progress" value="yes" <?php checked( $s['zuno_docs_show_reading_progress'], 'yes' ); ?> />
+                                        <?php esc_html_e( 'Display a reading progress bar at the top of the page', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>
+                </section>
+
                 <!-- TYPOGRAPHY -->
-                <section id="zuno-docs-tab-typography" class="zuno-docs-tab-panel zuno-docs-tab-active">
+                <section id="zuno-docs-tab-typography" class="zuno-docs-tab-panel">
                     <h2><?php esc_html_e( 'Typography', 'zuno-docs' ); ?></h2>
                     <p class="description"><?php esc_html_e( 'Control font sizes and line height for documentation content.', 'zuno-docs' ); ?></p>
 
@@ -406,17 +440,6 @@ function zuno_docs_admin_settings_page() {
                                 </fieldset>
                             </td>
                         </tr>
-                        <tr>
-                            <th scope="row"><?php esc_html_e( 'Reading Progress', 'zuno-docs' ); ?></th>
-                            <td>
-                                <fieldset>
-                                    <label>
-                                        <input type="checkbox" name="zuno_docs_show_reading_progress" value="yes" <?php checked( $s['zuno_docs_show_reading_progress'], 'yes' ); ?> />
-                                        <?php esc_html_e( 'Display a reading progress bar at the top of the page', 'zuno-docs' ); ?>
-                                    </label>
-                                </fieldset>
-                            </td>
-                        </tr>
                     </table>
                 </section>
             </div>
@@ -495,6 +518,10 @@ function zuno_docs_admin_settings_page() {
         if ( window.location.hash ) {
             var hashTab = document.querySelector('.zuno-docs-tab-nav a[href="' + window.location.hash + '"]');
             if ( hashTab ) hashTab.click();
+        }
+
+        if (typeof jQuery !== 'undefined' && jQuery.fn.wpColorPicker) {
+            jQuery('.zuno-docs-color-picker').wpColorPicker();
         }
     })();
     </script>

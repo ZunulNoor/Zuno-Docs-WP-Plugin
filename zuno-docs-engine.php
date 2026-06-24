@@ -211,8 +211,13 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
         ? '.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link { background: ' . $settings['toc_heading_bg'] . '; border-radius: 6px; }'
         : '';
 
+    $theme_color = $settings['zuno_docs_theme_color'] ?? '#2563EB';
+    $theme_rgb = zuno_docs_hex_to_rgb( $theme_color );
+
     $css = '
 .zuno-docs-wrap {
+    --zuno-theme-color: ' . $theme_color . ';
+    --zuno-theme-color-rgb: ' . esc_attr( $theme_rgb ) . ';
     --zuno-docs-h1-size: ' . (int) $settings['h1_size'] . 'px;
     --zuno-docs-h2-size: ' . (int) $settings['h2_size'] . 'px;
     --zuno-docs-h3-size: ' . (int) $settings['h3_size'] . 'px;
@@ -238,6 +243,23 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
 ' . $heading_bg_rule;
 
     return $css;
+}
+
+/* -----------------------------------------------------------------------
+ * Helper: convert hex color to RGB string
+ * --------------------------------------------------------------------- */
+function zuno_docs_hex_to_rgb( $hex ) {
+    $hex = ltrim( $hex, '#' );
+    if ( strlen( $hex ) === 3 ) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
+    if ( strlen( $hex ) !== 6 ) {
+        return '37, 99, 235';
+    }
+    $r = hexdec( substr( $hex, 0, 2 ) );
+    $g = hexdec( substr( $hex, 2, 2 ) );
+    $b = hexdec( substr( $hex, 4, 2 ) );
+    return "{$r}, {$g}, {$b}";
 }
 
 /* -----------------------------------------------------------------------

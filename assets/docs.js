@@ -272,6 +272,7 @@
                         var offset = document.body.classList.contains('admin-bar') ? ADMIN_BAR_H + 20 : 20;
                         var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
                         window.scrollTo({ top: top, behavior: 'smooth' });
+                        ScrollSpy.activateHeading(node.id);
                     }
                 });
 
@@ -432,12 +433,14 @@
         _headings: [],
         _visibleIds: new Set(),
         _activeId: null,
+        _scrollTimer: null,
 
         init: function (headings) {
             this._headings = headings;
             if (!headings.length || !('IntersectionObserver' in window)) return;
 
             this._observer = new IntersectionObserver(function (entries) {
+                if (this._scrollTimer) return;
                 entries.forEach(function (entry) {
                     if (entry.isIntersecting) {
                         this._visibleIds.add(entry.target.id);
@@ -454,7 +457,19 @@
             headings.forEach(function (h) { this._observer.observe(h.el); }.bind(this));
         },
 
+        activateHeading: function (id) {
+            if (this._scrollTimer) clearTimeout(this._scrollTimer);
+            this._activeId = id;
+            this._updateActiveLinks(id);
+            TocBuilder.expandToItem(id);
+            var self = this;
+            this._scrollTimer = setTimeout(function () {
+                self._scrollTimer = null;
+            }, 800);
+        },
+
         _updateActive: function () {
+            if (this._scrollTimer) return;
             var active = null;
             for (var i = 0; i < this._headings.length; i++) {
                 if (this._visibleIds.has(this._headings[i].id)) {
@@ -465,14 +480,16 @@
 
             if (!active || active === this._activeId) return;
             this._activeId = active;
+            this._updateActiveLinks(active);
+            TocBuilder.expandToItem(active);
+        },
 
+        _updateActiveLinks: function (id) {
             qsa('.zuno-docs-toc-link').forEach(function (link) {
-                var isActive = link.dataset.tocId === active;
+                var isActive = link.dataset.tocId === id;
                 link.classList.toggle('is-active', isActive);
                 link.setAttribute('aria-current', isActive ? 'true' : 'false');
             });
-
-            TocBuilder.expandToItem(active);
         },
 
         destroy: function () {
