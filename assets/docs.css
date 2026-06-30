@@ -361,7 +361,6 @@
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
     padding: 10px 14px;
     font-weight: 500;
-    border-radius: var(--zuno-radius-md, 8px);
     text-decoration: none !important;
 }
 
@@ -386,7 +385,6 @@
 .zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link.is-active:hover {
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
     padding: 10px 14px;
-    border-radius: var(--zuno-radius-md, 8px);
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
 }
@@ -407,7 +405,6 @@
 .zuno-docs-toc li[data-depth="2"] > .zuno-docs-toc-link.is-active,
 .zuno-docs-toc li[data-depth="2"] > .zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
-    border-radius: var(--zuno-radius-md, 8px);
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
@@ -428,7 +425,6 @@
 .zuno-docs-toc li[data-depth="3"] > .zuno-docs-toc-link.is-active,
 .zuno-docs-toc li[data-depth="3"] > .zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
-    border-radius: var(--zuno-radius-md, 8px);
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
@@ -449,7 +445,6 @@
 .zuno-docs-toc li[data-depth="4"] > .zuno-docs-toc-link.is-active,
 .zuno-docs-toc li[data-depth="4"] > .zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
-    border-radius: var(--zuno-radius-md, 8px);
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
@@ -470,7 +465,6 @@
 .zuno-docs-toc li[data-depth="5"] > .zuno-docs-toc-link.is-active,
 .zuno-docs-toc li[data-depth="5"] > .zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
-    border-radius: var(--zuno-radius-md, 8px);
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
