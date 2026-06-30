@@ -8,15 +8,15 @@
 defined( 'ABSPATH' ) || exit;
 
 /* ---------- Resolve display settings ---------- */
-$show_search          = 'yes' === ( $settings['zuno_docs_show_search'] ?? 'yes' );
-$show_breadcrumbs     = 'yes' === ( $settings['zuno_docs_show_breadcrumbs'] ?? 'yes' );
-$show_previous        = 'yes' === ( $settings['zuno_docs_show_previous'] ?? 'yes' );
-$show_next            = 'yes' === ( $settings['zuno_docs_show_next'] ?? 'yes' );
-$show_navigation      = 'yes' === ( $settings['zuno_docs_show_navigation'] ?? 'yes' );
-$show_toc             = 'yes' === ( $settings['zuno_docs_show_toc'] ?? 'yes' );
-$show_categories      = 'yes' === ( $settings['zuno_docs_show_categories'] ?? 'yes' );
-$show_related         = 'yes' === ( $settings['zuno_docs_show_related_articles'] ?? 'yes' );
-$show_reading_progress = 'yes' === ( $settings['zuno_docs_show_reading_progress'] ?? 'no' );
+$show_search          = 'yes' === $settings['zuno_docs_show_search'];
+$show_breadcrumbs     = 'yes' === $settings['zuno_docs_show_breadcrumbs'];
+$show_previous        = 'yes' === $settings['zuno_docs_show_previous'];
+$show_next            = 'yes' === $settings['zuno_docs_show_next'];
+$show_navigation      = 'yes' === $settings['zuno_docs_show_navigation'];
+$show_toc             = 'yes' === $settings['zuno_docs_show_toc'];
+$show_categories      = 'yes' === $settings['zuno_docs_show_categories'];
+$show_related         = 'yes' === $settings['zuno_docs_show_related_articles'];
+$show_reading_progress = 'yes' === $settings['zuno_docs_show_reading_progress'];
 $show_sidebar          = $show_search || $show_toc;
 ?>
 <div
@@ -166,7 +166,7 @@ $show_sidebar          = $show_search || $show_toc;
                         ?>
                     </p>
                     <?php
-                    $show_hint = $settings['show_admin_hint'] ?? 'yes';
+                    $show_hint = $settings['show_admin_hint'];
                     if ( current_user_can( 'edit_posts' ) && 'yes' === $show_hint ) :
                     ?>
                         <p class="zuno-docs-admin-hint">

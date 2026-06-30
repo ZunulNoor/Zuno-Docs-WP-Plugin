@@ -77,7 +77,7 @@ function zuno_docs_render_shortcode( $atts ) {
     wp_enqueue_script( 'zuno-docs' );
 
     /* ---------- Google Font ---------- */
-    if ( 'google' === ( $settings['zuno_docs_font_family'] ?? 'inherit' ) && ! empty( $settings['zuno_docs_google_font'] ) ) {
+    if ( 'google' === $settings['zuno_docs_font_family'] && ! empty( $settings['zuno_docs_google_font'] ) ) {
         $gf = trim( $settings['zuno_docs_google_font'] );
         $gf_slug = sanitize_title( $gf );
         $gf_url = 'https://fonts.googleapis.com/css2?family=' . str_replace( ' ', '+', $gf ) . ':wght@400;500;600;700&display=swap';
@@ -91,13 +91,7 @@ function zuno_docs_render_shortcode( $atts ) {
         $search_data = zuno_docs_get_product_search_data( $product );
     }
 
-    $display_settings = array(
-        'show_breadcrumbs' => 'yes' === ( $settings['zuno_docs_show_breadcrumbs'] ?? 'yes' ),
-        'show_previous'    => 'yes' === ( $settings['zuno_docs_show_previous'] ?? 'yes' ),
-        'show_next'        => 'yes' === ( $settings['zuno_docs_show_next'] ?? 'yes' ),
-        'show_navigation'  => 'yes' === ( $settings['zuno_docs_show_navigation'] ?? 'yes' ),
-        'show_related'     => 'yes' === ( $settings['zuno_docs_show_related_articles'] ?? 'yes' ),
-    );
+    $display_settings = Zuno_Docs_Settings::get_display_settings();
 
     $config = array(
         'product'         => $product,
@@ -126,11 +120,27 @@ function zuno_docs_render_shortcode( $atts ) {
 
     /* ---------- Dynamic CSS ---------- */
     $css_vars = zuno_docs_get_dynamic_css( $settings );
+    wp_add_inline_style( 'zuno-docs', $css_vars );
 
     /* ---------- Render ---------- */
     ob_start();
-    echo '<style>' . $css_vars . '</style>';
     include ZUNO_DOCS_TEMPLATES . 'layout.php';
+
+    /* ---------- Debug mode (admins only) ---------- */
+    if ( defined( 'ZUNO_DOCS_DEBUG' ) && ZUNO_DOCS_DEBUG && current_user_can( 'manage_options' ) ) {
+        $raw = get_option( Zuno_Docs_Settings::OPTION_NAME, array() );
+        printf(
+            "\n<!-- ZUNO DOCS DEBUG\n\n--- Settings (from DB) ---\n%s\n\n--- Localized JS Config ---\n%s\n\n-->",
+            print_r( $raw, true ),
+            print_r( $config, true )
+        );
+        echo '<div style="border:3px solid #f00;background:#fff0f0;padding:12px 16px;margin-bottom:16px;font-family:monospace;font-size:13px;border-radius:6px;color:#c00;">';
+        echo '<strong>ZUNO_DOCS_DEBUG ACTIVE</strong> — Settings source of truth:<br>';
+        echo '<pre style="margin:8px 0;white-space:pre-wrap;color:#333;">' . esc_html( print_r( $raw, true ) ) . '</pre>';
+        echo '<em>Remove <code>define( \'ZUNO_DOCS_DEBUG\', true );</code> from wp-config.php when done.</em>';
+        echo '</div>';
+    }
+
     return ob_get_clean();
 }
 

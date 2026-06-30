@@ -62,6 +62,7 @@ function zuno_docs_activate() {
     zuno_docs_register_taxonomy();
     zuno_docs_register_product_taxonomy();
     zuno_docs_seed_default_terms();
+    zuno_docs_seed_settings();
     update_option( 'zuno_docs_version', ZUNO_DOCS_VERSION );
     flush_rewrite_rules();
 }
@@ -69,6 +70,52 @@ function zuno_docs_activate() {
 register_deactivation_hook( __FILE__, 'zuno_docs_deactivate' );
 function zuno_docs_deactivate() {
     flush_rewrite_rules();
+}
+
+/* -----------------------------------------------------------------------
+ * Seed default settings into the database (safe — preserves existing).
+ * --------------------------------------------------------------------- */
+function zuno_docs_seed_settings() {
+    $existing = get_option( 'zuno_docs_settings', null );
+    if ( null === $existing || false === $existing ) {
+        // Fresh install: write full defaults.
+        update_option( 'zuno_docs_settings', Zuno_Docs_Settings::get_defaults() );
+    } else {
+        // Existing install: ensure all keys exist (merge with defaults).
+        if ( ! is_array( $existing ) ) {
+            $existing = array();
+        }
+        $merged = array_merge( Zuno_Docs_Settings::get_defaults(), $existing );
+        update_option( 'zuno_docs_settings', $merged );
+    }
+    Zuno_Docs_Settings::get_instance()->reload();
+}
+
+/* -----------------------------------------------------------------------
+ * Cache safety: clear object caches when settings are saved.
+ * --------------------------------------------------------------------- */
+add_action( 'zuno_docs_settings_saved', 'zuno_docs_clear_settings_cache' );
+function zuno_docs_clear_settings_cache() {
+    wp_cache_delete( Zuno_Docs_Settings::OPTION_NAME, 'options' );
+
+    // Ensure WP-Optimize cache functions are available (loaded via
+    // advanced-cache.php on front-end, but not in the admin area).
+    if ( ! function_exists( 'wpo_cache_flush' ) ) {
+        $wpo_cache_funcs = WP_PLUGIN_DIR . '/wp-optimize/cache/file-based-page-cache-functions.php';
+        if ( file_exists( $wpo_cache_funcs ) ) {
+            require_once $wpo_cache_funcs;
+        }
+    }
+
+    // Purge WP-Optimize page cache so cached HTML regenerates with new settings.
+    if ( function_exists( 'wpo_cache_flush' ) ) {
+        wpo_cache_flush();
+    }
+
+    // Purge legacy WP Super Cache if active.
+    if ( function_exists( 'wp_cache_clear_cache' ) ) {
+        wp_cache_clear_cache();
+    }
 }
 
 /* -----------------------------------------------------------------------
@@ -94,6 +141,9 @@ function zuno_docs_version_upgrade() {
 
     // Seed default terms on fresh install.
     zuno_docs_seed_default_terms();
+
+    // Ensure all settings keys exist (safe migration for any version).
+    zuno_docs_seed_settings();
 
     // Run version-specific migrations.
     $version_map = array(
@@ -243,11 +293,12 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
         ? '.zuno-docs .zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link { background: ' . esc_attr( $settings['toc_heading_bg'] ) . '; border-radius: 6px; }'
         : '';
 
-    $theme_color = $settings['zuno_docs_theme_color'] ?? '#2563EB';
+    $theme_color = $settings['zuno_docs_theme_color'];
     $theme_rgb = zuno_docs_hex_to_rgb( $theme_color );
+    $theme_hover = zuno_docs_darken_color( $theme_color, 0.85 );
 
     $font_family = 'inherit';
-    if ( 'google' === ( $settings['zuno_docs_font_family'] ?? 'inherit' ) && ! empty( $settings['zuno_docs_google_font'] ) ) {
+    if ( 'google' === $settings['zuno_docs_font_family'] && ! empty( $settings['zuno_docs_google_font'] ) ) {
         $font_family = "'" . esc_attr( $settings['zuno_docs_google_font'] ) . "', sans-serif";
     }
 
@@ -257,6 +308,9 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
     --zuno-primary-rgb: ' . esc_attr( $theme_rgb ) . ';
     --zuno-theme-color: ' . esc_attr( $theme_color ) . ';
     --zuno-theme-color-rgb: ' . esc_attr( $theme_rgb ) . ';
+    --zuno-text: #000000;
+    --zuno-text-link: ' . esc_attr( $theme_color ) . ';
+    --zuno-docs-primary-hover: ' . esc_attr( $theme_hover ) . ';
     --zuno-docs-h1-size: ' . (int) $settings['h1_size'] . 'px;
     --zuno-docs-h2-size: ' . (int) $settings['h2_size'] . 'px;
     --zuno-docs-h3-size: ' . (int) $settings['h3_size'] . 'px;
@@ -304,6 +358,23 @@ function zuno_docs_hex_to_rgb( $hex ) {
     $g = hexdec( substr( $hex, 2, 2 ) );
     $b = hexdec( substr( $hex, 4, 2 ) );
     return "{$r}, {$g}, {$b}";
+}
+
+/* -----------------------------------------------------------------------
+ * Helper: darken a hex color by a factor (0.0 = black, 1.0 = unchanged)
+ * --------------------------------------------------------------------- */
+function zuno_docs_darken_color( $hex, $factor = 0.8 ) {
+    $hex = ltrim( $hex, '#' );
+    if ( strlen( $hex ) === 3 ) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
+    if ( strlen( $hex ) !== 6 ) {
+        return '#1d4ed8';
+    }
+    $r = round( hexdec( substr( $hex, 0, 2 ) ) * $factor );
+    $g = round( hexdec( substr( $hex, 2, 2 ) ) * $factor );
+    $b = round( hexdec( substr( $hex, 4, 2 ) ) * $factor );
+    return '#' . sprintf( '%02x%02x%02x', $r, $g, $b );
 }
 
 /* -----------------------------------------------------------------------
