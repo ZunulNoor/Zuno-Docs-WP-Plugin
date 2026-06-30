@@ -1,30 +1,25 @@
-.zuno-docs-wrap {
-    --zuno-theme-color: #2563EB;
-    --zuno-theme-color-rgb: 37, 99, 235;
-
-    --zuno-docs-bg: #ffffff;
-    --zuno-docs-bg-subtle: #F9FAFB;
-    --zuno-docs-bg-hover: #F3F4F6;
-
-    --zuno-docs-border: #E5E7EB;
-    --zuno-docs-border-light: #F3F4F6;
-
-    --zuno-docs-text-primary: #111827;
-    --zuno-docs-text-secondary: #6B7280;
-    --zuno-docs-text-muted: #9CA3AF;
-    --zuno-docs-text-link: #2563EB;
-
-    --zuno-docs-sidebar-top: 0px;
-    --zuno-docs-content-max: 820px;
-
-    --zuno-docs-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, sans-serif;
-    --zuno-docs-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-
-    --zuno-docs-transition: 150ms ease;
+.zuno-docs {
+    --zuno-primary: #2563EB;
+    --zuno-primary-rgb: 37, 99, 235;
+    --zuno-text: #111827;
+    --zuno-text-secondary: #6B7280;
+    --zuno-text-muted: #9CA3AF;
+    --zuno-border: #E5E7EB;
+    --zuno-border-light: #F3F4F6;
+    --zuno-bg: #ffffff;
+    --zuno-bg-subtle: #F9FAFB;
+    --zuno-bg-hover: #F3F4F6;
+    --zuno-text-link: #2563EB;
+    --zuno-sidebar-top: 0px;
+    --zuno-content-max: 820px;
+    --zuno-font: inherit;
+    --zuno-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --zuno-transition: 150ms ease;
+    --zuno-offset: 0px;
+    --zuno-adminbar-h: 0px;
 }
 
-.zuno-docs-wrap {
+.zuno-docs {
     max-width: 1440px;
     width: 100%;
     margin: 0 auto;
@@ -32,17 +27,17 @@
     align-items: flex-start;
     position: relative;
     min-height: 100vh;
-    background: var(--zuno-docs-bg);
-    font-family: var(--zuno-docs-font);
-    color: var(--zuno-docs-text-primary);
+    background: var(--zuno-bg);
+    font-family: var(--zuno-font);
+    color: var(--zuno-text);
     font-size: 16px;
     line-height: 1.7;
     box-sizing: border-box;
 }
 
-.zuno-docs-wrap *,
-.zuno-docs-wrap *::before,
-.zuno-docs-wrap *::after {
+.zuno-docs *,
+.zuno-docs *::before,
+.zuno-docs *::after {
     box-sizing: inherit;
 }
 
@@ -78,7 +73,7 @@
     position: relative;
     flex-shrink: 0;
     padding: 0 0 16px;
-    border-bottom: 1px solid var(--zuno-docs-border-light);
+    border-bottom: 1px solid var(--zuno-border-light);
 }
 
 .zuno-docs-search-icon {
@@ -86,7 +81,7 @@
     left: 14px;
     top: 35%;
     transform: translateY(-50%);
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     pointer-events: none;
     display: flex;
     align-items: center;
@@ -102,30 +97,20 @@
 .zuno-docs-search-input {
     width: 100%;
     padding: 10px 14px 10px 42px;
-    border: 1px solid var(--zuno-docs-border);
+    border: 1px solid var(--zuno-border);
     border-radius: 12px;
     background: #FFFFFF;
-    font-family: var(--zuno-docs-font);
+    font-family: var(--zuno-font);
     font-size: 14px;
-    color: var(--zuno-docs-text-primary);
+    color: var(--zuno-text);
     outline: none;
-    transition: border-color var(--zuno-docs-transition), box-shadow var(--zuno-docs-transition);
+    transition: border-color var(--zuno-transition), box-shadow var(--zuno-transition);
     -webkit-appearance: none;
     appearance: none;
-    /* box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04); */
 }
 
-/* .zuno-docs-search-input:hover {
-    box-shadow: 0 10px 28px rgba(0,0,0,0.10), 0 3px 10px rgba(0,0,0,0.05);
-} */
-
-/* .zuno-docs-search-input:focus {
-    border-color: var(--zuno-theme-color, #2563EB);
-    box-shadow: 0 0 0 4px rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.10);
-} */
-
 .zuno-docs-search-input::placeholder {
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
 }
 
 .zuno-docs-search-input::-webkit-search-cancel-button {
@@ -140,16 +125,16 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     font-size: 14px;
     padding: 2px 6px;
     border-radius: 6px;
     line-height: 1;
-    transition: color var(--zuno-docs-transition), background var(--zuno-docs-transition);
+    transition: color var(--zuno-transition), background var(--zuno-transition);
 }
 
 .zuno-docs-search-clear:hover {
-    color: var(--zuno-docs-text-primary);
+    color: var(--zuno-text);
 }
 
 .zuno-docs-toc {
@@ -157,7 +142,7 @@
     overflow-y: auto;
     padding: 16px 0 32px;
     scrollbar-width: thin;
-    scrollbar-color: var(--zuno-docs-border) transparent;
+    scrollbar-color: var(--zuno-border) transparent;
 }
 
 .zuno-docs-toc::-webkit-scrollbar {
@@ -169,7 +154,7 @@
 }
 
 .zuno-docs-toc::-webkit-scrollbar-thumb {
-    background: var(--zuno-docs-border);
+    background: var(--zuno-border);
     border-radius: 2px;
 }
 
@@ -178,7 +163,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     padding: 0 4px 12px;
     margin: 0;
 }
@@ -199,7 +184,7 @@
 .zuno-docs-toc button:focus-visible,
 .zuno-docs-toc [role="button"]:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.20);
+    box-shadow: 0 0 0 2px rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.20);
     border-radius: 8px;
 }
 
@@ -210,7 +195,7 @@
     padding: 6px 4px 6px 12px;
     font-size: 14px;
     font-weight: 400;
-    color: var(--zuno-docs-toc-text, var(--zuno-docs-text-secondary));
+    color: var(--zuno-docs-toc-text, var(--zuno-text-secondary));
     text-decoration: none;
     border-left: 2px solid transparent;
     transition:
@@ -226,16 +211,16 @@
 .zuno-docs-toc-link:hover {
     background: none;
     background-color: transparent;
-    color: var(--zuno-theme-color, #2563EB);
-    border-left: 2px solid var(--zuno-theme-color, #2563EB);
+    color: var(--zuno-primary, #2563EB);
+    border-left: 2px solid var(--zuno-primary, #2563EB);
     padding-left: 14px;
 }
 
 .zuno-docs-toc-link.is-active,
 .zuno-docs-toc-link.is-active:hover {
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.12);
-    color: var(--zuno-docs-text-primary);
-    border-left: 3px solid var(--zuno-theme-color, #2563EB);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.12);
+    color: var(--zuno-text);
+    border-left: 3px solid var(--zuno-primary, #2563EB);
     padding: 10px 14px;
     font-weight: 500;
     border-radius: 8px;
@@ -245,24 +230,24 @@
     padding-left: 4px;
     font-size: 15px;
     font-weight: 600;
-    color: var(--zuno-docs-toc-text, var(--zuno-docs-text-primary));
+    color: var(--zuno-docs-toc-text, var(--zuno-text));
 }
 
 .zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link:hover {
     background: none;
     background-color: transparent;
-    color: var(--zuno-theme-color, #2563EB);
-    border-left: 2px solid var(--zuno-theme-color, #2563EB);
+    color: var(--zuno-primary, #2563EB);
+    border-left: 2px solid var(--zuno-primary, #2563EB);
     padding-left: 6px;
 }
 
 .zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link.is-active,
 .zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link.is-active:hover {
-    border-left: 3px solid var(--zuno-theme-color, #2563EB);
+    border-left: 3px solid var(--zuno-primary, #2563EB);
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.12);
-    color: var(--zuno-docs-text-primary);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.12);
+    color: var(--zuno-text);
 }
 
 .zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link {
@@ -274,8 +259,8 @@
 .zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link:hover {
     background: none;
     background-color: transparent;
-    color: var(--zuno-theme-color, #2563EB);
-    border-left: 2px solid var(--zuno-theme-color, #2563EB);
+    color: var(--zuno-primary, #2563EB);
+    border-left: 2px solid var(--zuno-primary, #2563EB);
     padding-left: 26px;
 }
 
@@ -283,9 +268,9 @@
 .zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.12);
-    color: var(--zuno-docs-text-primary);
-    border-left: 3px solid var(--zuno-theme-color, #2563EB);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.12);
+    color: var(--zuno-text);
+    border-left: 3px solid var(--zuno-primary, #2563EB);
 }
 
 .zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link {
@@ -296,8 +281,8 @@
 .zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link:hover {
     background: none;
     background-color: transparent;
-    color: var(--zuno-theme-color, #2563EB);
-    border-left: 2px solid var(--zuno-theme-color, #2563EB);
+    color: var(--zuno-primary, #2563EB);
+    border-left: 2px solid var(--zuno-primary, #2563EB);
     padding-left: 46px;
 }
 
@@ -305,9 +290,9 @@
 .zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.12);
-    color: var(--zuno-docs-text-primary);
-    border-left: 3px solid var(--zuno-theme-color, #2563EB);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.12);
+    color: var(--zuno-text);
+    border-left: 3px solid var(--zuno-primary, #2563EB);
 }
 
 .zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link {
@@ -318,8 +303,8 @@
 .zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link:hover {
     background: none;
     background-color: transparent;
-    color: var(--zuno-theme-color, #2563EB);
-    border-left: 2px solid var(--zuno-theme-color, #2563EB);
+    color: var(--zuno-primary, #2563EB);
+    border-left: 2px solid var(--zuno-primary, #2563EB);
     padding-left: 66px;
 }
 
@@ -327,9 +312,9 @@
 .zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.12);
-    color: var(--zuno-docs-text-primary);
-    border-left: 3px solid var(--zuno-theme-color, #2563EB);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.12);
+    color: var(--zuno-text);
+    border-left: 3px solid var(--zuno-primary, #2563EB);
 }
 
 .zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link {
@@ -340,8 +325,8 @@
 .zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link:hover {
     background: none;
     background-color: transparent;
-    color: var(--zuno-theme-color, #2563EB);
-    border-left: 2px solid var(--zuno-theme-color, #2563EB);
+    color: var(--zuno-primary, #2563EB);
+    border-left: 2px solid var(--zuno-primary, #2563EB);
     padding-left: 86px;
 }
 
@@ -349,9 +334,9 @@
 .zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.12);
-    color: var(--zuno-docs-text-primary);
-    border-left: 3px solid var(--zuno-theme-color, #2563EB);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.12);
+    color: var(--zuno-text);
+    border-left: 3px solid var(--zuno-primary, #2563EB);
 }
 
 .zuno-docs-toc li>ul {
@@ -376,8 +361,8 @@
     opacity: 0.35;
     font-size: 9px;
     line-height: 1;
-    transition: transform var(--zuno-docs-transition), opacity var(--zuno-docs-transition);
-    color: var(--zuno-docs-text-muted);
+    transition: transform var(--zuno-transition), opacity var(--zuno-transition);
+    color: var(--zuno-text-muted);
     user-select: none;
 }
 
@@ -393,7 +378,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 .zuno-docs-no-results {
     padding: 16px 4px;
     font-size: 14px;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     font-style: italic;
     margin: 0;
 }
@@ -403,22 +388,22 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 .zuno-docs-toc-match>.zuno-docs-toc-link {
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.08);
-    border-left-color: var(--zuno-theme-color, #2563EB);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.08);
+    border-left-color: var(--zuno-primary, #2563EB);
     font-weight: 500;
 }
 
 .zuno-docs-toc-empty {
     padding: 16px 4px;
     font-size: 14px;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     font-style: italic;
     text-align: center;
     margin: 0;
 }
 
 .zuno-docs-toc-searching .zuno-docs-toc-label {
-    color: var(--zuno-theme-color, #2563EB);
+    color: var(--zuno-primary, #2563EB);
 }
 
 .zuno-docs-content-wrap {
@@ -441,7 +426,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 .zuno-docs-content h4,
 .zuno-docs-content h5,
 .zuno-docs-content h6 {
-    font-family: var(--zuno-docs-font);
+    font-family: var(--zuno-font);
     color: #000000;
     line-height: 1.3;
     margin-bottom: 15px;
@@ -494,10 +479,10 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 .zuno-docs-content a {
-    color: var(--zuno-docs-text-link);
+    color: var(--zuno-text-link);
     text-decoration: none;
     font-weight: 500;
-    transition: color var(--zuno-docs-transition);
+    transition: color var(--zuno-transition);
 }
 
 .zuno-docs-content a:hover {
@@ -531,7 +516,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 .zuno-docs-content blockquote {
     margin: 32px 0;
     padding: 4px 20px;
-    border-left: 3px solid var(--zuno-docs-border);
+    border-left: 3px solid var(--zuno-border);
     color: #000000;
     font-size: 18px;
     line-height: 1.8;
@@ -542,13 +527,13 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 .zuno-docs-content code {
-    font-family: var(--zuno-docs-font-mono);
+    font-family: var(--zuno-font-mono);
     font-size: 0.85em;
-    background: var(--zuno-docs-bg-subtle);
+    background: var(--zuno-bg-subtle);
     color: #DC2626;
     padding: 0.2em 0.4em;
     border-radius: 4px;
-    border: 1px solid var(--zuno-docs-border-light);
+    border: 1px solid var(--zuno-border-light);
 }
 
 .zuno-docs-content pre {
@@ -574,7 +559,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     max-width: 100%;
     height: auto;
     border-radius: 12px;
-    border: 1px solid var(--zuno-docs-border-light);
+    border: 1px solid var(--zuno-border-light);
     margin: 32px 0;
 }
 
@@ -586,26 +571,26 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 .zuno-docs-content th {
-    background: var(--zuno-docs-bg-subtle);
+    background: var(--zuno-bg-subtle);
     font-weight: 600;
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     padding: 12px 16px;
     text-align: left;
-    border-bottom: 2px solid var(--zuno-docs-border);
+    border-bottom: 2px solid var(--zuno-border);
 }
 
 .zuno-docs-content td {
     padding: 12px 16px;
-    border-bottom: 1px solid var(--zuno-docs-border-light);
+    border-bottom: 1px solid var(--zuno-border-light);
     color: #000000;
     vertical-align: top;
 }
 
 .zuno-docs-content tr:hover td {
-    background: var(--zuno-docs-bg-subtle);
+    background: var(--zuno-bg-subtle);
 }
 
 .zuno-docs-content iframe {
@@ -664,7 +649,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 .zuno-docs-empty-state {
     padding: 64px 0;
     text-align: center;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
 }
 
 .zuno-docs-admin-hint {
@@ -695,115 +680,75 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     display: none !important;
 }
 
-@media (max-width: 1439px) {
-    .zuno-docs-content {
-        padding: 40px 40px 80px;
+/* ---------- Mobile TOC Trigger (visible only on mobile) ---------- */
+.zuno-docs-mobile-toc {
+    display: none;
+}
+
+.zuno-docs-mobile-toc-trigger {
+    display: none;
+}
+
+/* ---------- Admin bar offset (namespaced via JS-added class) ---------- */
+.zuno-docs.zuno-docs-has-admin-bar .zuno-docs-sidebar {
+    top: calc(var(--zuno-offset, 0px) + 24px);
+    height: calc(100vh - var(--zuno-offset, 0px));
+}
+
+.zuno-docs.zuno-docs-has-admin-bar .zuno-docs-progress-bar {
+    top: var(--zuno-offset, 32px);
+}
+
+@media (max-width: 782px) {
+    .zuno-docs.zuno-docs-has-admin-bar .zuno-docs-sidebar {
+        top: calc(var(--zuno-offset, 0px) + 24px);
+        height: calc(100vh - var(--zuno-offset, 0px));
     }
 }
 
-@media (max-width: 1024px) {
-    .zuno-docs-sidebar {
-        max-width: 280px;
-        min-width: 240px;
-    }
+/* ---------- Progress Bar ---------- */
+.zuno-docs-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: transparent;
+    z-index: 999999;
 }
 
-@media (max-width: 767px) {
-    .zuno-docs-wrap {
-        max-width: 100%;
-        flex-direction: column;
-    }
+.zuno-docs-progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--zuno-primary, #2563EB);
+    border-radius: 0 2px 2px 0;
+    transition: width 100ms ease-out;
+    will-change: width;
+}
 
+/* ---------- Attribute-based toggles ---------- */
+.zuno-docs[data-show-sidebar="0"] .zuno-docs-sidebar {
+    display: none;
+}
+
+.zuno-docs[data-show-sidebar="0"] .zuno-docs-content-wrap {
+    width: 100%;
+}
+
+.zuno-docs[data-show-toc="0"] .zuno-docs-toc {
+    display: none;
+}
+
+.zuno-docs[data-show-search="0"] .zuno-docs-search-wrap,
+.zuno-docs[data-show-search="0"] .zuno-docs-suggestions,
+.zuno-docs[data-show-search="0"] .zuno-docs-no-results {
+    display: none;
+}
+
+/* ---------- Print ---------- */
+@media print {
     .zuno-docs-sidebar {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        height: auto;
-        position: static;
-        border: none;
-        overflow: visible;
-        background: var(--zuno-docs-bg);
-    }
-
-    .zuno-docs-sidebar-toggle {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        padding: 12px 16px;
-        background: transparent;
-        border: 1px solid var(--zuno-docs-border);
-        border-radius: 10px;
-        cursor: pointer;
-        font-family: var(--zuno-docs-font);
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--zuno-docs-text-primary);
-        margin-bottom: 8px;
-        transition: border-color var(--zuno-docs-transition);
-    }
-
-    .zuno-docs-sidebar-toggle:hover {
-        border-color: var(--zuno-theme-color, #2563EB);
-    }
-
-    .zuno-docs-toggle-icon {
-        width: 18px;
-        height: 2px;
-        background: currentColor;
-        position: relative;
-        transition: background var(--zuno-docs-transition);
-    }
-
-    .zuno-docs-toggle-icon::before,
-    .zuno-docs-toggle-icon::after {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background: currentColor;
-        left: 0;
-        transition: transform var(--zuno-docs-transition);
-    }
-
-    .zuno-docs-toggle-icon::before {
-        top: -5px;
-    }
-
-    .zuno-docs-toggle-icon::after {
-        top: 5px;
-    }
-
-    .zuno-docs-sidebar-toggle[aria-expanded="true"] .zuno-docs-toggle-icon {
-        background: transparent;
-    }
-
-    .zuno-docs-sidebar-toggle[aria-expanded="true"] .zuno-docs-toggle-icon::before {
-        transform: rotate(45deg) translate(3px, 4px);
-    }
-
-    .zuno-docs-sidebar-toggle[aria-expanded="true"] .zuno-docs-toggle-icon::after {
-        transform: rotate(-45deg) translate(3px, -4px);
-    }
-
-    .zuno-docs-sidebar-inner {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 300ms ease;
-    }
-
-    .zuno-docs-sidebar.is-open .zuno-docs-sidebar-inner {
-        max-height: 75vh;
-        overflow-y: auto;
-    }
-
-    .zuno-docs-search-wrap {
-        padding: 0 0 12px;
-    }
-
-    .zuno-docs-toc {
-        max-height: none;
-        padding-top: 8px;
+        display: none;
     }
 
     .zuno-docs-content-wrap {
@@ -811,76 +756,48 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     }
 
     .zuno-docs-content {
-        padding: 24px 20px 48px;
-    }
-
-    .zuno-docs-page-nav {
-        padding: 24px 20px 0;
         max-width: 100%;
-    }
-
-    .zuno-docs-content h1 {
-        font-size: 32px;
-        margin-bottom: 24px;
-    }
-
-    .zuno-docs-content h2 {
-        font-size: 26px;
-    }
-
-    .zuno-docs-content h3 {
-        font-size: 22px;
-    }
-
-    .zuno-docs-content p {
-        font-size: 16px;
-    }
-
-    .zuno-docs-content ul,
-    .zuno-docs-content ol {
-        font-size: 16px;
-    }
-
-    .zuno-docs-content blockquote {
-        font-size: 16px;
+        padding: 0;
     }
 }
 
+/* ---------- Breadcrumbs ---------- */
 .zuno-docs-breadcrumbs {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     margin-bottom: 32px;
     padding-bottom: 16px;
-    border-bottom: 1px solid var(--zuno-docs-border-light);
+    border-bottom: 1px solid var(--zuno-border-light);
 }
 
 .zuno-docs-breadcrumb {
     font-size: 14px;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
 }
 
 .zuno-docs-breadcrumb.is-current {
-    color: var(--zuno-docs-text-primary);
+    color: var(--zuno-text);
     font-weight: 500;
 }
 
 .zuno-docs-breadcrumb-sep {
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     font-size: 12px;
     margin: 0 4px;
 }
 
+/* ---------- Suggestions ---------- */
 .zuno-docs-suggestions {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
     background: #FFFFFF;
-    border: 1px solid var(--zuno-docs-border);
+    border: 1px solid var(--zuno-border);
     border-radius: 12px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10);
     max-height: 360px;
@@ -897,9 +814,9 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     background: none;
     border: none;
     cursor: pointer;
-    font-family: var(--zuno-docs-font);
-    border-bottom: 1px solid var(--zuno-docs-border-light);
-    transition: background var(--zuno-docs-transition);
+    font-family: var(--zuno-font);
+    border-bottom: 1px solid var(--zuno-border-light);
+    transition: background var(--zuno-transition);
 }
 
 .zuno-docs-suggestion-item:last-child {
@@ -913,7 +830,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 
 .zuno-docs-suggestion-item:hover,
 .zuno-docs-suggestion-item:focus {
-    background: var(--zuno-docs-bg-subtle);
+    background: var(--zuno-bg-subtle);
     outline: none;
 }
 
@@ -921,14 +838,14 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     display: block;
     font-size: 14px;
     font-weight: 500;
-    color: var(--zuno-docs-text-primary);
+    color: var(--zuno-text);
     line-height: 1.4;
 }
 
 .zuno-docs-suggestion-excerpt {
     display: block;
     font-size: 13px;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
     margin-top: 4px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -942,17 +859,13 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     border-radius: 3px;
 }
 
-.zuno-docs-search-wrap {
-    position: relative;
-}
-
 .zuno-docs-page-nav {
     display: flex;
     justify-content: space-between;
     gap: 16px;
     margin-top: 64px;
     padding: 32px 64px 0;
-    border-top: 1px solid var(--zuno-docs-border);
+    border-top: 1px solid var(--zuno-border);
     max-width: 860px;
     width: 100%;
 }
@@ -963,16 +876,16 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     flex-direction: column;
     gap: 4px;
     padding: 16px 20px;
-    border: 1px solid var(--zuno-docs-border);
+    border: 1px solid var(--zuno-border);
     border-radius: 10px;
     text-decoration: none;
-    transition: border-color var(--zuno-docs-transition), background var(--zuno-docs-transition);
+    transition: border-color var(--zuno-transition), background var(--zuno-transition);
     max-width: 48%;
 }
 
 .zuno-docs-page-nav-link:hover {
-    border-color: var(--zuno-theme-color, #2563EB);
-    background: rgba(var(--zuno-theme-color-rgb, 37, 99, 235), 0.02);
+    border-color: var(--zuno-primary, #2563EB);
+    background: rgba(var(--zuno-primary-rgb, 37, 99, 235), 0.02);
 }
 
 .zuno-docs-page-nav-next {
@@ -985,25 +898,25 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--zuno-docs-text-muted);
+    color: var(--zuno-text-muted);
 }
 
 .zuno-docs-nav-title {
     font-size: 15px;
     font-weight: 500;
-    color: var(--zuno-docs-text-primary);
+    color: var(--zuno-text);
 }
 
 .zuno-docs-related-wrap {
     margin-top: 48px;
     padding-top: 32px;
-    border-top: 1px solid var(--zuno-docs-border);
+    border-top: 1px solid var(--zuno-border);
 }
 
 .zuno-docs-related-title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--zuno-docs-text-primary);
+    color: var(--zuno-text);
     margin: 0 0 16px;
 }
 
@@ -1019,10 +932,10 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 
 .zuno-docs-related-list a {
     font-size: 15px;
-    color: var(--zuno-docs-text-link);
+    color: var(--zuno-text-link);
     text-decoration: none;
     font-weight: 500;
-    transition: color var(--zuno-docs-transition);
+    transition: color var(--zuno-transition);
 }
 
 .zuno-docs-related-list a:hover {
@@ -1031,80 +944,272 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     text-underline-offset: 2px;
 }
 
-.zuno-docs-section-hidden {
-    display: none !important;
-}
-
-.admin-bar .zuno-docs-sidebar {
-    top: calc(var(--zuno-docs-adminbar-h, 32px) + 24px);
-    height: calc(100vh - var(--zuno-docs-adminbar-h, 32px));
-}
-
-@media (max-width: 782px) {
-    .admin-bar .zuno-docs-sidebar {
-        top: calc(var(--zuno-docs-adminbar-h, 46px) + 24px);
-        height: calc(100vh - var(--zuno-docs-adminbar-h, 46px));
+/* ===================================================================
+ * DESKTOP LAYOUT (≥ 768px)
+ * =================================================================== */
+@media (max-width: 1439px) {
+    .zuno-docs-content {
+        padding: 40px 40px 80px;
     }
 }
 
-.zuno-docs-progress-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: transparent;
-    z-index: 999999;
-}
-
-.admin-bar .zuno-docs-progress-bar {
-    top: 32px;
-}
-
-@media (max-width: 782px) {
-    .admin-bar .zuno-docs-progress-bar {
-        top: 46px;
+@media (max-width: 1024px) {
+    .zuno-docs-sidebar {
+        max-width: 280px;
+        min-width: 240px;
     }
 }
 
-.zuno-docs-progress-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--zuno-theme-color, #2563EB);
-    border-radius: 0 2px 2px 0;
-    transition: width 100ms ease-out;
-    will-change: width;
-}
+/* ===================================================================
+ * MOBILE LAYOUT (≤ 767px)
+ * =================================================================== */
+@media (max-width: 767px) {
+    .zuno-docs {
+        max-width: 100%;
+        flex-direction: column !important;
+    }
 
-.zuno-docs-wrap[data-show-sidebar="0"] .zuno-docs-sidebar {
-    display: none;
-}
-
-.zuno-docs-wrap[data-show-sidebar="0"] .zuno-docs-content-wrap {
-    width: 100%;
-}
-
-.zuno-docs-wrap[data-show-toc="0"] .zuno-docs-toc {
-    display: none;
-}
-
-.zuno-docs-wrap[data-show-search="0"] .zuno-docs-search-wrap,
-.zuno-docs-wrap[data-show-search="0"] .zuno-docs-suggestions,
-.zuno-docs-wrap[data-show-search="0"] .zuno-docs-no-results {
-    display: none;
-}
-
-@media print {
+    /* Hide desktop sidebar on mobile */
     .zuno-docs-sidebar {
         display: none;
     }
 
     .zuno-docs-content-wrap {
-        width: 100%;
+        width: 100% !important;
     }
 
     .zuno-docs-content {
+        padding: 12px 10px 24px;
         max-width: 100%;
+    }
+
+    .zuno-docs-page-nav {
+        padding: 24px 20px 0;
+        max-width: 100%;
+    }
+
+    .zuno-docs-content h1 {
+        font-size: 28px;
+        margin-bottom: 24px;
+    }
+
+    .zuno-docs-content h2 {
+        font-size: 26px;
+    }
+
+    .zuno-docs-content h3 {
+        font-size: 24px;
+    }
+
+    .zuno-docs-content h4 {
+        font-size: 22px;
+    }
+
+    .zuno-docs-content h5 {
+        font-size: 20px;
+    }
+
+    .zuno-docs-content h6 {
+        font-size: 18px;
+    }
+
+    .zuno-docs-content p {
+        font-size: 14px;
+    }
+
+    .zuno-docs-content ul,
+    .zuno-docs-content ol {
+        font-size: 16px;
+    }
+
+    .zuno-docs-content blockquote {
+        font-size: 16px;
+    }
+
+    /* ---------- Mobile TOC Trigger ---------- */
+    .zuno-docs-mobile-toc {
+        display: block;
+        position: sticky;
+        top: var(--zuno-offset, 0px);
+        z-index: 9999;
+        width: 100%;
+        padding: 12px 0px;
+    }
+
+    .zuno-docs-mobile-toc-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 14px 20px;
+        background: #FFFFFF;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 16px;
+        cursor: pointer;
+        font-family: var(--zuno-font);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--zuno-text);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: box-shadow 250ms ease, border-color 250ms ease;
+        -webkit-appearance: none;
+        appearance: none;
+        line-height: 1.3;
+        text-align: left;
+    }
+
+    .zuno-docs-mobile-toc-trigger:hover {
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+        border-color: rgba(0, 0, 0, 0.10);
+    }
+
+    .zuno-docs-mobile-toc-label {
+        flex: 1;
+    }
+
+    .zuno-docs-mobile-toc-chevron {
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        color: var(--zuno-text-muted);
+        transition: transform 250ms ease;
+        margin-left: 12px;
+    }
+
+    .zuno-docs-mobile-toc.is-open .zuno-docs-mobile-toc-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* ---------- Mobile TOC Backdrop ---------- */
+    .zuno-docs-mobile-toc-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.30);
+        z-index: 998;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 250ms ease, visibility 250ms ease;
+        -webkit-backdrop-filter: blur(2px);
+        backdrop-filter: blur(2px);
+    }
+
+    .zuno-docs-mobile-toc.is-open .zuno-docs-mobile-toc-backdrop {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* ---------- Mobile TOC Panel ---------- */
+    .zuno-docs-mobile-toc-panel {
+        display: flex;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 999;
+        background: #FFFFFF;
+        flex-direction: column;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(12px);
+        transition: opacity 250ms ease, transform 250ms ease, visibility 250ms ease;
+        will-change: transform, opacity;
+    }
+
+    .zuno-docs-mobile-toc.is-open .zuno-docs-mobile-toc-panel {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* ---------- Panel Header ---------- */
+    .zuno-docs-mobile-toc-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--zuno-border-light);
+        background: #FFFFFF;
+    }
+
+    .zuno-docs-mobile-toc-panel-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--zuno-text);
+        margin: 0;
+        font-family: var(--zuno-font);
+    }
+
+    .zuno-docs-mobile-toc-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
         padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--zuno-text-muted);
+        border-radius: 8px;
+        transition: background var(--zuno-transition), color var(--zuno-transition);
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .zuno-docs-mobile-toc-close:hover {
+        background: var(--zuno-bg-hover);
+        color: var(--zuno-text);
+    }
+
+    .zuno-docs-mobile-toc-close svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* ---------- Panel Body (scrollable) ---------- */
+    .zuno-docs-mobile-toc-panel-body {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 16px 20px 32px;
+    }
+
+    /* Search inside the mobile panel — fixed at top */
+    .zuno-docs-mobile-toc-panel-body .zuno-docs-search-wrap {
+        padding: 0 0 16px;
+        margin-bottom: 8px;
+    }
+
+    .zuno-docs-mobile-toc-panel-body .zuno-docs-search-input {
+        font-size: 16px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .zuno-docs-mobile-toc-panel-body .zuno-docs-toc {
+        padding-top: 8px;
+    }
+
+    .zuno-docs-mobile-toc-panel-body .zuno-docs-toc-label {
+        display: none;
+    }
+
+    /* ---------- Body scroll lock ---------- */
+    body.zuno-docs-toc-open {
+        overflow: hidden !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .zuno-docs-mobile-toc-trigger {
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-size: 14px;
+    }
+
+    .zuno-docs-mobile-toc-panel-body {
+        padding: 12px 16px 24px;
     }
 }

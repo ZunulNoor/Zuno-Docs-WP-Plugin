@@ -5,7 +5,7 @@ Tags: documentation, docs, knowledge base, documentation management, docs engine
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -75,6 +75,15 @@ Yes. All frontend strings use WordPress i18n functions and the `zuno-docs` text 
 4. Meta box for per-doc product, category, and ordering
 
 == Changelog ==
+
+= 2.1.0 =
+* Major: Full CSS namespace isolation — no conflicts with themes or page builders
+* Major: Premium mobile TOC with floating sticky card, overlay panel, backdrop blur, body scroll lock
+* Major: JavaScript isolation — all DOM operations scoped to plugin wrapper
+* New: Google Font integration — inherit theme font or load any Google Font
+* Enhancement: Refined mobile typography — optimized heading sizes for small screens
+* Enhancement: Active heading auto-scrolls into view in mobile TOC panel
+* Tweak: Admin bar offset now uses scoped class instead of global `.admin-bar`
 
 = 2.0.0 =
 * Major: SaaS-grade upgrade with hierarchical TOC, collapsible sections, scroll-spy

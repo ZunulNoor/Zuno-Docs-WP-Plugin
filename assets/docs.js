@@ -6,6 +6,7 @@
     var MIN_QUERY = 2;
     var MAX_SUGGESTIONS = 8;
     var ADMIN_BAR_H = 32;
+    var _activeWrapper = null;
 
     /* ===================================================================
      * Utility helpers
@@ -33,7 +34,6 @@
      * =================================================================== */
     var SearchEngine = {
         _docs: {},
-        _tokens: {},
 
         init: function (docs) {
             this._docs = docs || {};
@@ -146,7 +146,11 @@
             this._searchInput.value = result.title;
             this._searchInput.blur();
             var event = new CustomEvent('zuno-docs-navigate', { detail: { docId: result.id } });
-            document.dispatchEvent(event);
+            if (_activeWrapper) {
+                _activeWrapper.dispatchEvent(event);
+            } else {
+                document.dispatchEvent(event);
+            }
         }
     };
 
@@ -158,12 +162,14 @@
         _tocEl: null,
         _tree: [],
         _maxDepth: 6,
+        _wrapper: null,
 
-        build: function (contentEl, tocEl, maxDepth) {
+        build: function (contentEl, tocEl, maxDepth, wrapper) {
             this._tocEl = tocEl;
             this._maxDepth = maxDepth || 6;
             this._headings = [];
             this._tree = [];
+            this._wrapper = wrapper;
 
             tocEl.innerHTML = '';
 
@@ -266,14 +272,14 @@
 
                 a.addEventListener('click', function (e) {
                     e.preventDefault();
-                    var target = document.getElementById(node.id);
+                    var target = qs('#' + CSS.escape(node.id), this._wrapper);
                     if (target) {
-                        var offset = document.body.classList.contains('admin-bar') ? ADMIN_BAR_H + 20 : 20;
+                        var offset = this._wrapper.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
                         var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
                         window.scrollTo({ top: top, behavior: 'smooth' });
                         ScrollSpy.activateHeading(node.id);
                     }
-                });
+                }.bind(this));
 
                 if (hasChildren) {
                     var toggle = document.createElement('span');
@@ -439,9 +445,11 @@
         _visibleIds: new Set(),
         _activeId: null,
         _scrollTimer: null,
+        _wrapper: null,
 
-        init: function (headings) {
+        init: function (headings, wrapper) {
             this._headings = headings;
+            this._wrapper = wrapper;
             if (!headings.length || !('IntersectionObserver' in window)) return;
 
             this._observer = new IntersectionObserver(function (entries) {
@@ -490,7 +498,8 @@
         },
 
         _updateActiveLinks: function (id) {
-            qsa('.zuno-docs-toc-link').forEach(function (link) {
+            var links = qsa('.zuno-docs-toc-link', this._wrapper);
+            links.forEach(function (link) {
                 var isActive = link.dataset.tocId === id;
                 link.classList.toggle('is-active', isActive);
                 link.setAttribute('aria-current', isActive ? 'true' : 'false');
@@ -589,7 +598,6 @@
             }
 
             var isFirst = true;
-            var self = this;
             textNodes.forEach(function (textNode) {
                 var text = textNode.textContent;
                 var lowerText = text.toLowerCase();
@@ -638,7 +646,7 @@
         _scrollToFirst: function () {
             var first = qs('.zuno-docs-highlight-first', this._contentEl);
             if (!first) return;
-            var offset = document.body.classList.contains('admin-bar') ? ADMIN_BAR_H + 20 : 20;
+            var offset = _activeWrapper && _activeWrapper.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
             var top = first.getBoundingClientRect().top + window.pageYOffset - offset - 10;
             window.scrollTo({ top: top, behavior: 'smooth' });
         }
@@ -659,7 +667,7 @@
         };
 
         window.addEventListener('scroll', update, { passive: true });
-        window.addEventListener('resize', update);
+        window.addEventListener('resize', update, { passive: true });
         update();
     }
 
@@ -734,7 +742,7 @@
             prevLink.addEventListener('click', function (e) {
                 e.preventDefault();
                 var event = new CustomEvent('zuno-docs-navigate', { detail: { docId: prev.id } });
-                document.dispatchEvent(event);
+                wrapEl.dispatchEvent(event);
             });
             el.appendChild(prevLink);
         }
@@ -748,7 +756,7 @@
             nextLink.addEventListener('click', function (e) {
                 e.preventDefault();
                 var event = new CustomEvent('zuno-docs-navigate', { detail: { docId: next.id } });
-                document.dispatchEvent(event);
+                wrapEl.dispatchEvent(event);
             });
             el.appendChild(nextLink);
         }
@@ -764,7 +772,10 @@
         if (!wrap) return;
 
         var display = CFG.display || {};
-        if (!display.show_related) return;
+        if (!display.show_related) {
+            wrap.style.display = 'none';
+            return;
+        }
 
         var related = CFG.related || [];
 
@@ -785,7 +796,7 @@
             a.addEventListener('click', function (e) {
                 e.preventDefault();
                 var event = new CustomEvent('zuno-docs-navigate', { detail: { docId: r.id } });
-                document.dispatchEvent(event);
+                wrapEl.dispatchEvent(event);
             });
             li.appendChild(a);
             list.appendChild(li);
@@ -898,11 +909,10 @@
             });
         }
 
-        document.addEventListener('click', function (e) {
-            if (!wrapEl.contains(e.target) || e.target === input) {
-                if (!e.target.closest('.zuno-docs-suggestions')) {
-                    setTimeout(function () { Suggestions.hide(); }, 200);
-                }
+        wrapEl.addEventListener('click', function (e) {
+            if (e.target === input) return;
+            if (!e.target.closest('.zuno-docs-suggestions')) {
+                setTimeout(function () { Suggestions.hide(); }, 200);
             }
         });
     }
@@ -936,7 +946,7 @@
      * Navigation event handling
      * =================================================================== */
     function initNavigation(wrapEl) {
-        document.addEventListener('zuno-docs-navigate', function (e) {
+        wrapEl.addEventListener('zuno-docs-navigate', function (e) {
             var docId = e.detail && e.detail.docId;
             if (!docId) return;
             var url = new URL(window.location.href);
@@ -957,50 +967,222 @@
     }
 
     /* ===================================================================
-     * Mobile sidebar
-     * =================================================================== */
-    function initMobileSidebar(wrapEl) {
-        var toggle = qs('.zuno-docs-sidebar-toggle', wrapEl);
-        var sidebar = qs('.zuno-docs-sidebar', wrapEl);
-
-        if (!toggle || !sidebar) return;
-
-        toggle.addEventListener('click', function () {
-            var isOpen = sidebar.classList.toggle('is-open');
-            toggle.setAttribute('aria-expanded', String(isOpen));
-        });
-
-        qsa('.zuno-docs-toc-link', wrapEl).forEach(function (link) {
-            link.addEventListener('click', function () {
-                if (window.innerWidth < 768) {
-                    sidebar.classList.remove('is-open');
-                    toggle.setAttribute('aria-expanded', 'false');
-                }
-            });
-        });
-    }
-
-    /* ===================================================================
-     * Admin bar offset
+     * Admin bar offset + class
      * =================================================================== */
     function initAdminBarOffset(wrapEl) {
         var bar = document.getElementById('wpadminbar');
         if (!bar) return;
 
+        wrapEl.classList.add('zuno-docs-has-admin-bar');
+
         var update = function () {
             var h = bar.getBoundingClientRect().height;
-            wrapEl.style.setProperty('--zuno-docs-adminbar-h', h + 'px');
+            wrapEl.style.setProperty('--zuno-adminbar-h', h + 'px');
+            wrapEl.style.setProperty('--zuno-offset', h + 'px');
             wrapEl.style.setProperty('--zuno-docs-sidebar-top', h + 'px');
         };
 
         update();
-        window.addEventListener('resize', debounce(update, 100));
+        window.addEventListener('resize', debounce(update, 100), { passive: true });
+    }
+
+    /* ===================================================================
+     * Hash handler — scoped to wrapper
+     * =================================================================== */
+    function handleInitialHash(wrapEl) {
+        var hash = window.location.hash.slice(1);
+        if (!hash) return;
+        var target = qs('#' + CSS.escape(hash), wrapEl);
+        if (!target) {
+            target = document.getElementById(hash);
+        }
+        if (target) {
+            setTimeout(function () {
+                var offset = wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
+                var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({ top: top, behavior: 'smooth' });
+                ScrollSpy.activateHeading(hash);
+            }, 150);
+        }
+    }
+
+    /* ===================================================================
+     * Mobile TOC — floating card with overlay behavior
+     * =================================================================== */
+    function initMobileToc(wrapEl) {
+        var mobileToc = qs('.zuno-docs-mobile-toc', wrapEl);
+        var trigger = qs('.zuno-docs-mobile-toc-trigger', wrapEl);
+        var closeBtn = qs('.zuno-docs-mobile-toc-close', wrapEl);
+        var backdrop = qs('.zuno-docs-mobile-toc-backdrop', wrapEl);
+        var panel = qs('.zuno-docs-mobile-toc-panel', wrapEl);
+        var panelBody = qs('.zuno-docs-mobile-toc-panel-body', wrapEl);
+        var sidebar = qs('.zuno-docs-sidebar', wrapEl);
+
+        if (!trigger || !mobileToc) return;
+
+        function isMobile() {
+            return window.innerWidth < 768;
+        }
+
+        function openToc() {
+            if (!isMobile()) return;
+            mobileToc.classList.add('is-open');
+            trigger.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('zuno-docs-toc-open');
+
+            /* If the panel is empty, clone the sidebar TOC + search into it */
+            if (panelBody && sidebar && !panelBody.querySelector('.zuno-docs-toc') && !panelBody.querySelector('.zuno-docs-search-wrap')) {
+                var searchWrap = qs('.zuno-docs-search-wrap', sidebar);
+                var tocNav = qs('.zuno-docs-toc', sidebar);
+                var suggestions = qs('.zuno-docs-suggestions', sidebar);
+                var noResults = qs('.zuno-docs-no-results', sidebar);
+
+                if (searchWrap) {
+                    var searchClone = searchWrap.cloneNode(true);
+                    panelBody.insertBefore(searchClone, panelBody.firstChild);
+                    var newInput = qs('.zuno-docs-search-input', panelBody);
+                    if (newInput) {
+                        newInput.addEventListener('input', function (e) {
+                            var sidebarInput = qs('.zuno-docs-search-input', sidebar);
+                            if (sidebarInput) {
+                                sidebarInput.value = e.target.value;
+                                sidebarInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                        });
+                        newInput.addEventListener('focus', function () {
+                            var sidebarInput = qs('.zuno-docs-search-input', sidebar);
+                            if (sidebarInput) {
+                                sidebarInput.focus();
+                            }
+                        });
+                    }
+                }
+
+                if (suggestions) {
+                    var suggClone = suggestions.cloneNode(true);
+                    panelBody.appendChild(suggClone);
+                }
+
+                if (noResults) {
+                    var nrClone = noResults.cloneNode(true);
+                    panelBody.appendChild(nrClone);
+                }
+
+                if (tocNav) {
+                    var tocClone = tocNav.cloneNode(true);
+                    panelBody.appendChild(tocClone);
+                    /* Wire up the cloned TOC links to navigate */
+                    qsa('.zuno-docs-toc-link', panelBody).forEach(function (link) {
+                        link.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            var id = link.dataset.tocId;
+                            if (id) {
+                                closeToc();
+                                var target = qs('#' + CSS.escape(id), wrapEl);
+                                if (target) {
+                                    var offset = wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
+                                    var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                                    window.scrollTo({ top: top, behavior: 'smooth' });
+                                    ScrollSpy.activateHeading(id);
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+
+            /* Sync search input from sidebar to panel */
+            var sidebarInput = qs('.zuno-docs-search-input', sidebar);
+            var panelInput = qs('.zuno-docs-search-input', panelBody);
+            if (sidebarInput && panelInput) {
+                panelInput.value = sidebarInput.value;
+            }
+        }
+
+        function closeToc() {
+            mobileToc.classList.remove('is-open');
+            trigger.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('zuno-docs-toc-open');
+        }
+
+        trigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (mobileToc.classList.contains('is-open')) {
+                closeToc();
+            } else {
+                openToc();
+            }
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closeToc();
+            });
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closeToc();
+            });
+        }
+
+        /* Close on Escape key */
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && mobileToc.classList.contains('is-open')) {
+                closeToc();
+            }
+        });
+
+        /* Close TOC on TOC link click (smooth) */
+        if (panelBody) {
+            panelBody.addEventListener('click', function (e) {
+                var link = e.target.closest('.zuno-docs-toc-link');
+                if (link && isMobile()) {
+                    var id = link.dataset.tocId;
+                    if (id) {
+                        closeToc();
+                        var target = qs('#' + CSS.escape(id), wrapEl);
+                        if (target) {
+                            var offset = wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
+                            setTimeout(function () {
+                                var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                                window.scrollTo({ top: top, behavior: 'smooth' });
+                                ScrollSpy.activateHeading(id);
+                            }, 250);
+                        }
+                    }
+                }
+            });
+        }
+
+        /* Scroll active heading into view within the TOC panel */
+        var origUpdateActiveLinks = ScrollSpy._updateActiveLinks;
+        ScrollSpy._updateActiveLinks = function (id) {
+            origUpdateActiveLinks.call(ScrollSpy, id);
+            if (isMobile() && panelBody && id) {
+                var activeLink = qs('.zuno-docs-toc-link.is-active', panelBody);
+                if (activeLink) {
+                    activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            }
+        };
+
+        /* Close on resize to desktop */
+        window.addEventListener('resize', function () {
+            if (!isMobile() && mobileToc.classList.contains('is-open')) {
+                closeToc();
+            }
+        }, { passive: true });
     }
 
     /* ===================================================================
      * Initialiser
      * =================================================================== */
     function initInstance(wrapEl) {
+        _activeWrapper = wrapEl;
+
         var contentEl = qs('.zuno-docs-content', wrapEl);
         var tocEl = qs('.zuno-docs-toc', wrapEl);
         if (!contentEl || !tocEl) return;
@@ -1008,10 +1190,10 @@
         var maxDepth = parseInt(wrapEl.dataset.tocDepth, 10) || 6;
 
         /* 1. Build TOC */
-        var headings = TocBuilder.build(contentEl, tocEl, maxDepth);
+        var headings = TocBuilder.build(contentEl, tocEl, maxDepth, wrapEl);
 
         /* 2. Scroll spy */
-        ScrollSpy.init(headings);
+        ScrollSpy.init(headings, wrapEl);
 
         /* 3. Breadcrumbs */
         renderBreadcrumbs(wrapEl);
@@ -1031,32 +1213,21 @@
         /* 8. Navigation */
         initNavigation(wrapEl);
 
-        /* 9. Mobile sidebar */
-        initMobileSidebar(wrapEl);
-
-        /* 10. Admin bar offset */
+        /* 9. Admin bar offset */
         initAdminBarOffset(wrapEl);
 
+        /* 10. Mobile TOC */
+        initMobileToc(wrapEl);
+
         /* 11. Handle initial hash */
-        var hash = window.location.hash.slice(1);
-        if (hash) {
-            var target = document.getElementById(hash);
-            if (target) {
-                setTimeout(function () {
-                    var offset = document.body.classList.contains('admin-bar') ? ADMIN_BAR_H + 20 : 20;
-                    var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                    window.scrollTo({ top: top, behavior: 'smooth' });
-                    ScrollSpy.activateHeading(hash);
-                }, 150);
-            }
-        }
+        handleInitialHash(wrapEl);
     }
 
     /* ===================================================================
      * Entry Point
      * =================================================================== */
     function boot() {
-        var instances = qsa('.zuno-docs-wrap');
+        var instances = qsa('.zuno-docs');
         instances.forEach(function (wrap) { initInstance(wrap); });
     }
 

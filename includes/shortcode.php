@@ -76,6 +76,14 @@ function zuno_docs_render_shortcode( $atts ) {
     wp_enqueue_style( 'zuno-docs' );
     wp_enqueue_script( 'zuno-docs' );
 
+    /* ---------- Google Font ---------- */
+    if ( 'google' === ( $settings['zuno_docs_font_family'] ?? 'inherit' ) && ! empty( $settings['zuno_docs_google_font'] ) ) {
+        $gf = trim( $settings['zuno_docs_google_font'] );
+        $gf_slug = sanitize_title( $gf );
+        $gf_url = 'https://fonts.googleapis.com/css2?family=' . str_replace( ' ', '+', $gf ) . ':wght@400;500;600;700&display=swap';
+        wp_enqueue_style( 'zuno-docs-font-' . $gf_slug, $gf_url, array(), ZUNO_DOCS_VERSION );
+    }
+
     /* ---------- Pass config to JS ---------- */
     $graph = zuno_docs_get_graph();
     $search_data = array();

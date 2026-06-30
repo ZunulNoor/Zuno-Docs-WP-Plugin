@@ -20,7 +20,7 @@ $show_reading_progress = 'yes' === ( $settings['zuno_docs_show_reading_progress'
 $show_sidebar          = $show_search || $show_toc;
 ?>
 <div
-    class="zuno-docs-wrap"
+    class="zuno-docs"
     data-product="<?php echo esc_attr( $product ); ?>"
     data-doc-id="<?php echo esc_attr( $doc_id ?? 0 ); ?>"
     data-toc-depth="<?php echo esc_attr( $toc_depth ); ?>"
@@ -39,10 +39,38 @@ $show_sidebar          = $show_search || $show_toc;
     <?php endif; ?>
 
     <!-- ============================================================
-         SIDEBAR
+         MOBILE TOC (visible only on mobile)
          ============================================================ -->
     <?php if ( $show_sidebar ) : ?>
-    <aside class="zuno-docs-sidebar" aria-label="Documentation navigation">
+    <div class="zuno-docs-mobile-toc">
+        <button
+            class="zuno-docs-mobile-toc-trigger"
+            aria-expanded="false"
+            aria-label="<?php esc_attr_e( 'Table of Contents', 'zuno-docs' ); ?>"
+        >
+            <span class="zuno-docs-mobile-toc-label"><?php esc_html_e( 'Table of Contents', 'zuno-docs' ); ?></span>
+            <svg class="zuno-docs-mobile-toc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+        </button>
+        <div class="zuno-docs-mobile-toc-backdrop"></div>
+        <div class="zuno-docs-mobile-toc-panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Table of Contents', 'zuno-docs' ); ?>">
+            <div class="zuno-docs-mobile-toc-panel-header">
+                <h2 class="zuno-docs-mobile-toc-panel-title"><?php esc_html_e( 'Table of Contents', 'zuno-docs' ); ?></h2>
+                <button class="zuno-docs-mobile-toc-close" aria-label="<?php esc_attr_e( 'Close', 'zuno-docs' ); ?>">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="zuno-docs-mobile-toc-panel-body">
+                <!-- Search, suggestions, and TOC are cloned from sidebar by JS -->
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- ============================================================
+         SIDEBAR (desktop only on mobile, used as source for mobile TOC)
+         ============================================================ -->
+    <?php if ( $show_sidebar ) : ?>
+    <aside class="zuno-docs-sidebar" aria-label="<?php esc_attr_e( 'Documentation navigation', 'zuno-docs' ); ?>">
 
         <button
             class="zuno-docs-sidebar-toggle"

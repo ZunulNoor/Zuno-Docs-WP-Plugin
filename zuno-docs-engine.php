@@ -4,7 +4,7 @@
  * Plugin URI:   https://zunulnoor.vercel.app
  * Description:  Full documentation CMS with custom post types, categories, TOC,
  *               client-side search, and multi-product support.
- * Version:      2.0.0
+ * Version:      2.1.0
  * Author:       Zun Ul Noor
  * Author URI:   https://zunulnoor.vercel.app
  * Text Domain:  zuno-docs
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /* -----------------------------------------------------------------------
  * Constants
  * --------------------------------------------------------------------- */
-define( 'ZUNO_DOCS_VERSION',     '2.0.0' );
+define( 'ZUNO_DOCS_VERSION',     '2.1.0' );
 define( 'ZUNO_DOCS_DIR',         plugin_dir_path( __FILE__ ) );
 define( 'ZUNO_DOCS_URL',         plugin_dir_url( __FILE__ ) );
 define( 'ZUNO_DOCS_ASSETS',      ZUNO_DOCS_URL . 'assets/' );
@@ -240,14 +240,21 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
     $direction = 'left' === $settings['toc_position'] ? 'row' : 'row-reverse';
     $active_bg = 'yes' === $settings['enable_active_bg'] ? $settings['toc_active_bg'] : 'transparent';
     $heading_bg_rule = 'yes' === $settings['enable_heading_bg']
-        ? '.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link { background: ' . esc_attr( $settings['toc_heading_bg'] ) . '; border-radius: 6px; }'
+        ? '.zuno-docs .zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link { background: ' . esc_attr( $settings['toc_heading_bg'] ) . '; border-radius: 6px; }'
         : '';
 
     $theme_color = $settings['zuno_docs_theme_color'] ?? '#2563EB';
     $theme_rgb = zuno_docs_hex_to_rgb( $theme_color );
 
+    $font_family = 'inherit';
+    if ( 'google' === ( $settings['zuno_docs_font_family'] ?? 'inherit' ) && ! empty( $settings['zuno_docs_google_font'] ) ) {
+        $font_family = "'" . esc_attr( $settings['zuno_docs_google_font'] ) . "', sans-serif";
+    }
+
     $css = '
-.zuno-docs-wrap {
+.zuno-docs {
+    --zuno-primary: ' . esc_attr( $theme_color ) . ';
+    --zuno-primary-rgb: ' . esc_attr( $theme_rgb ) . ';
     --zuno-theme-color: ' . esc_attr( $theme_color ) . ';
     --zuno-theme-color-rgb: ' . esc_attr( $theme_rgb ) . ';
     --zuno-docs-h1-size: ' . (int) $settings['h1_size'] . 'px;
@@ -267,12 +274,17 @@ function zuno_docs_get_dynamic_css( $settings = null ) {
     --zuno-docs-highlight-bg: ' . esc_attr( $settings['highlight_bg'] ) . ';
     --zuno-docs-highlight-text: ' . esc_attr( $settings['highlight_text'] ) . ';
     --zuno-docs-sidebar-w: ' . $sidebar_w . '%;
+    --zuno-font: ' . $font_family . ';
     flex-direction: ' . esc_attr( $direction ) . ';
 }
 .zuno-docs-content-wrap {
     width: ' . $content_w . '%;
 }
-' . $heading_bg_rule;
+' . $heading_bg_rule . '
+.zuno-docs.zuno-docs-has-admin-bar .zuno-docs-sidebar {
+    top: calc(var(--zuno-offset, 0px) + 24px);
+    height: calc(100vh - var(--zuno-offset, 0px));
+}';
 
     return $css;
 }

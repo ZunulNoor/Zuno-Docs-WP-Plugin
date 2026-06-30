@@ -1,6 +1,6 @@
 # Zuno Docs Engine
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Author:** Zun Ul Noor  
 **URI:** [https://zunulnoor.vercel.app](https://zunulnoor.vercel.app)  
 **License:** GPL-2.0+  
@@ -35,6 +35,9 @@ A standalone documentation CMS for WordPress that lets you create, manage, and d
 - **Centralized Settings** — singleton service class with lazy loading, backward compatible
 - **Version Upgrade Support** — automated migration callbacks (1.0.0 → 2.0.0+)
 - **Uninstall Cleanup** — full data removal on plugin deletion, with `ZUNO_DOCS_PRESERVE_DATA` constant
+- **Full CSS Namespace Isolation** — all styles scoped under `.zuno-docs`, zero conflicts with themes or page builders
+- **Premium Mobile TOC** — floating sticky card with overlay panel, backdrop blur, body scroll lock, smooth animations
+- **Google Font Support** — choose between theme-inherited font or any Google Font via settings
 - **Mobile Responsive** — collapsible sidebar drawer, full-width content on smaller screens
 - **Accessibility** — ARIA labels, keyboard-navigable search, focus management, screen reader support
 - **No Dependencies** — zero jQuery, zero external libraries, zero page builders
@@ -111,6 +114,16 @@ By default, all plugin data is removed on deletion. To preserve data, define `de
 ---
 
 ## Changelog
+
+### 2.1.0
+- **Full CSS Namespace Isolation** — every selector prefixed under `.zuno-docs`, no leakage to/from themes or plugins
+- **JavaScript Isolation** — all DOM queries scoped to plugin wrapper, delegated events, no globals
+- **Premium Mobile TOC Redesign** — sticky floating trigger card, overlay panel with backdrop blur, body scroll lock, independent scrolling, smooth open/close animations
+- **Premium Mobile TOC Search** — search field fixed at top of overlay panel, only TOC list scrolls
+- **Active Heading Tracking** — active TOC item auto-scrolls into view in the mobile panel
+- **Admin Bar Namespace** — `.admin-bar` dependency replaced with scoped `.zuno-docs-has-admin-bar` class
+- **Google Font Integration** — new Typography setting to inherit theme font or load a Google Font with automatic enqueueing
+- **Refined Mobile Typography** — adjusted mobile heading sizes (H1: 28px, H2: 26px, H3: 24px, H4: 22px, H5: 20px, H6: 18px, P: 14px)
 
 ### 2.0.0
 - **Precomputed Documentation Graph** — hierarchical doc tree + inverted search index, zero heavy queries on frontend

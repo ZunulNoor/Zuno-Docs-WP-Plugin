@@ -55,6 +55,9 @@ function zuno_docs_admin_settings_page() {
 
         $s['zuno_docs_theme_color'] = sanitize_hex_color( $_POST['zuno_docs_theme_color'] ?? '#2563EB' ) ?: '#2563EB';
 
+        $s['zuno_docs_font_family'] = in_array( $_POST['zuno_docs_font_family'] ?? '', array( 'inherit', 'google' ), true ) ? $_POST['zuno_docs_font_family'] : 'inherit';
+        $s['zuno_docs_google_font'] = sanitize_text_field( $_POST['zuno_docs_google_font'] ?? '' );
+
         $s['show_admin_hint']  = ! empty( $_POST['show_admin_hint'] ) ? 'yes' : 'no';
 
         $display_toggles = array(
@@ -163,6 +166,25 @@ function zuno_docs_admin_settings_page() {
                         <tr>
                             <th><label for="line_height"><?php esc_html_e( 'Line Height', 'zuno-docs' ); ?></label></th>
                             <td><input type="number" id="line_height" name="line_height" value="<?php echo esc_attr( $s['line_height'] ); ?>" min="1.0" max="3.0" step="0.1" class="small-text" /></td>
+                        </tr>
+                        <tr>
+                            <th><?php esc_html_e( 'Font Family', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="radio" name="zuno_docs_font_family" value="inherit" <?php checked( $s['zuno_docs_font_family'], 'inherit' ); ?> />
+                                        <?php esc_html_e( 'Inherit from theme', 'zuno-docs' ); ?>
+                                    </label>
+                                    <br />
+                                    <label>
+                                        <input type="radio" name="zuno_docs_font_family" value="google" <?php checked( $s['zuno_docs_font_family'], 'google' ); ?> />
+                                        <?php esc_html_e( 'Google Font', 'zuno-docs' ); ?>
+                                    </label>
+                                    <br />
+                                    <input type="text" name="zuno_docs_google_font" value="<?php echo esc_attr( $s['zuno_docs_google_font'] ); ?>" placeholder="<?php esc_attr_e( 'e.g. Inter', 'zuno-docs' ); ?>" style="margin-top:6px" />
+                                    <p class="description"><?php esc_html_e( 'Enter the Google Font name. Only one font family is supported.', 'zuno-docs' ); ?></p>
+                                </fieldset>
+                            </td>
                         </tr>
                     </table>
                 </section>

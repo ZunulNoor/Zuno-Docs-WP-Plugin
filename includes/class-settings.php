@@ -98,6 +98,8 @@ class Zuno_Docs_Settings {
             'zuno_docs_show_categories'     => 'yes',
             'zuno_docs_show_related_articles' => 'yes',
             'zuno_docs_show_reading_progress' => 'no',
+            'zuno_docs_font_family'         => 'inherit',
+            'zuno_docs_google_font'         => '',
         );
     }
 
