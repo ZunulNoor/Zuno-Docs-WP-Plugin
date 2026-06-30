@@ -92,12 +92,11 @@ function zuno_docs_seed_settings() {
 }
 
 /* -----------------------------------------------------------------------
- * Cache safety: clear object caches when settings are saved.
+ * Cache safety: clear all external page caches.
+ * Loads WP-Optimize functions manually in admin (where advanced-cache.php
+ * is skipped) so cache purging works from any context.
  * --------------------------------------------------------------------- */
-add_action( 'zuno_docs_settings_saved', 'zuno_docs_clear_settings_cache' );
-function zuno_docs_clear_settings_cache() {
-    wp_cache_delete( Zuno_Docs_Settings::OPTION_NAME, 'options' );
-
+function zuno_docs_purge_page_cache() {
     // Ensure WP-Optimize cache functions are available (loaded via
     // advanced-cache.php on front-end, but not in the admin area).
     if ( ! function_exists( 'wpo_cache_flush' ) ) {
@@ -107,7 +106,7 @@ function zuno_docs_clear_settings_cache() {
         }
     }
 
-    // Purge WP-Optimize page cache so cached HTML regenerates with new settings.
+    // Purge WP-Optimize page cache.
     if ( function_exists( 'wpo_cache_flush' ) ) {
         wpo_cache_flush();
     }
@@ -116,6 +115,12 @@ function zuno_docs_clear_settings_cache() {
     if ( function_exists( 'wp_cache_clear_cache' ) ) {
         wp_cache_clear_cache();
     }
+}
+
+add_action( 'zuno_docs_settings_saved', 'zuno_docs_clear_settings_cache' );
+function zuno_docs_clear_settings_cache() {
+    wp_cache_delete( Zuno_Docs_Settings::OPTION_NAME, 'options' );
+    zuno_docs_purge_page_cache();
 }
 
 /* -----------------------------------------------------------------------

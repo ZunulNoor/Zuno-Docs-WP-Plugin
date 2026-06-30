@@ -20,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * --------------------------------------------------------------------- */
 add_action( 'save_post_zuno_doc', 'zuno_docs_build_graph', 10, 2 );
 add_action( 'delete_post', 'zuno_docs_on_delete_graph' );
+add_action( 'trashed_post', 'zuno_docs_on_trash_untrash_graph' );
+add_action( 'untrashed_post', 'zuno_docs_on_trash_untrash_graph' );
 add_action( 'edited_zuno_doc_category', 'zuno_docs_build_graph' );
 add_action( 'created_zuno_doc_category', 'zuno_docs_build_graph' );
 add_action( 'delete_zuno_doc_category', 'zuno_docs_build_graph' );
@@ -29,19 +31,26 @@ add_action( 'delete_zuno_product', 'zuno_docs_build_graph' );
 
 /* -----------------------------------------------------------------------
  * In-memory request cache (Layer 2)
+ * The global $zuno_docs_graph_cache is used so that zuno_docs_clear_graph_cache()
+ * can invalidate it from outside the function scope.
  * --------------------------------------------------------------------- */
 function zuno_docs_get_graph() {
-    static $cache = null;
-    if ( null !== $cache ) {
-        return $cache;
+    global $zuno_docs_graph_cache;
+    if ( null !== $zuno_docs_graph_cache ) {
+        return $zuno_docs_graph_cache;
     }
     $graph = get_option( 'zuno_docs_graph', false );
     if ( ! is_array( $graph ) || empty( $graph ) ) {
         zuno_docs_build_graph();
         $graph = get_option( 'zuno_docs_graph', array() );
     }
-    $cache = $graph;
-    return $cache;
+    $zuno_docs_graph_cache = $graph;
+    return $zuno_docs_graph_cache;
+}
+
+function zuno_docs_clear_graph_cache() {
+    global $zuno_docs_graph_cache;
+    $zuno_docs_graph_cache = null;
 }
 
 function zuno_docs_get_product_graph( $product_slug ) {
@@ -61,6 +70,10 @@ function zuno_docs_get_product_graph( $product_slug ) {
  * Main builder — runs on save_post_zuno_doc
  * --------------------------------------------------------------------- */
 function zuno_docs_build_graph() {
+    // Clear in-memory cache so anything reading the graph later in this
+    // request gets fresh data from the option we're about to update.
+    zuno_docs_clear_graph_cache();
+
     $products = get_terms( array(
         'taxonomy'   => 'zuno_product',
         'hide_empty' => false,
@@ -208,9 +221,19 @@ function zuno_docs_build_graph() {
     foreach ( $products as $pid => $slug ) {
         delete_transient( 'zuno_docs_query_' . $slug );
     }
+
+    // Purge external page caches so the frontend renders updated content immediately.
+    zuno_docs_purge_page_cache();
 }
 
 function zuno_docs_on_delete_graph( $post_id ) {
+    if ( 'zuno_doc' !== get_post_type( $post_id ) ) {
+        return;
+    }
+    zuno_docs_build_graph();
+}
+
+function zuno_docs_on_trash_untrash_graph( $post_id ) {
     if ( 'zuno_doc' !== get_post_type( $post_id ) ) {
         return;
     }
