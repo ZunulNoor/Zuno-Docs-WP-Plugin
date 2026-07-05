@@ -29,6 +29,7 @@ define( 'ZUNO_DOCS_INCLUDES',    ZUNO_DOCS_DIR . 'includes/' );
  * --------------------------------------------------------------------- */
 $zuno_docs_includes = array(
     'class-settings.php',
+    'class-capabilities.php',
     'post-type.php',
     'doc-graph.php',
     'shortcode.php',
@@ -63,6 +64,7 @@ function zuno_docs_activate() {
     zuno_docs_register_product_taxonomy();
     zuno_docs_seed_default_terms();
     zuno_docs_seed_settings();
+    zuno_docs_register_capabilities();
     update_option( 'zuno_docs_version', ZUNO_DOCS_VERSION );
     flush_rewrite_rules();
 }
@@ -150,6 +152,9 @@ function zuno_docs_version_upgrade() {
     // Ensure all settings keys exist (safe migration for any version).
     zuno_docs_seed_settings();
 
+    // Register capabilities for any new or updated roles.
+    zuno_docs_register_capabilities();
+
     // Run version-specific migrations.
     $version_map = array(
         '1.0.0' => 'zuno_docs_upgrade_100_to_200',
@@ -188,7 +193,7 @@ function zuno_docs_register_admin_menu() {
     add_menu_page(
         'Zuno Docs',
         'Zuno Docs',
-        'manage_options',
+        'zuno_docs_read',
         'zuno-docs',
         'zuno_docs_admin_dashboard',
         'dashicons-book',
@@ -199,7 +204,7 @@ function zuno_docs_register_admin_menu() {
         'zuno-docs',
         'All Docs',
         'All Docs',
-        'manage_options',
+        'zuno_docs_read',
         'zuno-docs',
         'zuno_docs_admin_dashboard'
     );
@@ -208,7 +213,7 @@ function zuno_docs_register_admin_menu() {
         'zuno-docs',
         'Add New Doc',
         'Add New',
-        'manage_options',
+        'zuno_docs_create',
         'zuno-docs-new',
         'zuno_docs_admin_new_doc_page'
     );
@@ -217,7 +222,7 @@ function zuno_docs_register_admin_menu() {
         'zuno-docs',
         'Categories',
         'Categories',
-        'manage_options',
+        'zuno_docs_read',
         'zuno-docs-categories',
         'zuno_docs_admin_categories_page'
     );
@@ -226,7 +231,7 @@ function zuno_docs_register_admin_menu() {
         'zuno-docs',
         'Settings',
         'Settings',
-        'manage_options',
+        'zuno_docs_manage_settings',
         'zuno-docs-settings',
         'zuno_docs_admin_settings_page'
     );
@@ -424,7 +429,7 @@ function zuno_docs_rest_search( $request ) {
  * Helper: show error notice to editors/admins
  * --------------------------------------------------------------------- */
 function zuno_docs_error( $message ) {
-    if ( ! current_user_can( 'edit_posts' ) ) {
+    if ( ! current_user_can( 'zuno_docs_edit' ) ) {
         return '';
     }
     return sprintf(

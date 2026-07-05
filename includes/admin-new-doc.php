@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 function zuno_docs_admin_new_doc_page() {
-    if ( ! current_user_can( 'manage_options' ) ) {
+    if ( ! current_user_can( 'zuno_docs_create' ) ) {
         wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs' ) );
     }
 
@@ -21,6 +21,9 @@ function zuno_docs_admin_new_doc_page() {
     $saved = false;
     if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['zuno_docs_new_doc_nonce'] ) ) {
         if ( wp_verify_nonce( $_POST['zuno_docs_new_doc_nonce'], 'zuno_docs_new_doc' ) ) {
+            if ( ! current_user_can( 'zuno_docs_publish' ) ) {
+                wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs' ) );
+            }
             $title   = sanitize_text_field( $_POST['zuno_docs_title'] ?? '' );
             $content = wp_kses_post( $_POST['zuno_docs_content'] ?? '' );
             $cat_id  = (int) ( $_POST['zuno_docs_category'] ?? 0 );

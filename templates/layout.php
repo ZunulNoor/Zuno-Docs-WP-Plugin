@@ -167,7 +167,7 @@ $show_sidebar          = $show_search || $show_toc;
                     </p>
                     <?php
                     $show_hint = $settings['show_admin_hint'];
-                    if ( current_user_can( 'edit_posts' ) && 'yes' === $show_hint ) :
+                    if ( current_user_can( 'zuno_docs_edit' ) && 'yes' === $show_hint ) :
                     ?>
                         <p class="zuno-docs-admin-hint">
                             <?php

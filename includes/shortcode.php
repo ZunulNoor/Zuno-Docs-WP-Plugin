@@ -127,7 +127,7 @@ function zuno_docs_render_shortcode( $atts ) {
     include ZUNO_DOCS_TEMPLATES . 'layout.php';
 
     /* ---------- Debug mode (admins only) ---------- */
-    if ( defined( 'ZUNO_DOCS_DEBUG' ) && ZUNO_DOCS_DEBUG && current_user_can( 'manage_options' ) ) {
+    if ( defined( 'ZUNO_DOCS_DEBUG' ) && ZUNO_DOCS_DEBUG && current_user_can( 'zuno_docs_manage_settings' ) ) {
         $raw = get_option( Zuno_Docs_Settings::OPTION_NAME, array() );
         printf(
             "\n<!-- ZUNO DOCS DEBUG\n\n--- Settings (from DB) ---\n%s\n\n--- Localized JS Config ---\n%s\n\n-->",

@@ -8,12 +8,15 @@
 defined( 'ABSPATH' ) || exit;
 
 function zuno_docs_admin_dashboard() {
-    if ( ! current_user_can( 'manage_options' ) ) {
+    if ( ! current_user_can( 'zuno_docs_read' ) ) {
         wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs' ) );
     }
 
     /* ----- Handle delete ----- */
     if ( isset( $_GET['action'], $_GET['doc'] ) && 'delete' === $_GET['action'] ) {
+        if ( ! current_user_can( 'zuno_docs_delete' ) ) {
+            wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs' ) );
+        }
         $doc_id = (int) $_GET['doc'];
         if ( $doc_id && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'delete_doc_' . $doc_id ) ) {
             wp_delete_post( $doc_id, true );
@@ -88,9 +91,11 @@ function zuno_docs_admin_dashboard() {
     <div class="wrap zuno-docs-dashboard">
         <h1>
             <?php esc_html_e( 'Zuno Docs', 'zuno-docs' ); ?>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=zuno-docs-new' ) ); ?>" class="page-title-action">
-                <?php esc_html_e( 'Add New Doc', 'zuno-docs' ); ?>
-            </a>
+            <?php if ( current_user_can( 'zuno_docs_create' ) ) : ?>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=zuno-docs-new' ) ); ?>" class="page-title-action">
+                    <?php esc_html_e( 'Add New Doc', 'zuno-docs' ); ?>
+                </a>
+            <?php endif; ?>
         </h1>
 
         <!-- Stats cards -->
@@ -200,7 +205,9 @@ function zuno_docs_admin_dashboard() {
                             <td class="zuno-docs-actions">
                                 <a href="<?php echo esc_url( $edit_link ); ?>" class="button button-small"><?php esc_html_e( 'Edit', 'zuno-docs' ); ?></a>
                                 <a href="<?php echo esc_url( $view_link ); ?>" class="button button-small" target="_blank"><?php esc_html_e( 'View', 'zuno-docs' ); ?></a>
-                                <a href="<?php echo esc_url( $delete_link ); ?>" class="button button-small button-link-delete" onclick="return confirm('<?php esc_attr_e( 'Delete this doc permanently?', 'zuno-docs' ); ?>');"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></a>
+                                <?php if ( current_user_can( 'zuno_docs_delete' ) ) : ?>
+                                    <a href="<?php echo esc_url( $delete_link ); ?>" class="button button-small button-link-delete" onclick="return confirm('<?php esc_attr_e( 'Delete this doc permanently?', 'zuno-docs' ); ?>');"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>

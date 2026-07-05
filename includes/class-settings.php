@@ -95,7 +95,8 @@ class Zuno_Docs_Settings {
             'highlight_text'   => '#000000',
 
             // Behavior
-            'show_admin_hint'  => 'yes',
+            'zuno_docs_allow_editors'  => 'no',
+            'show_admin_hint'          => 'yes',
 
             // Display toggles
             'zuno_docs_show_search'          => 'yes',
@@ -115,6 +116,7 @@ class Zuno_Docs_Settings {
     public static function get_toggle_keys() {
         return array(
             'zuno_docs_show_reading_progress',
+            'zuno_docs_allow_editors',
             'show_admin_hint',
             'enable_active_bg',
             'enable_heading_bg',

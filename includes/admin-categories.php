@@ -8,17 +8,18 @@
 defined( 'ABSPATH' ) || exit;
 
 function zuno_docs_admin_categories_page() {
-    if ( ! current_user_can( 'manage_options' ) ) {
+    if ( ! current_user_can( 'zuno_docs_read' ) ) {
         wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs' ) );
     }
 
-    $taxonomy = 'zuno_doc_category';
+    $can_manage = current_user_can( 'zuno_docs_manage_categories' );
+    $taxonomy   = 'zuno_doc_category';
 
     /* ----- Handle form actions ----- */
     $message = '';
 
     // Add category
-    if ( isset( $_POST['zuno_docs_add_cat_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_add_cat_nonce'], 'zuno_docs_add_cat' ) ) {
+    if ( $can_manage && isset( $_POST['zuno_docs_add_cat_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_add_cat_nonce'], 'zuno_docs_add_cat' ) ) {
         $name = sanitize_text_field( $_POST['zuno_docs_cat_name'] ?? '' );
         $slug = sanitize_title( $_POST['zuno_docs_cat_slug'] ?? '' );
         $parent = (int) ( $_POST['zuno_docs_cat_parent'] ?? 0 );
@@ -38,7 +39,7 @@ function zuno_docs_admin_categories_page() {
     }
 
     // Edit category
-    if ( isset( $_POST['zuno_docs_edit_cat_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_edit_cat_nonce'], 'zuno_docs_edit_cat' ) ) {
+    if ( $can_manage && isset( $_POST['zuno_docs_edit_cat_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_edit_cat_nonce'], 'zuno_docs_edit_cat' ) ) {
         $cat_id = (int) ( $_POST['zuno_docs_cat_id'] ?? 0 );
         $name   = sanitize_text_field( $_POST['zuno_docs_cat_name'] ?? '' );
         $slug   = sanitize_title( $_POST['zuno_docs_cat_slug'] ?? '' );
@@ -58,7 +59,7 @@ function zuno_docs_admin_categories_page() {
     }
 
     // Delete category
-    if ( isset( $_GET['action'], $_GET['cat_id'] ) && 'delete' === $_GET['action'] ) {
+    if ( $can_manage && isset( $_GET['action'], $_GET['cat_id'] ) && 'delete' === $_GET['action'] ) {
         $cat_id = (int) $_GET['cat_id'];
         if ( $cat_id && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'delete_cat_' . $cat_id ) ) {
             $result = wp_delete_term( $cat_id, $taxonomy );
@@ -76,7 +77,7 @@ function zuno_docs_admin_categories_page() {
     ) );
 
     $edit_cat = null;
-    if ( isset( $_GET['action'], $_GET['cat_id'] ) && 'edit' === $_GET['action'] ) {
+    if ( $can_manage && isset( $_GET['action'], $_GET['cat_id'] ) && 'edit' === $_GET['action'] ) {
         $edit_cat = get_term( (int) $_GET['cat_id'], $taxonomy );
     }
     ?>
@@ -85,6 +86,7 @@ function zuno_docs_admin_categories_page() {
         <?php echo $message; ?>
 
         <div class="zuno-docs-cats-layout">
+            <?php if ( $can_manage ) : ?>
             <!-- Add / Edit form -->
             <div class="zuno-docs-cats-form">
                 <?php if ( $edit_cat && ! is_wp_error( $edit_cat ) ) : ?>
@@ -133,6 +135,7 @@ function zuno_docs_admin_categories_page() {
                     </form>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <!-- Categories list -->
             <div class="zuno-docs-cats-list">
@@ -146,7 +149,9 @@ function zuno_docs_admin_categories_page() {
                                 <th><?php esc_html_e( 'Name', 'zuno-docs' ); ?></th>
                                 <th><?php esc_html_e( 'Slug', 'zuno-docs' ); ?></th>
                                 <th><?php esc_html_e( 'Docs Count', 'zuno-docs' ); ?></th>
+                                <?php if ( $can_manage ) : ?>
                                 <th><?php esc_html_e( 'Actions', 'zuno-docs' ); ?></th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
@@ -161,10 +166,12 @@ function zuno_docs_admin_categories_page() {
                                 <td><strong><?php echo esc_html( $cat->name ); ?></strong></td>
                                 <td><code><?php echo esc_html( $cat->slug ); ?></code></td>
                                 <td><?php echo esc_html( $cat->count ); ?></td>
+                                <?php if ( $can_manage ) : ?>
                                 <td>
                                     <a href="<?php echo esc_url( $edit_link ); ?>" class="button button-small"><?php esc_html_e( 'Edit', 'zuno-docs' ); ?></a>
                                     <a href="<?php echo esc_url( $delete_link ); ?>" class="button button-small button-link-delete" onclick="return confirm('<?php esc_attr_e( 'Delete this category?', 'zuno-docs' ); ?>');"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></a>
                                 </td>
+                                <?php endif; ?>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

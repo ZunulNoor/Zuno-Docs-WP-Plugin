@@ -18,6 +18,39 @@ if ( defined( 'ZUNO_DOCS_PRESERVE_DATA' ) && ZUNO_DOCS_PRESERVE_DATA ) {
 }
 
 /* -----------------------------------------------------------------------
+ * Clean up custom role and capabilities
+ * --------------------------------------------------------------------- */
+$zuno_caps = array(
+    'zuno_docs_read',
+    'zuno_docs_create',
+    'zuno_docs_edit',
+    'zuno_docs_publish',
+    'zuno_docs_delete',
+    'zuno_docs_manage_categories',
+    'zuno_docs_manage_settings',
+    'zuno_docs_import',
+    'zuno_docs_export',
+    'zuno_docs_manage_plugin',
+);
+
+// Remove Zuno Docs capabilities from all roles.
+global $wp_roles;
+if ( ! isset( $wp_roles ) ) {
+    $wp_roles = new WP_Roles();
+}
+foreach ( $wp_roles->roles as $role_name => $role_info ) {
+    $role = get_role( $role_name );
+    if ( $role ) {
+        foreach ( $zuno_caps as $cap ) {
+            $role->remove_cap( $cap );
+        }
+    }
+}
+
+// Remove the custom Zuno Docs Editor role.
+remove_role( 'zuno_docs_editor' );
+
+/* -----------------------------------------------------------------------
  * Delete options
  * --------------------------------------------------------------------- */
 delete_option( 'zuno_docs_graph' );

@@ -22,20 +22,20 @@ function zuno_docs_register_settings() {
  * Settings page
  * --------------------------------------------------------------------- */
 function zuno_docs_admin_settings_page() {
-    if ( ! current_user_can( 'manage_options' ) ) {
+    if ( ! current_user_can( 'zuno_docs_manage_settings' ) ) {
         wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs' ) );
     }
 
     $saved_notice = '';
 
     /* ----- Rebuild cache ----- */
-    if ( isset( $_POST['zuno_docs_rebuild_cache'] ) && wp_verify_nonce( $_POST['zuno_docs_rebuild_cache_nonce'], 'zuno_docs_rebuild_cache' ) ) {
+    if ( current_user_can( 'zuno_docs_manage_settings' ) && isset( $_POST['zuno_docs_rebuild_cache'] ) && wp_verify_nonce( $_POST['zuno_docs_rebuild_cache_nonce'], 'zuno_docs_rebuild_cache' ) ) {
         zuno_docs_rebuild_graph();
         $saved_notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Documentation cache rebuilt successfully.', 'zuno-docs' ) . '</p></div>';
     }
 
     /* ----- Save settings ----- */
-    if ( isset( $_POST['zuno_docs_settings_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_settings_nonce'], 'zuno_docs_save_settings' ) ) {
+    if ( current_user_can( 'zuno_docs_manage_settings' ) && isset( $_POST['zuno_docs_settings_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_settings_nonce'], 'zuno_docs_save_settings' ) ) {
         Zuno_Docs_Settings::get_instance()->save( $_POST );
         $saved_notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'zuno-docs' ) . '</p></div>';
     }
@@ -265,6 +265,16 @@ function zuno_docs_admin_settings_page() {
                     <p class="description"><?php esc_html_e( 'Miscellaneous plugin behavior options.', 'zuno-docs' ); ?></p>
 
                     <table class="form-table">
+                        <tr>
+                            <th><?php esc_html_e( 'Allow Editors', 'zuno-docs' ); ?></th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="zuno_docs_allow_editors" value="yes" <?php checked( $settings->get( 'zuno_docs_allow_editors' ), 'yes' ); ?> />
+                                    <?php esc_html_e( 'Allow Editors to Manage Documentation', 'zuno-docs' ); ?>
+                                </label>
+                                <p class="description"><?php esc_html_e( 'When enabled, the built-in WordPress Editor role will be able to create, edit, and publish documentation.', 'zuno-docs' ); ?></p>
+                            </td>
+                        </tr>
                         <tr>
                             <th><?php esc_html_e( 'Admin Hints', 'zuno-docs' ); ?></th>
                             <td>
