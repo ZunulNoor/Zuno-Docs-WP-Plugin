@@ -1178,6 +1178,202 @@
     }
 
     /* ===================================================================
+     * Navigation Rail
+     * =================================================================== */
+    var NavRail = {
+        _el: null,
+        _items: [],
+        _observer: null,
+        _boundaryObserver: null,
+        _activeId: null,
+        _suppressObserver: false,
+        _topOffset: 20,
+
+        init: function (wrapEl) {
+            this._el = qs('.zuno-docs-nav-rail', wrapEl);
+            var contentEl = qs('.zuno-docs-content', wrapEl);
+            if (!this._el || !contentEl) return;
+
+            var display = CFG.display || {};
+            if (!display.show_navigation_rail) return;
+
+            var headings = qsa('h1[id], h2[id]', contentEl);
+            if (!headings.length) {
+                this._el.style.display = 'none';
+                return;
+            }
+
+            this._topOffset = _activeWrapper && _activeWrapper.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
+
+            this._el.innerHTML = '';
+
+            this._buildIndicators(headings);
+            this._buildPanel(headings);
+            this._initObserver(headings);
+            this._initBoundary(contentEl);
+        },
+
+        _buildIndicators: function (headings) {
+            var wrap = document.createElement('div');
+            wrap.className = 'zuno-docs-nav-indicators';
+            wrap.setAttribute('aria-hidden', 'true');
+
+            headings.forEach(function (h) {
+                var dot = document.createElement('div');
+                dot.className = 'zuno-docs-nav-indicator';
+                dot.dataset.target = h.id;
+                wrap.appendChild(dot);
+            });
+
+            this._el.appendChild(wrap);
+        },
+
+        _buildPanel: function (headings) {
+            var panel = document.createElement('div');
+            panel.className = 'zuno-docs-nav-panel';
+            panel.setAttribute('role', 'dialog');
+            panel.setAttribute('aria-label', 'Section navigation');
+
+            var header = document.createElement('div');
+            header.className = 'zuno-docs-nav-panel-header';
+
+            var icon = document.createElement('span');
+            icon.className = 'zuno-docs-nav-panel-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>';
+
+            header.appendChild(icon);
+            header.appendChild(document.createTextNode('On this page'));
+            panel.appendChild(header);
+
+            var list = document.createElement('ul');
+            list.className = 'zuno-docs-nav-list';
+            list.setAttribute('role', 'list');
+
+            var self = this;
+
+            headings.forEach(function (h) {
+                var li = document.createElement('li');
+                li.className = 'zuno-docs-nav-item';
+
+                var link = document.createElement('a');
+                link.className = 'zuno-docs-nav-link';
+                link.href = '#' + h.id;
+                link.textContent = h.textContent.trim();
+                link.dataset.target = h.id;
+
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var top = h.getBoundingClientRect().top + window.pageYOffset - self._topOffset;
+                    window.scrollTo({ top: top, behavior: 'smooth' });
+                    self._activate(h.id);
+                    self._suppressObserver = true;
+                    setTimeout(function () {
+                        self._suppressObserver = false;
+                    }, 500);
+                });
+
+                li.appendChild(link);
+                list.appendChild(li);
+                self._items.push({ id: h.id, el: h, link: link });
+            }, this);
+
+            panel.appendChild(list);
+            this._el.appendChild(panel);
+
+            var indicators = qsa('.zuno-docs-nav-indicator', this._el);
+            self._items.forEach(function (item, i) {
+                item.indicator = indicators[i] || null;
+            });
+        },
+
+        _initObserver: function (headings) {
+            if (!('IntersectionObserver' in window)) return;
+
+            var visibleIds = new Set();
+            var self = this;
+            var rootMargin = '-' + this._topOffset + 'px 0px -65% 0px';
+
+            this._observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        visibleIds.add(entry.target.id);
+                    } else {
+                        visibleIds.delete(entry.target.id);
+                    }
+                });
+
+                if (self._suppressObserver) return;
+
+                var active = null;
+                for (var i = 0; i < self._items.length; i++) {
+                    if (visibleIds.has(self._items[i].id)) {
+                        active = self._items[i].id;
+                        break;
+                    }
+                }
+
+                if (active && active !== self._activeId) {
+                    self._activate(active);
+                }
+            }, {
+                rootMargin: rootMargin,
+                threshold: 0
+            });
+
+            headings.forEach(function (h) { self._observer.observe(h); });
+        },
+
+        _initBoundary: function (contentEl) {
+            var sentinel = document.createElement('div');
+            sentinel.className = 'zuno-docs-nav-sentinel';
+            contentEl.appendChild(sentinel);
+
+            var self = this;
+            this._boundaryObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        var railRect = self._el.getBoundingClientRect();
+                        var containerRect = self._el.parentElement.getBoundingClientRect();
+                        var topPx = railRect.top - containerRect.top;
+                        self._el.style.top = topPx + 'px';
+                        self._el.classList.add('is-at-bottom');
+                    } else {
+                        self._el.style.top = '';
+                        self._el.classList.remove('is-at-bottom');
+                    }
+                });
+            }, {
+                rootMargin: '0px 0px 300px 0px',
+                threshold: 0
+            });
+
+            this._boundaryObserver.observe(sentinel);
+        },
+
+        _activate: function (id) {
+            this._activeId = id;
+            this._items.forEach(function (item) {
+                var isActive = item.id === id;
+
+                if (item.indicator) {
+                    item.indicator.classList.toggle('is-active', isActive);
+                }
+
+                item.link.classList.toggle('is-active', isActive);
+                var li = item.link.closest('.zuno-docs-nav-item');
+                if (li) li.classList.toggle('is-active', isActive);
+                item.link.setAttribute('aria-current', isActive ? 'true' : 'false');
+            });
+        },
+
+        destroy: function () {
+            if (this._observer) this._observer.disconnect();
+            if (this._boundaryObserver) this._boundaryObserver.disconnect();
+        }
+    };
+
+    /* ===================================================================
      * Initialiser
      * =================================================================== */
     function initInstance(wrapEl) {
@@ -1219,7 +1415,10 @@
         /* 10. Mobile TOC */
         initMobileToc(wrapEl);
 
-        /* 11. Handle initial hash */
+        /* 11. Navigation Rail */
+        NavRail.init(wrapEl);
+
+        /* 12. Handle initial hash */
         handleInitialHash(wrapEl);
     }
 

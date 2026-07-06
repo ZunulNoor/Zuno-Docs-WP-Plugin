@@ -381,6 +381,18 @@ function zuno_docs_admin_settings_page() {
                                 </fieldset>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Navigation Rail', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_show_navigation_rail" value="yes" <?php checked( $settings->get( 'zuno_docs_show_navigation_rail' ), 'yes' ); ?> />
+                                        <?php esc_html_e( 'Show a fixed navigation rail with H1/H2 section headings on the opposite side of the TOC', 'zuno-docs' ); ?>
+                                    </label>
+                                    <p class="description"><?php esc_html_e( 'Desktop only. Uses IntersectionObserver for active-state tracking.', 'zuno-docs' ); ?></p>
+                                </fieldset>
+                            </td>
+                        </tr>
                     </table>
                 </section>
             </div>

@@ -71,7 +71,7 @@ function zuno_docs_register_post_type() {
             'edit_private_posts'     => 'zuno_docs_edit',
             'edit_published_posts'   => 'zuno_docs_edit',
         ),
-        'map_meta_cap'        => true,
+        'map_meta_cap'        => false,
         'show_in_rest'        => true,
         'rest_base'           => 'zuno-docs',
     );

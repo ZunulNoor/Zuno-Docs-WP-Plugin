@@ -17,6 +17,9 @@ $show_toc             = 'yes' === $settings['zuno_docs_show_toc'];
 $show_categories      = 'yes' === $settings['zuno_docs_show_categories'];
 $show_related         = 'yes' === $settings['zuno_docs_show_related_articles'];
 $show_reading_progress = 'yes' === $settings['zuno_docs_show_reading_progress'];
+$show_nav_rail         = 'yes' === $settings['zuno_docs_show_navigation_rail'];
+$toc_position          = $settings['toc_position'] ?? 'left';
+$rail_side             = $toc_position === 'left' ? 'right' : 'left';
 $show_sidebar          = $show_search || $show_toc;
 ?>
 <div
@@ -132,6 +135,15 @@ $show_sidebar          = $show_search || $show_toc;
 
         </div>
     </aside>
+    <?php endif; ?>
+
+    <!-- ============================================================
+         NAVIGATION RAIL (fixed, desktop only, opposite side of TOC)
+         ============================================================ -->
+<?php if ( $show_nav_rail ) : ?>
+<nav class="zuno-docs-nav-rail zuno-docs-nav-rail--<?php echo esc_attr( $rail_side ); ?>"
+         aria-label="<?php esc_attr_e( 'Section navigation', 'zuno-docs' ); ?>"
+         data-rail-side="<?php echo esc_attr( $rail_side ); ?>"></nav>
     <?php endif; ?>
 
     <!-- ============================================================

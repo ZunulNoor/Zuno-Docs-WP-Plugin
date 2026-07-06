@@ -80,15 +80,20 @@ function zuno_docs_deactivate() {
 function zuno_docs_seed_settings() {
     $existing = get_option( 'zuno_docs_settings', null );
     if ( null === $existing || false === $existing ) {
-        // Fresh install: write full defaults.
         update_option( 'zuno_docs_settings', Zuno_Docs_Settings::get_defaults() );
     } else {
-        // Existing install: ensure all keys exist (merge with defaults).
         if ( ! is_array( $existing ) ) {
             $existing = array();
         }
-        $merged = array_merge( Zuno_Docs_Settings::get_defaults(), $existing );
-        update_option( 'zuno_docs_settings', $merged );
+        // Only add keys from defaults that do not yet exist in stored settings.
+        // This preserves user-configured values while safely introducing new keys.
+        $defaults = Zuno_Docs_Settings::get_defaults();
+        foreach ( $defaults as $key => $value ) {
+            if ( ! array_key_exists( $key, $existing ) ) {
+                $existing[ $key ] = $value;
+            }
+        }
+        update_option( 'zuno_docs_settings', $existing );
     }
     Zuno_Docs_Settings::get_instance()->reload();
 }

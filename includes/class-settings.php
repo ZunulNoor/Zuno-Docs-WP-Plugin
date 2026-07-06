@@ -106,7 +106,8 @@ class Zuno_Docs_Settings {
             'zuno_docs_show_navigation'      => 'yes',
             'zuno_docs_show_toc'             => 'yes',
             'zuno_docs_show_categories'      => 'yes',
-            'zuno_docs_show_related_articles' => 'yes',
+            'zuno_docs_show_related_articles'  => 'yes',
+            'zuno_docs_show_navigation_rail'   => 'yes',
         );
     }
 
@@ -128,6 +129,7 @@ class Zuno_Docs_Settings {
             'zuno_docs_show_toc',
             'zuno_docs_show_categories',
             'zuno_docs_show_related_articles',
+            'zuno_docs_show_navigation_rail',
         );
     }
 
@@ -142,7 +144,8 @@ class Zuno_Docs_Settings {
             'show_previous'    => 'yes' === $settings['zuno_docs_show_previous'],
             'show_next'        => 'yes' === $settings['zuno_docs_show_next'],
             'show_navigation'  => 'yes' === $settings['zuno_docs_show_navigation'],
-            'show_related'     => 'yes' === $settings['zuno_docs_show_related_articles'],
+            'show_related'         => 'yes' === $settings['zuno_docs_show_related_articles'],
+            'show_navigation_rail' => 'yes' === $settings['zuno_docs_show_navigation_rail'],
         );
     }
 

@@ -1316,3 +1316,249 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
         padding: var(--zuno-space-2, 8px) var(--zuno-space-3, 12px) var(--zuno-space-6, 12px);
     }
 }
+
+/* ===================================================================
+ * 21. NAVIGATION RAIL — ChatGPT-style floating rail with expandable panel
+ * =================================================================== */
+
+/* ---------- Rail container ---------- */
+.zuno-docs-nav-rail {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    gap: 8px;
+    pointer-events: auto;
+    will-change: transform;
+}
+
+/* Admin-bar centering: shift down by half the bar height */
+.zuno-docs.zuno-docs-has-admin-bar .zuno-docs-nav-rail {
+    top: calc(50% + var(--zuno-offset, 0px) / 2);
+}
+
+/* ---------- Horizontal positioning ---------- */
+.zuno-docs-nav-rail--right {
+    right: 36px;
+}
+
+.zuno-docs-nav-rail--left {
+    left: 36px;
+}
+
+/* ===================================================================
+ * IDLE STATE — thin horizontal indicator dots
+ * =================================================================== */
+.zuno-docs-nav-indicators {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.zuno-docs-nav-indicator {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--zuno-border);
+    transition:
+        width 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        background 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 300ms ease;
+    will-change: width, background;
+    flex-shrink: 0;
+    opacity: 0.5;
+}
+
+.zuno-docs-nav-indicator.is-active {
+    width: 28px;
+    background: var(--zuno-primary);
+    opacity: 1;
+}
+
+/* ===================================================================
+ * HOVER / EXPANDED STATE — floating panel
+ * =================================================================== */
+.zuno-docs-nav-panel {
+    position: absolute;
+    top: 50%;
+    width: 220px;
+    max-height: 65vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding: 12px 10px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.10),
+        0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0.94);
+    transition:
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0ms 200ms,
+        transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform, opacity;
+    z-index: 1;
+}
+
+.zuno-docs-nav-rail--right .zuno-docs-nav-panel {
+    right: calc(100% + 14px);
+    transform-origin: right center;
+}
+
+.zuno-docs-nav-rail--left .zuno-docs-nav-panel {
+    left: calc(100% + 14px);
+    transform-origin: left center;
+}
+
+/* Show panel on hover over rail OR panel itself */
+.zuno-docs-nav-rail:hover .zuno-docs-nav-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(-50%) scale(1);
+    transition:
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0ms 0ms,
+        transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- Panel header ---------- */
+.zuno-docs-nav-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--zuno-text-muted);
+    padding: 4px 6px 10px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid var(--zuno-border);
+    user-select: none;
+}
+
+.zuno-docs-nav-panel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+/* ---------- Panel list ---------- */
+.zuno-docs-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.zuno-docs-nav-item {
+    margin: 0;
+    padding: 0;
+}
+
+.zuno-docs-nav-link {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--zuno-text);
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition:
+        background 180ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 180ms cubic-bezier(0.4, 0, 0.2, 1),
+        font-weight 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.zuno-docs-nav-link:hover,
+.zuno-docs-nav-link:focus-visible {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--zuno-text);
+    outline: none;
+}
+
+/* Active pill — theme color background, white text */
+.zuno-docs-nav-item.is-active .zuno-docs-nav-link,
+.zuno-docs-nav-link.is-active {
+    background: var(--zuno-primary);
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.zuno-docs-nav-link.is-active:hover,
+.zuno-docs-nav-item.is-active .zuno-docs-nav-link:hover {
+    background: var(--zuno-primary);
+    color: #ffffff;
+}
+
+.zuno-docs-nav-link[aria-current="true"] {
+    font-weight: 500;
+}
+
+/* ===================================================================
+ * DOCUMENT BOUNDARY — rail scrolls away at content end
+ * =================================================================== */
+.zuno-docs-nav-sentinel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.zuno-docs-nav-rail.is-at-bottom {
+    position: absolute;
+    transform: none;
+}
+
+.zuno-docs-nav-rail.is-at-bottom .zuno-docs-nav-panel {
+    display: none;
+}
+
+/* ===================================================================
+ * Reduced motion
+ * =================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .zuno-docs-nav-rail,
+    .zuno-docs-nav-indicator,
+    .zuno-docs-nav-panel,
+    .zuno-docs-nav-link {
+        transition: none !important;
+    }
+}
+
+/* ===================================================================
+ * Responsive — hide on tablet / mobile
+ * =================================================================== */
+@media (max-width: 1024px) {
+    .zuno-docs-nav-rail {
+        display: none !important;
+    }
+}
