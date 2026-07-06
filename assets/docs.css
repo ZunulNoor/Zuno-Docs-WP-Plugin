@@ -42,10 +42,10 @@
     --zuno-radius-xl: 16px;
 
     /* Shadows */
-    --zuno-shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-    --zuno-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --zuno-shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
-    --zuno-shadow-xl: 0 12px 32px rgba(0,0,0,0.12);
+    --zuno-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --zuno-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --zuno-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+    --zuno-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.12);
 
     /* Transitions */
     --zuno-transition: 200ms ease;
@@ -210,7 +210,7 @@
     background: var(--zuno-bg);
     border: 1px solid var(--zuno-border);
     border-radius: var(--zuno-radius-lg, 12px);
-    box-shadow: var(--zuno-shadow-xl, 0 12px 32px rgba(0,0,0,0.12));
+    box-shadow: var(--zuno-shadow-xl, 0 12px 32px rgba(0, 0, 0, 0.12));
     max-height: 360px;
     overflow-y: auto;
     z-index: 200;
@@ -358,103 +358,103 @@
 /* ---------- Depth-based indentation ---------- */
 
 /* Base padding per depth (all use same padding-top/bottom = 10px for readability) */
-.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link {
+.zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link {
     padding-left: 4px;
     font-size: 15px;
     font-weight: 600;
     color: var(--zuno-docs-toc-text, var(--zuno-text));
 }
 
-.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link:hover {
+.zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link:hover {
     background: var(--zuno-docs-toc-hover, transparent);
     color: var(--zuno-primary);
     border-left-color: var(--zuno-primary);
     padding-left: 6px;
 }
 
-.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link.is-active,
-.zuno-docs-toc li[data-depth="1"] > .zuno-docs-toc-link.is-active:hover {
+.zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link.is-active,
+.zuno-docs-toc li[data-depth="1"]>.zuno-docs-toc-link.is-active:hover {
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
     padding: 10px 14px;
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
 }
 
-.zuno-docs-toc li[data-depth="2"] > .zuno-docs-toc-link {
+.zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link {
     padding-left: 24px;
     font-size: 14px;
     font-weight: 400;
 }
 
-.zuno-docs-toc li[data-depth="2"] > .zuno-docs-toc-link:hover {
+.zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link:hover {
     background: var(--zuno-docs-toc-hover, transparent);
     color: var(--zuno-primary);
     border-left-color: var(--zuno-primary);
     padding-left: 26px;
 }
 
-.zuno-docs-toc li[data-depth="2"] > .zuno-docs-toc-link.is-active,
-.zuno-docs-toc li[data-depth="2"] > .zuno-docs-toc-link.is-active:hover {
+.zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link.is-active,
+.zuno-docs-toc li[data-depth="2"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
 }
 
-.zuno-docs-toc li[data-depth="3"] > .zuno-docs-toc-link {
+.zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link {
     padding-left: 44px;
     font-size: 13.5px;
 }
 
-.zuno-docs-toc li[data-depth="3"] > .zuno-docs-toc-link:hover {
+.zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link:hover {
     background: var(--zuno-docs-toc-hover, transparent);
     color: var(--zuno-primary);
     border-left-color: var(--zuno-primary);
     padding-left: 46px;
 }
 
-.zuno-docs-toc li[data-depth="3"] > .zuno-docs-toc-link.is-active,
-.zuno-docs-toc li[data-depth="3"] > .zuno-docs-toc-link.is-active:hover {
+.zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link.is-active,
+.zuno-docs-toc li[data-depth="3"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
 }
 
-.zuno-docs-toc li[data-depth="4"] > .zuno-docs-toc-link {
+.zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link {
     padding-left: 64px;
     font-size: 13px;
 }
 
-.zuno-docs-toc li[data-depth="4"] > .zuno-docs-toc-link:hover {
+.zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link:hover {
     background: var(--zuno-docs-toc-hover, transparent);
     color: var(--zuno-primary);
     border-left-color: var(--zuno-primary);
     padding-left: 66px;
 }
 
-.zuno-docs-toc li[data-depth="4"] > .zuno-docs-toc-link.is-active,
-.zuno-docs-toc li[data-depth="4"] > .zuno-docs-toc-link.is-active:hover {
+.zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link.is-active,
+.zuno-docs-toc li[data-depth="4"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
 }
 
-.zuno-docs-toc li[data-depth="5"] > .zuno-docs-toc-link {
+.zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link {
     padding-left: 84px;
     font-size: 13px;
 }
 
-.zuno-docs-toc li[data-depth="5"] > .zuno-docs-toc-link:hover {
+.zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link:hover {
     background: var(--zuno-docs-toc-hover, transparent);
     color: var(--zuno-primary);
     border-left-color: var(--zuno-primary);
     padding-left: 86px;
 }
 
-.zuno-docs-toc li[data-depth="5"] > .zuno-docs-toc-link.is-active,
-.zuno-docs-toc li[data-depth="5"] > .zuno-docs-toc-link.is-active:hover {
+.zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link.is-active,
+.zuno-docs-toc li[data-depth="5"]>.zuno-docs-toc-link.is-active:hover {
     padding: 10px 14px;
     background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
     color: var(--zuno-docs-toc-active-text, var(--zuno-text));
@@ -462,13 +462,13 @@
 }
 
 /* ---------- Collapsible sections ---------- */
-.zuno-docs-toc li > ul {
+.zuno-docs-toc li>ul {
     overflow: hidden;
     max-height: 0;
     transition: max-height var(--zuno-transition-slow, 250ms) ease;
 }
 
-.zuno-docs-toc li.is-open > ul {
+.zuno-docs-toc li.is-open>ul {
     max-height: 9999px;
 }
 
@@ -493,7 +493,7 @@
     opacity: 0.7;
 }
 
-li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
+li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     transform: rotate(90deg);
     opacity: 0.5;
 }
@@ -503,7 +503,7 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
     color: var(--zuno-primary);
 }
 
-.zuno-docs-toc-match > .zuno-docs-toc-link {
+.zuno-docs-toc-match>.zuno-docs-toc-link {
     background: rgba(var(--zuno-primary-rgb), 0.06);
     border-left-color: var(--zuno-primary);
     font-weight: 500;
@@ -824,9 +824,18 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 @keyframes zuno-docs-pulse {
-    0%   { background: var(--zuno-docs-highlight-bg, #FEF3C7); }
-    50%  { background: var(--zuno-docs-highlight-bg, #FEF3C7); box-shadow: 0 0 0 3px rgba(254, 243, 199, 0.5); }
-    100% { background: var(--zuno-docs-highlight-bg, #FEF3C7); }
+    0% {
+        background: var(--zuno-docs-highlight-bg, #FEF3C7);
+    }
+
+    50% {
+        background: var(--zuno-docs-highlight-bg, #FEF3C7);
+        box-shadow: 0 0 0 3px rgba(254, 243, 199, 0.5);
+    }
+
+    100% {
+        background: var(--zuno-docs-highlight-bg, #FEF3C7);
+    }
 }
 
 .zuno-docs-section-hidden {
@@ -1105,16 +1114,43 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
     }
 
     /* ---------- Mobile heading sizes ---------- */
-    .zuno-docs-content h1 { font-size: 28px; margin-bottom: var(--zuno-space-6, 24px); }
-    .zuno-docs-content h2 { font-size: 26px; }
-    .zuno-docs-content h3 { font-size: 24px; }
-    .zuno-docs-content h4 { font-size: 22px; }
-    .zuno-docs-content h5 { font-size: 20px; }
-    .zuno-docs-content h6 { font-size: 18px; }
-    .zuno-docs-content p  { font-size: 14px; }
+    .zuno-docs-content h1 {
+        font-size: 28px;
+        margin-bottom: var(--zuno-space-6, 24px);
+    }
+
+    .zuno-docs-content h2 {
+        font-size: 26px;
+    }
+
+    .zuno-docs-content h3 {
+        font-size: 24px;
+    }
+
+    .zuno-docs-content h4 {
+        font-size: 22px;
+    }
+
+    .zuno-docs-content h5 {
+        font-size: 20px;
+    }
+
+    .zuno-docs-content h6 {
+        font-size: 18px;
+    }
+
+    .zuno-docs-content p {
+        font-size: 14px;
+    }
+
     .zuno-docs-content ul,
-    .zuno-docs-content ol { font-size: 16px; }
-    .zuno-docs-content blockquote { font-size: 16px; }
+    .zuno-docs-content ol {
+        font-size: 16px;
+    }
+
+    .zuno-docs-content blockquote {
+        font-size: 16px;
+    }
 
     /* ---------- Mobile TOC Trigger ---------- */
     .zuno-docs-mobile-toc {
@@ -1140,7 +1176,7 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
         font-size: 15px;
         font-weight: 600;
         color: var(--zuno-text);
-        box-shadow: var(--zuno-shadow-lg, 0 8px 24px rgba(0,0,0,0.10));
+        box-shadow: var(--zuno-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.10));
         transition: box-shadow var(--zuno-transition-slow, 250ms), border-color var(--zuno-transition-slow, 250ms);
         -webkit-appearance: none;
         appearance: none;
@@ -1149,7 +1185,7 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
     }
 
     .zuno-docs-mobile-toc-trigger:hover {
-        box-shadow: var(--zuno-shadow-xl, 0 12px 32px rgba(0,0,0,0.12));
+        box-shadow: var(--zuno-shadow-xl, 0 12px 32px rgba(0, 0, 0, 0.12));
         border-color: rgba(0, 0, 0, 0.10);
     }
 
@@ -1281,6 +1317,166 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
     /* ---------- Body scroll lock ---------- */
     body.zuno-docs-toc-open {
         overflow: hidden !important;
+    }
+
+    /* ===================================================================
+     * 19a. MOBILE TOC TRIGGER — BOTTOM
+     * Only the collapsed trigger moves; the panel is identical for all positions.
+     * =================================================================== */
+    .zuno-docs-mobile-toc[data-mobile-toc-position="bottom"] {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        padding: var(--zuno-space-3, 12px) var(--zuno-space-4, 16px);
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="bottom"] .zuno-docs-mobile-toc-trigger {
+        margin: 0 auto;
+        max-width: 320px;
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="bottom"].is-open .zuno-docs-mobile-toc-trigger {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* ===================================================================
+     * 19b. MOBILE TOC TRIGGER — LEFT
+     * Vertical tab on the left edge; panel is identical.
+     * =================================================================== */
+    .zuno-docs-mobile-toc[data-mobile-toc-position="left"] {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        z-index: 9999;
+        width: auto;
+        padding: 0;
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="left"] .zuno-docs-mobile-toc-trigger {
+        writing-mode: vertical-lr;
+        text-orientation: mixed;
+        width: auto;
+        min-width: 36px;
+        padding: 14px 8px;
+        border-radius: 0 var(--zuno-radius-lg, 12px) var(--zuno-radius-lg, 12px) 0;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-left: none;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 0;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        line-height: 1.4;
+        text-align: center;
+        min-height: 120px;
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="left"] .zuno-docs-mobile-toc-trigger .zuno-docs-mobile-toc-chevron {
+        margin: 0;
+        transform: rotate(90deg);
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="left"].is-open .zuno-docs-mobile-toc-trigger .zuno-docs-mobile-toc-chevron {
+        transform: rotate(-90deg);
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="left"].is-open .zuno-docs-mobile-toc-trigger {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* ===================================================================
+     * 19c. MOBILE TOC TRIGGER — RIGHT
+     * Vertical tab on the right edge; panel is identical.
+     * =================================================================== */
+    .zuno-docs-mobile-toc[data-mobile-toc-position="right"] {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        z-index: 9999;
+        width: auto;
+        padding: 0;
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="right"] .zuno-docs-mobile-toc-trigger {
+        writing-mode: vertical-lr;
+        text-orientation: mixed;
+        width: auto;
+        min-width: 36px;
+        padding: 14px 8px;
+        border-radius: var(--zuno-radius-lg, 12px) 0 0 var(--zuno-radius-lg, 12px);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-right: none;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 0;
+        box-shadow: -2px 0 12px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        line-height: 1.4;
+        text-align: center;
+        min-height: 120px;
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="right"] .zuno-docs-mobile-toc-trigger .zuno-docs-mobile-toc-chevron {
+        margin: 0;
+        transform: rotate(90deg);
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="right"].is-open .zuno-docs-mobile-toc-trigger .zuno-docs-mobile-toc-chevron {
+        transform: rotate(-90deg);
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="right"].is-open .zuno-docs-mobile-toc-trigger {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* ===================================================================
+     * 19d. MOBILE TOC TRIGGER — BOUNDARY (bottom stop)
+     * Switch from fixed to absolute anchored at the bottom of .zuno-docs
+     * so the trigger naturally ends with the documentation instead of
+     * floating over the footer.
+     * =================================================================== */
+    .zuno-docs-mobile-toc[data-mobile-toc-position="bottom"].is-at-boundary {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="left"].is-at-boundary {
+        opacity: 0;
+        transform: translateX(100%);
+        pointer-events: none;
+    }
+
+    .zuno-docs-mobile-toc[data-mobile-toc-position="right"].is-at-boundary {
+        opacity: 0;
+        transform: translateX(100%);
+        pointer-events: none;
     }
 }
 
@@ -1533,6 +1729,7 @@ li.is-open > .zuno-docs-toc-link .zuno-docs-toc-toggle {
  * Reduced motion
  * =================================================================== */
 @media (prefers-reduced-motion: reduce) {
+
     .zuno-docs-nav-rail,
     .zuno-docs-nav-indicator,
     .zuno-docs-nav-panel,

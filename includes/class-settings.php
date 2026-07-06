@@ -78,6 +78,7 @@ class Zuno_Docs_Settings {
             'toc_depth'       => 6,
             'toc_position'    => 'left',
             'sidebar_width'   => 30,
+            'mobile_toc_position' => 'top',
 
             // TOC Colors
             'toc_bg'           => '#f8f9fb',
@@ -220,6 +221,10 @@ class Zuno_Docs_Settings {
             // TOC position (left|right).
             case 'toc_position' === $key:
                 return in_array( (string) $value, array( 'left', 'right' ), true ) ? $value : 'left';
+
+            // Mobile TOC position (top|bottom|left|right).
+            case 'mobile_toc_position' === $key:
+                return in_array( (string) $value, array( 'top', 'bottom', 'left', 'right' ), true ) ? $value : 'top';
 
             // Sidebar width (int 20-50).
             case 'sidebar_width' === $key:

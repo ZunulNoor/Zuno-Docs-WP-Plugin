@@ -184,6 +184,18 @@ function zuno_docs_admin_settings_page() {
                                 </select>
                             </td>
                         </tr>
+                        <tr>
+                            <th><label for="mobile_toc_position"><?php esc_html_e( 'Mobile TOC Position', 'zuno-docs' ); ?></label></th>
+                            <td>
+                                <select id="mobile_toc_position" name="mobile_toc_position">
+                                    <option value="top" <?php selected( $settings->get( 'mobile_toc_position' ), 'top' ); ?>><?php esc_html_e( 'Top', 'zuno-docs' ); ?></option>
+                                    <option value="bottom" <?php selected( $settings->get( 'mobile_toc_position' ), 'bottom' ); ?>><?php esc_html_e( 'Bottom', 'zuno-docs' ); ?></option>
+                                    <option value="left" <?php selected( $settings->get( 'mobile_toc_position' ), 'left' ); ?>><?php esc_html_e( 'Left', 'zuno-docs' ); ?></option>
+                                    <option value="right" <?php selected( $settings->get( 'mobile_toc_position' ), 'right' ); ?>><?php esc_html_e( 'Right', 'zuno-docs' ); ?></option>
+                                </select>
+                                <p class="description"><?php esc_html_e( 'Controls the collapsed trigger position on mobile (≤ 767px). The TOC panel itself is identical for all positions.', 'zuno-docs' ); ?></p>
+                            </td>
+                        </tr>
                     </table>
                 </section>
 

@@ -1019,15 +1019,62 @@
 
         if (!trigger || !mobileToc) return;
 
+        var position = mobileToc.dataset.mobileTocPosition || 'top';
+
+        /* Boundary detection for floating positions (left/right/bottom) —
+         * switch from position:fixed to position:absolute when the
+         * documentation bottom edge passes the trigger's screen position. */
+        if (position !== 'top') {
+            var boundaryBottom;
+
+            function calcBoundary() {
+                if (position === 'bottom') {
+                    boundaryBottom = window.innerHeight;
+                } else {
+                    boundaryBottom = window.innerHeight / 2 + trigger.offsetHeight / 2;
+                }
+            }
+
+            calcBoundary();
+
+            function updateBoundary() {
+                mobileToc.classList.toggle('is-at-boundary', wrapEl.getBoundingClientRect().bottom <= boundaryBottom);
+            }
+
+            updateBoundary();
+
+            var scrollTick;
+            window.addEventListener('scroll', function () {
+                if (!isMobile()) return;
+                cancelAnimationFrame(scrollTick);
+                scrollTick = requestAnimationFrame(updateBoundary);
+            }, { passive: true });
+
+            window.addEventListener('resize', function () {
+                if (!isMobile()) return;
+                calcBoundary();
+                updateBoundary();
+            }, { passive: true });
+        }
+
         function isMobile() {
             return window.innerWidth < 768;
+        }
+
+        function getScrollOffset() {
+            if (position === 'top') {
+                return wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
+            }
+            return 0;
         }
 
         function openToc() {
             if (!isMobile()) return;
             mobileToc.classList.add('is-open');
             trigger.setAttribute('aria-expanded', 'true');
-            document.body.classList.add('zuno-docs-toc-open');
+            if (position !== 'bottom') {
+                document.body.classList.add('zuno-docs-toc-open');
+            }
 
             /* If the panel is empty, clone the sidebar TOC + search into it */
             if (panelBody && sidebar && !panelBody.querySelector('.zuno-docs-toc') && !panelBody.querySelector('.zuno-docs-search-wrap')) {
@@ -1079,8 +1126,7 @@
                                 closeToc();
                                 var target = qs('#' + CSS.escape(id), wrapEl);
                                 if (target) {
-                                    var offset = wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
-                                    var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                                    var top = target.getBoundingClientRect().top + window.pageYOffset - getScrollOffset();
                                     window.scrollTo({ top: top, behavior: 'smooth' });
                                     ScrollSpy.activateHeading(id);
                                 }
@@ -1144,9 +1190,8 @@
                         closeToc();
                         var target = qs('#' + CSS.escape(id), wrapEl);
                         if (target) {
-                            var offset = wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
                             setTimeout(function () {
-                                var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                                var top = target.getBoundingClientRect().top + window.pageYOffset - getScrollOffset();
                                 window.scrollTo({ top: top, behavior: 'smooth' });
                                 ScrollSpy.activateHeading(id);
                             }, 250);

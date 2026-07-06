@@ -20,6 +20,7 @@ $show_reading_progress = 'yes' === $settings['zuno_docs_show_reading_progress'];
 $show_nav_rail         = 'yes' === $settings['zuno_docs_show_navigation_rail'];
 $toc_position          = $settings['toc_position'] ?? 'left';
 $rail_side             = $toc_position === 'left' ? 'right' : 'left';
+$mobile_toc_position   = $settings['mobile_toc_position'] ?? 'top';
 $show_sidebar          = $show_search || $show_toc;
 ?>
 <div
@@ -45,7 +46,7 @@ $show_sidebar          = $show_search || $show_toc;
          MOBILE TOC (visible only on mobile)
          ============================================================ -->
     <?php if ( $show_sidebar ) : ?>
-    <div class="zuno-docs-mobile-toc">
+    <div class="zuno-docs-mobile-toc" data-mobile-toc-position="<?php echo esc_attr( $mobile_toc_position ); ?>">
         <button
             class="zuno-docs-mobile-toc-trigger"
             aria-expanded="false"
