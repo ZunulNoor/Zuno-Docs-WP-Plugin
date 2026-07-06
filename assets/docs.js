@@ -183,11 +183,6 @@
             }
 
             tocEl.style.display = '';
-            var label = document.createElement('p');
-            label.className = 'zuno-docs-toc-label';
-            label.setAttribute('aria-hidden', 'true');
-            label.textContent = CFG.i18n && CFG.i18n.tocLabel ? CFG.i18n.tocLabel : 'On this page';
-            tocEl.appendChild(label);
 
             var usedIds = new Set();
 
@@ -475,6 +470,10 @@
             this._activeId = id;
             this._updateActiveLinks(id);
             TocBuilder.expandToItem(id);
+            var activeLink = qs('.zuno-docs-toc-link.is-active', this._wrapper);
+            if (activeLink) {
+                activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
             var self = this;
             this._scrollTimer = setTimeout(function () {
                 self._scrollTimer = null;
@@ -1182,6 +1181,7 @@
      * =================================================================== */
     var NavRail = {
         _el: null,
+        _wrapper: null,
         _items: [],
         _observer: null,
         _boundaryObserver: null,
@@ -1191,13 +1191,14 @@
 
         init: function (wrapEl) {
             this._el = qs('.zuno-docs-nav-rail', wrapEl);
+            this._wrapper = wrapEl;
             var contentEl = qs('.zuno-docs-content', wrapEl);
             if (!this._el || !contentEl) return;
 
             var display = CFG.display || {};
             if (!display.show_navigation_rail) return;
 
-            var headings = qsa('h1[id], h2[id]', contentEl);
+            var headings = qsa('h1[id]', contentEl);
             if (!headings.length) {
                 this._el.style.display = 'none';
                 return;
@@ -1264,9 +1265,12 @@
 
                 link.addEventListener('click', function (e) {
                     e.preventDefault();
-                    var top = h.getBoundingClientRect().top + window.pageYOffset - self._topOffset;
+                    var target = document.getElementById(h.id);
+                    if (!target) return;
+                    var top = target.getBoundingClientRect().top + window.pageYOffset - self._topOffset;
                     window.scrollTo({ top: top, behavior: 'smooth' });
                     self._activate(h.id);
+                    ScrollSpy.activateHeading(h.id);
                     self._suppressObserver = true;
                     setTimeout(function () {
                         self._suppressObserver = false;
