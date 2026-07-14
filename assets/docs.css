@@ -1649,7 +1649,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     padding: 4px 0 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
 }
 
 .zuno-docs-nav-item {
@@ -1657,9 +1657,26 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     padding: 0;
 }
 
+/* ---------- Sublist (children) — collapsible ---------- */
+.zuno-docs-nav-sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 250ms ease;
+}
+
+.zuno-docs-nav-expanded > .zuno-docs-nav-sublist {
+    max-height: 9999px;
+}
+
+/* ---------- Nav link — base ---------- */
 .zuno-docs-nav-link {
-    display: block;
-    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 12px;
     border-radius: 8px;
     font-family: inherit;
     font-size: 13px;
@@ -1678,6 +1695,37 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
         font-weight 180ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Depth-based indentation */
+.zuno-docs-nav-link[data-target] {
+    padding-left: 12px;
+}
+
+.zuno-docs-nav-item[data-tag-level="2"] > .zuno-docs-nav-link {
+    padding-left: 12px;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.zuno-docs-nav-item[data-tag-level="3"] > .zuno-docs-nav-link {
+    padding-left: 28px;
+    font-size: 12.5px;
+}
+
+.zuno-docs-nav-item[data-tag-level="4"] > .zuno-docs-nav-link {
+    padding-left: 44px;
+    font-size: 12.5px;
+}
+
+.zuno-docs-nav-item[data-tag-level="5"] > .zuno-docs-nav-link {
+    padding-left: 60px;
+    font-size: 12px;
+}
+
+.zuno-docs-nav-item[data-tag-level="6"] > .zuno-docs-nav-link {
+    padding-left: 76px;
+    font-size: 12px;
+}
+
 .zuno-docs-nav-link:hover,
 .zuno-docs-nav-link:focus-visible {
     background: rgba(0, 0, 0, 0.04);
@@ -1686,21 +1734,58 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 /* Active pill — theme color background, white text */
-.zuno-docs-nav-item.is-active .zuno-docs-nav-link,
 .zuno-docs-nav-link.is-active {
     background: var(--zuno-primary);
     color: #ffffff;
     font-weight: 500;
 }
 
-.zuno-docs-nav-link.is-active:hover,
-.zuno-docs-nav-item.is-active .zuno-docs-nav-link:hover {
+.zuno-docs-nav-link.is-active:hover {
     background: var(--zuno-primary);
     color: #ffffff;
 }
 
-.zuno-docs-nav-link[aria-current="true"] {
+/* ---------- Expand/collapse toggle (H2 only) ---------- */
+.zuno-docs-nav-toggle {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.35;
+    line-height: 1;
+    transition: transform 200ms ease, opacity 200ms ease;
+    color: var(--zuno-text-muted);
+    user-select: none;
+    margin-right: 2px;
+}
+
+.zuno-docs-nav-toggle:hover {
+    opacity: 0.7;
+}
+
+.zuno-docs-nav-expanded > .zuno-docs-nav-link > .zuno-docs-nav-toggle {
+    transform: rotate(90deg);
+    opacity: 0.5;
+}
+
+/* ---------- Active state for items ---------- */
+.zuno-docs-nav-item.zuno-docs-nav-active > .zuno-docs-nav-link.is-active {
+    background: var(--zuno-primary);
+    color: #ffffff;
     font-weight: 500;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .zuno-docs-nav-sublist {
+        transition: none !important;
+    }
+    .zuno-docs-nav-toggle {
+        transition: none !important;
+    }
 }
 
 /* ===================================================================
@@ -1744,5 +1829,42 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 @media (max-width: 1024px) {
     .zuno-docs-nav-rail {
         display: none !important;
+    }
+}
+
+/* ===================================================================
+ * 22. CHAPTER-BASED READER
+ * =================================================================== */
+
+/* ---------- Chapter containers ---------- */
+.zuno-docs-chapter {
+    display: none;
+}
+
+.zuno-docs-chapter-active {
+    display: block;
+    animation: zuno-chapter-fade-in 200ms ease;
+}
+
+@keyframes zuno-chapter-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Ensure first heading in active chapter has proper scroll-margin */
+.zuno-docs-chapter-active > h1:first-child {
+    scroll-margin-top: calc(var(--zuno-offset, 0px) + 24px);
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .zuno-docs-chapter-active {
+        animation: none;
     }
 }

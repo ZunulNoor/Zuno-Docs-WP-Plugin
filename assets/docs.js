@@ -29,6 +29,24 @@
     function qs(sel, ctx) { return (ctx || document).querySelector(sel); }
     function qsa(sel, ctx) { return Array.from((ctx || document).querySelectorAll(sel)); }
 
+    function makeId(text, usedIds) {
+        var base = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
+        var id = base;
+        var n = 1;
+        while (usedIds && usedIds.has(id)) id = base + '-' + (n++);
+        if (usedIds) usedIds.add(id);
+        return id;
+    }
+
+    function getTopOffset(wrapper) {
+        var offset = 20;
+        if (wrapper && wrapper.classList.contains('zuno-docs-has-admin-bar')) {
+            var bar = document.getElementById('wpadminbar');
+            if (bar) offset += bar.getBoundingClientRect().height;
+        }
+        return offset;
+    }
+
     /* ===================================================================
      * Client-side inverted-index search
      * =================================================================== */
@@ -155,65 +173,96 @@
     };
 
     /* ===================================================================
-     * TOC Builder — hierarchical tree with collapsible sections
+     * Chapter Engine — core chapter management
      * =================================================================== */
-    var TocBuilder = {
-        _headings: [],
-        _tocEl: null,
-        _tree: [],
-        _maxDepth: 6,
+    var ChapterEngine = {
+        _chapters: [],
+        _activeId: null,
+        _contentEl: null,
         _wrapper: null,
+        _onChangeCallbacks: [],
+        _onAfterChangeCallbacks: [],
 
-        build: function (contentEl, tocEl, maxDepth, wrapper) {
-            this._tocEl = tocEl;
-            this._maxDepth = maxDepth || 6;
-            this._headings = [];
-            this._tree = [];
+        init: function (contentEl, wrapper) {
+            this._contentEl = contentEl;
             this._wrapper = wrapper;
+            this._chapters = [];
+            this._activeId = null;
 
-            tocEl.innerHTML = '';
-
-            var levelRange = [];
-            for (var i = 1; i <= this._maxDepth; i++) levelRange.push('h' + i);
-
-            var headingEls = qsa(levelRange.join(','), contentEl);
-            if (!headingEls.length) {
-                tocEl.style.display = 'none';
-                return this._headings;
-            }
-
-            tocEl.style.display = '';
-
+            var children = Array.from(contentEl.childNodes);
+            var currentWrapper = null;
             var usedIds = new Set();
 
-            headingEls.forEach(function (el) {
-                if (!el.id) {
-                    var base = el.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
-                    var id = base;
-                    var n = 1;
-                    while (usedIds.has(id)) id = base + '-' + (n++);
-                    el.id = id;
+            children.forEach(function (child) {
+                if (child.nodeType === 1 && child.tagName === 'H1') {
+                    if (!child.id) {
+                        child.id = makeId(child.textContent.trim(), usedIds);
+                    } else {
+                        usedIds.add(child.id);
+                    }
+
+                    currentWrapper = document.createElement('div');
+                    currentWrapper.className = 'zuno-docs-chapter';
+                    currentWrapper.id = 'zuno-chapter-' + child.id;
+                    currentWrapper.dataset.chapterId = child.id;
+
+                    this._chapters.push({
+                        id: child.id,
+                        title: child.textContent.trim(),
+                        h1: child,
+                        wrapper: currentWrapper,
+                        sections: []
+                    });
                 }
-                usedIds.add(el.id);
 
-                var tagLevel = parseInt(el.tagName[1], 10);
-                var depth;
-                if (tagLevel <= 2) depth = 1;
-                else if (tagLevel <= 4) depth = 2;
-                else depth = 3;
-
-                this._headings.push({
-                    el: el,
-                    id: el.id,
-                    text: el.textContent.trim(),
-                    tagLevel: tagLevel,
-                    depth: depth
-                });
+                if (currentWrapper) {
+                    currentWrapper.appendChild(child);
+                }
             }, this);
 
-            this._tree = this._buildTree(this._headings);
-            this._renderTree(this._tree, tocEl);
-            return this._headings;
+            /* Fallback: no H1 found → treat all content as one chapter */
+            if (this._chapters.length === 0 && children.length > 0) {
+                var defaultWrapper = document.createElement('div');
+                defaultWrapper.className = 'zuno-docs-chapter zuno-docs-chapter-active';
+                defaultWrapper.id = 'zuno-chapter-documentation';
+                defaultWrapper.dataset.chapterId = 'documentation';
+
+                children.forEach(function (child) {
+                    defaultWrapper.appendChild(child);
+                });
+
+                this._chapters.push({
+                    id: 'documentation',
+                    title: 'Documentation',
+                    h1: null,
+                    wrapper: defaultWrapper,
+                    sections: []
+                });
+            }
+
+            contentEl.innerHTML = '';
+            this._chapters.forEach(function (ch) {
+                contentEl.appendChild(ch.wrapper);
+
+                var headingEls = ch.wrapper.querySelectorAll('h2, h3, h4, h5, h6');
+                headingEls.forEach(function (h) {
+                    if (!h.id) {
+                        h.id = makeId(h.textContent.trim(), null);
+                    }
+                    var item = {
+                        id: h.id,
+                        el: h,
+                        text: h.textContent.trim(),
+                        tagLevel: parseInt(h.tagName[1], 10)
+                    };
+                    ch.sections.push(item);
+                });
+
+                /* Build hierarchical tree from flat sections */
+                ch.tree = this._buildTree(ch.sections);
+            }, this);
+
+            return this._chapters;
         },
 
         _buildTree: function (headings) {
@@ -224,23 +273,19 @@
                 var node = {
                     id: h.id,
                     text: h.text,
-                    depth: h.depth,
-                    treeDepth: 0,
+                    tagLevel: h.tagLevel,
                     el: h.el,
                     children: []
                 };
 
-                while (stack.length && stack[stack.length - 1].depth >= node.depth) {
+                while (stack.length && stack[stack.length - 1].tagLevel >= node.tagLevel) {
                     stack.pop();
                 }
 
                 if (stack.length) {
-                    var parent = stack[stack.length - 1];
-                    parent.children.push(node);
-                    node.treeDepth = parent.treeDepth + 1;
+                    stack[stack.length - 1].children.push(node);
                 } else {
                     root.push(node);
-                    node.treeDepth = 1;
                 }
 
                 stack.push(node);
@@ -249,103 +294,170 @@
             return root;
         },
 
-        _renderTree: function (nodes, container) {
-            var ul = document.createElement('ul');
-
-            nodes.forEach(function (node) {
-                var li = document.createElement('li');
-                li.dataset.depth = node.treeDepth;
-                li.dataset.id = node.id;
-
-                var hasChildren = node.children.length > 0;
-
-                var a = document.createElement('a');
-                a.href = '#' + node.id;
-                a.className = 'zuno-docs-toc-link';
-                a.dataset.tocId = node.id;
-                a.textContent = node.text;
-
-                a.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    var target = qs('#' + CSS.escape(node.id), this._wrapper);
-                    if (target) {
-                        var offset = this._wrapper.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
-                        var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                        window.scrollTo({ top: top, behavior: 'smooth' });
-                        ScrollSpy.activateHeading(node.id);
-                    }
-                }.bind(this));
-
-                if (hasChildren) {
-                    var toggle = document.createElement('span');
-                    toggle.className = 'zuno-docs-toc-toggle';
-                    toggle.setAttribute('role', 'button');
-                    toggle.setAttribute('tabindex', '0');
-                    toggle.setAttribute('aria-label', 'Toggle section');
-                    toggle.setAttribute('aria-expanded', 'false');
-                    toggle.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1l3 3-3 3"/></svg>';
-
-                    toggle.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        var isOpen = li.classList.toggle('is-open');
-                        this.setAttribute('aria-expanded', String(isOpen));
-                    });
-
-                    toggle.addEventListener('keydown', function (e) {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            var isOpen = li.classList.toggle('is-open');
-                            this.setAttribute('aria-expanded', String(isOpen));
-                        }
-                    });
-
-                    a.insertBefore(toggle, a.firstChild);
-
-                    if (node.treeDepth === 1) {
-                        li.classList.add('is-open');
-                        toggle.setAttribute('aria-expanded', 'true');
-                    }
-                }
-
-                li.appendChild(a);
-
-                if (hasChildren) {
-                    this._renderTree(node.children, li);
-                }
-
-                ul.appendChild(li);
-            }, this);
-
-            container.appendChild(ul);
-        },
-
-        getAllHeadings: function () {
+        _flattenTree: function (nodes) {
             var result = [];
-            this._flatten(this._tree, result);
+            nodes.forEach(function (node) {
+                result.push({ id: node.id, el: node.el, text: node.text, tagLevel: node.tagLevel });
+                if (node.children.length) {
+                    result = result.concat(this._flattenTree(node.children));
+                }
+            }, this);
             return result;
         },
 
-        _flatten: function (nodes, result) {
-            nodes.forEach(function (node) {
-                result.push(node);
-                if (node.children.length) {
-                    this._flatten(node.children, result);
-                }
-            }, this);
+        getChapterSections: function (chapterId) {
+            var ch = this.getChapter(chapterId);
+            return ch ? ch.sections : [];
         },
 
-        expandToItem: function (id) {
-            var li = qs('li[data-id="' + id + '"]', this._tocEl);
-            if (!li) return;
-            var cur = li.parentElement;
-            while (cur && cur !== this._tocEl) {
-                if (cur.tagName === 'LI') {
-                    cur.classList.add('is-open');
-                    var toggle = qs('.zuno-docs-toc-toggle', cur);
-                    if (toggle) toggle.setAttribute('aria-expanded', 'true');
+        getChapterTree: function (chapterId) {
+            var ch = this.getChapter(chapterId);
+            return ch ? ch.tree : [];
+        },
+
+        activate: function (chapterId, options) {
+            options = options || {};
+            if (this._activeId === chapterId && !options.force) return;
+
+            this._chapters.forEach(function (ch) {
+                var isActive = ch.id === chapterId;
+                ch.wrapper.style.display = isActive ? '' : 'none';
+                ch.wrapper.classList.toggle('zuno-docs-chapter-active', isActive);
+            });
+
+            var prevId = this._activeId;
+            this._activeId = chapterId;
+
+            TocBuilder.setActive(chapterId);
+            NavRail.rebuild(this.getActiveChapter());
+            ReadingProgress.reset(chapterId);
+
+            if (!options.silent) {
+                this._updateUrl(chapterId);
+            }
+
+            this._onChangeCallbacks.forEach(function (cb) { cb(chapterId, prevId); });
+
+            var self = this;
+            setTimeout(function () {
+                var activeCh = self.getActiveChapter();
+                if (activeCh && !options.noScroll) {
+                    var offset = getTopOffset(self._wrapper);
+                    var top = activeCh.wrapper.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
                 }
-                cur = cur.parentElement;
+                self._onAfterChangeCallbacks.forEach(function (cb) { cb(chapterId, prevId); });
+            }, 10);
+        },
+
+        getActiveChapter: function () {
+            var self = this;
+            return this._chapters.filter(function (ch) { return ch.id === self._activeId; })[0] || null;
+        },
+
+        getActiveChapterId: function () {
+            return this._activeId;
+        },
+
+        getChapter: function (id) {
+            return this._chapters.filter(function (ch) { return ch.id === id; })[0] || null;
+        },
+
+        getAllChapters: function () {
+            return this._chapters.map(function (ch) {
+                return { id: ch.id, title: ch.title };
+            });
+        },
+
+        onChange: function (callback) {
+            this._onChangeCallbacks.push(callback);
+        },
+
+        onAfterChange: function (callback) {
+            this._onAfterChangeCallbacks.push(callback);
+        },
+
+        _updateUrl: function (chapterId) {
+            if (history.pushState) {
+                history.pushState(null, '', '#' + chapterId);
+            }
+        },
+
+        getActiveChapterScrollPercent: function () {
+            var ch = this.getActiveChapter();
+            if (!ch) return 0;
+
+            var wrapper = ch.wrapper;
+            var totalHeight = wrapper.scrollHeight - window.innerHeight;
+            if (totalHeight <= 0) return 100;
+
+            var rect = wrapper.getBoundingClientRect();
+            var offset = getTopOffset(this._wrapper);
+            var passed = -(rect.top - offset);
+            passed = Math.max(0, Math.min(passed, totalHeight));
+            return (passed / totalHeight) * 100;
+        }
+    };
+
+    /* ===================================================================
+     * TOC Builder — flat H1 chapter list
+     * =================================================================== */
+    var TocBuilder = {
+        _tocEl: null,
+        _wrapper: null,
+        _activeId: null,
+
+        build: function (chapters, tocEl, wrapper) {
+            this._tocEl = tocEl;
+            this._wrapper = wrapper;
+            this._activeId = null;
+
+            tocEl.innerHTML = '';
+
+            if (!chapters.length) {
+                tocEl.style.display = 'none';
+                return;
+            }
+
+            tocEl.style.display = '';
+
+            var ul = document.createElement('ul');
+            chapters.forEach(function (ch) {
+                var li = document.createElement('li');
+                li.dataset.depth = '1';
+                li.dataset.id = ch.id;
+
+                var a = document.createElement('a');
+                a.href = '#' + ch.id;
+                a.className = 'zuno-docs-toc-link';
+                a.dataset.tocId = ch.id;
+                a.textContent = ch.title;
+
+                var self = this;
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    ChapterEngine.activate(ch.id);
+                });
+
+                li.appendChild(a);
+                ul.appendChild(li);
+            }, this);
+
+            tocEl.appendChild(ul);
+        },
+
+        setActive: function (id) {
+            this._activeId = id;
+            var links = qsa('.zuno-docs-toc-link', this._tocEl);
+            links.forEach(function (link) {
+                var isActive = link.dataset.tocId === id;
+                link.classList.toggle('is-active', isActive);
+                link.setAttribute('aria-current', isActive ? 'true' : 'false');
+            });
+
+            var activeLink = qs('.zuno-docs-toc-link.is-active', this._tocEl);
+            if (activeLink) {
+                activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
         },
 
@@ -357,20 +469,16 @@
             }
 
             var lis = qsa('li', this._tocEl);
-
             lis.forEach(function (li) {
                 li.classList.remove('zuno-docs-toc-match');
                 li.classList.remove('zuno-docs-toc-hidden');
             });
-            this._tocEl.classList.remove('zuno-docs-toc-searching');
-            this._hideNoResults();
 
             var matchCount = 0;
-
             lis.forEach(function (li) {
                 var link = qs('.zuno-docs-toc-link', li);
                 if (!link) return;
-                var text = link.textContent.replace('\u25B6', '').trim().toLowerCase();
+                var text = link.textContent.trim().toLowerCase();
                 if (text.indexOf(q) !== -1) {
                     li.classList.add('zuno-docs-toc-match');
                     matchCount++;
@@ -384,22 +492,13 @@
             }
 
             lis.forEach(function (li) { li.classList.add('zuno-docs-toc-hidden'); });
-
             lis.forEach(function (li) {
                 if (li.classList.contains('zuno-docs-toc-match')) {
                     li.classList.remove('zuno-docs-toc-hidden');
-                    var cur = li.parentElement;
-                    while (cur && cur !== this._tocEl) {
-                        if (cur.tagName === 'LI') {
-                            cur.classList.remove('zuno-docs-toc-hidden');
-                            cur.classList.add('is-open');
-                        }
-                        cur = cur.parentElement;
-                    }
                 }
             }, this);
 
-            this._tocEl.classList.add('zuno-docs-toc-searching');
+            this._hideNoResults();
         },
 
         resetFilter: function () {
@@ -407,10 +506,7 @@
             lis.forEach(function (li) {
                 li.classList.remove('zuno-docs-toc-hidden');
                 li.classList.remove('zuno-docs-toc-match');
-                var depth = parseInt(li.dataset.depth, 10);
-                li.classList.toggle('is-open', depth === 1);
             });
-            this._tocEl.classList.remove('zuno-docs-toc-searching');
             this._hideNoResults();
         },
 
@@ -432,21 +528,29 @@
     };
 
     /* ===================================================================
-     * Scroll Spy — IntersectionObserver + hierarchy expansion
+     * Scroll Spy — within active chapter only
      * =================================================================== */
     var ScrollSpy = {
         _observer: null,
-        _headings: [],
+        _sections: [],
         _visibleIds: new Set(),
         _activeId: null,
         _scrollTimer: null,
         _wrapper: null,
 
-        init: function (headings, wrapper) {
-            this._headings = headings;
+        init: function (wrapper) {
             this._wrapper = wrapper;
-            if (!headings.length || !('IntersectionObserver' in window)) return;
+        },
 
+        rebuild: function (sections) {
+            this.destroy();
+            this._sections = sections;
+            this._visibleIds = new Set();
+            this._activeId = null;
+
+            if (!sections.length || !('IntersectionObserver' in window)) return;
+
+            var offset = getTopOffset(this._wrapper);
             this._observer = new IntersectionObserver(function (entries) {
                 if (this._scrollTimer) return;
                 entries.forEach(function (entry) {
@@ -458,22 +562,19 @@
                 }.bind(this));
                 this._updateActive();
             }.bind(this), {
-                rootMargin: '-' + (ADMIN_BAR_H + 30) + 'px 0px -70% 0px',
+                rootMargin: '-' + offset + 'px 0px -70% 0px',
                 threshold: 0
             });
 
-            headings.forEach(function (h) { this._observer.observe(h.el); }.bind(this));
+            sections.forEach(function (s) {
+                if (s.el) this._observer.observe(s.el);
+            }.bind(this));
         },
 
         activateHeading: function (id) {
             if (this._scrollTimer) clearTimeout(this._scrollTimer);
             this._activeId = id;
-            this._updateActiveLinks(id);
-            TocBuilder.expandToItem(id);
-            var activeLink = qs('.zuno-docs-toc-link.is-active', this._wrapper);
-            if (activeLink) {
-                activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            }
+            this._updateNavLinks(id);
             var self = this;
             this._scrollTimer = setTimeout(function () {
                 self._scrollTimer = null;
@@ -483,35 +584,348 @@
         _updateActive: function () {
             if (this._scrollTimer) return;
             var active = null;
-            for (var i = 0; i < this._headings.length; i++) {
-                if (this._visibleIds.has(this._headings[i].id)) {
-                    active = this._headings[i].id;
+            for (var i = 0; i < this._sections.length; i++) {
+                if (this._visibleIds.has(this._sections[i].id)) {
+                    active = this._sections[i].id;
                     break;
                 }
             }
-
             if (!active || active === this._activeId) return;
             this._activeId = active;
-            this._updateActiveLinks(active);
-            TocBuilder.expandToItem(active);
+            this._updateNavLinks(active);
+            NavRail._activate(active, false);
         },
 
-        _updateActiveLinks: function (id) {
-            var links = qsa('.zuno-docs-toc-link', this._wrapper);
-            links.forEach(function (link) {
-                var isActive = link.dataset.tocId === id;
-                link.classList.toggle('is-active', isActive);
-                link.setAttribute('aria-current', isActive ? 'true' : 'false');
-            });
+        _updateNavLinks: function (id) {
+            NavRail._activate(id, false);
         },
 
         destroy: function () {
             if (this._observer) this._observer.disconnect();
+            this._observer = null;
         }
     };
 
     /* ===================================================================
-     * Content Search — in-page search with highlights
+     * Navigation Rail — hierarchical per-chapter section navigator (H2–H6)
+     * =================================================================== */
+    var NavRail = {
+        _el: null,
+        _wrapper: null,
+        _items: [],
+        _itemMap: {},
+        _observer: null,
+        _boundaryObserver: null,
+        _activeId: null,
+        _suppressObserver: false,
+        _topOffset: 20,
+
+        init: function (wrapEl) {
+            this._el = qs('.zuno-docs-nav-rail', wrapEl);
+            this._wrapper = wrapEl;
+            var display = CFG.display || {};
+            if (!this._el || !display.show_navigation_rail) return;
+            this._topOffset = getTopOffset(wrapEl);
+        },
+
+        rebuild: function (chapter) {
+            if (!this._el) return;
+
+            this._el.innerHTML = '';
+            this._items = [];
+            this._itemMap = {};
+            this._activeId = null;
+            this.destroy();
+
+            var tree = chapter ? ChapterEngine.getChapterTree(chapter.id) : [];
+            var flat = chapter ? chapter.sections : [];
+
+            if (!tree.length) {
+                this._el.style.display = 'none';
+                return;
+            }
+
+            this._el.style.display = '';
+            this._topOffset = getTopOffset(this._wrapper);
+
+            this._buildIndicators(flat);
+            this._buildPanel(tree, flat);
+            this._initObserver(flat);
+            this._initBoundary();
+        },
+
+        _buildIndicators: function (headings) {
+            var wrap = document.createElement('div');
+            wrap.className = 'zuno-docs-nav-indicators';
+            wrap.setAttribute('aria-hidden', 'true');
+
+            headings.forEach(function (h) {
+                var dot = document.createElement('div');
+                dot.className = 'zuno-docs-nav-indicator';
+                dot.dataset.target = h.id;
+                wrap.appendChild(dot);
+            });
+
+            this._el.appendChild(wrap);
+        },
+
+        _renderNode: function (node, container, depth) {
+            var self = this;
+            var li = document.createElement('li');
+            li.className = 'zuno-docs-nav-item';
+            li.dataset.tagLevel = node.tagLevel;
+            li.dataset.id = node.id;
+
+            var hasChildren = node.children && node.children.length > 0;
+            var isH2 = node.tagLevel === 2;
+
+            var link = document.createElement('a');
+            link.className = 'zuno-docs-nav-link';
+            link.href = '#' + node.id;
+            link.textContent = node.text;
+            link.dataset.target = node.id;
+
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                var target = document.getElementById(node.id);
+                if (!target) return;
+                var offset = getTopOffset(self._wrapper);
+                var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({ top: top, behavior: 'smooth' });
+                self._activate(node.id, true);
+                ScrollSpy.activateHeading(node.id);
+                self._suppressObserver = true;
+                setTimeout(function () {
+                    self._suppressObserver = false;
+                }, 500);
+            });
+
+            li.appendChild(link);
+
+            /* Expand/collapse toggle — only for H2 */
+            if (isH2 && hasChildren) {
+                var toggle = document.createElement('span');
+                toggle.className = 'zuno-docs-nav-toggle';
+                toggle.setAttribute('role', 'button');
+                toggle.setAttribute('tabindex', '0');
+                toggle.setAttribute('aria-label', 'Toggle section');
+                toggle.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1l3 3-3 3"/></svg>';
+
+                toggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    var isOpen = li.classList.toggle('zuno-docs-nav-expanded');
+                    toggle.setAttribute('aria-expanded', String(isOpen));
+                    var sublist = qs('.zuno-docs-nav-sublist', li);
+                    if (sublist) {
+                        sublist.style.maxHeight = isOpen ? sublist.scrollHeight + 'px' : '0';
+                    }
+                });
+
+                toggle.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        var isOpen = li.classList.toggle('zuno-docs-nav-expanded');
+                        this.setAttribute('aria-expanded', String(isOpen));
+                        var sublist = qs('.zuno-docs-nav-sublist', li);
+                        if (sublist) {
+                            sublist.style.maxHeight = isOpen ? sublist.scrollHeight + 'px' : '0';
+                        }
+                    }
+                });
+
+                link.insertBefore(toggle, link.firstChild);
+                li.classList.add('zuno-docs-nav-expanded');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+
+            /* Register flat item for observer + activation */
+            var itemEntry = { id: node.id, el: node.el, link: link, li: li };
+            self._items.push(itemEntry);
+            self._itemMap[node.id] = itemEntry;
+
+            /* Render children recursively */
+            if (hasChildren) {
+                var sublist = document.createElement('ul');
+                sublist.className = 'zuno-docs-nav-sublist';
+                node.children.forEach(function (child) {
+                    self._renderNode(child, sublist, depth + 1);
+                });
+                li.appendChild(sublist);
+            }
+
+            container.appendChild(li);
+        },
+
+        _buildPanel: function (tree, flat) {
+            var panel = document.createElement('div');
+            panel.className = 'zuno-docs-nav-panel';
+            panel.setAttribute('role', 'dialog');
+            panel.setAttribute('aria-label', 'Section navigation');
+
+            var header = document.createElement('div');
+            header.className = 'zuno-docs-nav-panel-header';
+
+            var icon = document.createElement('span');
+            icon.className = 'zuno-docs-nav-panel-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>';
+
+            header.appendChild(icon);
+            header.appendChild(document.createTextNode('On this page'));
+            panel.appendChild(header);
+
+            var list = document.createElement('ul');
+            list.className = 'zuno-docs-nav-list';
+
+            var self = this;
+            tree.forEach(function (node) {
+                self._renderNode(node, list, 1);
+            });
+
+            panel.appendChild(list);
+            this._el.appendChild(panel);
+
+            /* Sync indicator indices */
+            var indicators = qsa('.zuno-docs-nav-indicator', this._el);
+            self._items.forEach(function (item, i) {
+                item.indicator = indicators[i] || null;
+            });
+        },
+
+        _initObserver: function (headings) {
+            if (!('IntersectionObserver' in window)) return;
+
+            var visibleIds = new Set();
+            var self = this;
+            var rootMargin = '-' + this._topOffset + 'px 0px -65% 0px';
+
+            this._observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        visibleIds.add(entry.target.id);
+                    } else {
+                        visibleIds.delete(entry.target.id);
+                    }
+                });
+
+                if (self._suppressObserver) return;
+
+                var active = null;
+                for (var i = 0; i < self._items.length; i++) {
+                    if (visibleIds.has(self._items[i].id)) {
+                        active = self._items[i].id;
+                        break;
+                    }
+                }
+
+                if (active && active !== self._activeId) {
+                    self._activate(active, false);
+                }
+            }, {
+                rootMargin: rootMargin,
+                threshold: 0
+            });
+
+            headings.forEach(function (h) {
+                if (h.el) self._observer.observe(h.el);
+            });
+        },
+
+        _initBoundary: function () {
+            var contentEl = qs('.zuno-docs-content', this._wrapper);
+            if (!contentEl) return;
+            var sentinel = document.createElement('div');
+            sentinel.className = 'zuno-docs-nav-sentinel';
+            contentEl.appendChild(sentinel);
+
+            var self = this;
+            this._boundaryObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        var railRect = self._el.getBoundingClientRect();
+                        var containerRect = self._el.parentElement.getBoundingClientRect();
+                        var topPx = railRect.top - containerRect.top;
+                        self._el.style.top = topPx + 'px';
+                        self._el.classList.add('is-at-bottom');
+                    } else {
+                        self._el.style.top = '';
+                        self._el.classList.remove('is-at-bottom');
+                    }
+                });
+            }, {
+                rootMargin: '0px 0px 300px 0px',
+                threshold: 0
+            });
+
+            this._boundaryObserver.observe(sentinel);
+        },
+
+        /* Expand parent chain for a given node ID */
+        _expandParents: function (id) {
+            var el = qs('[data-id="' + id + '"]', this._el);
+            if (!el) return;
+            var cur = el.parentElement;
+            while (cur && cur !== this._el) {
+                if (cur.tagName === 'LI' && parseInt(cur.dataset.tagLevel, 10) === 2) {
+                    cur.classList.add('zuno-docs-nav-expanded');
+                    var toggle = qs('.zuno-docs-nav-toggle', cur);
+                    if (toggle) toggle.setAttribute('aria-expanded', 'true');
+                    var sublist = qs('.zuno-docs-nav-sublist', cur);
+                    if (sublist) {
+                        sublist.style.maxHeight = sublist.scrollHeight + 'px';
+                    }
+                }
+                cur = cur.parentElement;
+            }
+        },
+
+        _activate: function (id, fromClick) {
+            if (this._activeId === id && !fromClick) return;
+            this._activeId = id;
+
+            this._items.forEach(function (item) {
+                var isActive = item.id === id;
+                if (item.indicator) {
+                    item.indicator.classList.toggle('is-active', isActive);
+                }
+                item.link.classList.toggle('is-active', isActive);
+                item.link.setAttribute('aria-current', isActive ? 'true' : 'false');
+                var li = item.li;
+                if (li) {
+                    li.classList.toggle('zuno-docs-nav-active', isActive);
+                    li.classList.remove('zuno-docs-nav-parent-active');
+                }
+            });
+
+            /* Mark parents as expanded */
+            if (id) {
+                this._expandParents(id);
+            }
+
+            /* Scroll active item into view in the panel */
+            var activeLink = qs('.zuno-docs-nav-link.is-active', this._el);
+            if (activeLink) {
+                activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        },
+
+        destroy: function () {
+            if (this._observer) {
+                this._observer.disconnect();
+                this._observer = null;
+            }
+            if (this._boundaryObserver) {
+                this._boundaryObserver.disconnect();
+                this._boundaryObserver = null;
+            }
+            var sentinel = qs('.zuno-docs-nav-sentinel', this._wrapper);
+            if (sentinel) sentinel.remove();
+        }
+    };
+
+    /* ===================================================================
+     * Content Search — chapter-aware in-page search
      * =================================================================== */
     var ContentSearch = {
         _contentEl: null,
@@ -531,59 +945,85 @@
             this._clearHighlights();
         },
 
-        _searchAndHighlight: function (query) {
+        _findMatchesInElement: function (el, ql, chapterId) {
             var results = [];
-            var ql = query.toLowerCase();
-
-            var headings = qsa('h1,h2,h3,h4,h5,h6', this._contentEl);
-            headings.forEach(function (h) {
-                var text = h.textContent.trim();
-                if (text.toLowerCase().indexOf(ql) !== -1) {
-                    results.push({ el: h, type: 'heading', text: text, score: text.toLowerCase() === ql ? 10 : 8 });
+            var walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT, {
+                acceptNode: function (node) {
+                    if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE' || node.tagName === 'MARK') {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
                 }
             });
 
-            var paras = qsa('p', this._contentEl);
-            paras.forEach(function (p) {
-                var text = p.textContent.trim();
+            while (walker.nextNode()) {
+                var node = walker.currentNode;
+                var text = (node.textContent || '').trim();
                 if (text.toLowerCase().indexOf(ql) !== -1) {
-                    results.push({ el: p, type: 'paragraph', text: text, score: 3 });
+                    var tagName = node.tagName;
+                    var type = 'paragraph';
+                    var score = 1;
+                    if (tagName === 'H1') { type = 'h1'; score = 10; }
+                    else if (tagName === 'H2') { type = 'h2'; score = 9; }
+                    else if (tagName === 'H3') { type = 'h3'; score = 8; }
+                    else if (tagName === 'H4') { type = 'h4'; score = 7; }
+                    else if (tagName === 'H5' || tagName === 'H6') { type = 'heading'; score = 6; }
+                    else if (tagName === 'LI') { type = 'list-item'; score = 3; }
+                    else if (tagName === 'TD' || tagName === 'TH') { type = 'table-cell'; score = 2; }
+
+                    results.push({
+                        el: node,
+                        type: type,
+                        text: text,
+                        score: score,
+                        chapterId: chapterId
+                    });
                 }
-            });
-
-            var listItems = qsa('li', this._contentEl);
-            listItems.forEach(function (li) {
-                var text = li.textContent.trim();
-                if (text.toLowerCase().indexOf(ql) !== -1) {
-                    results.push({ el: li, type: 'list-item', text: text, score: 2 });
-                }
-            });
-
-            var cells = qsa('td, th', this._contentEl);
-            cells.forEach(function (cell) {
-                var text = cell.textContent.trim();
-                if (text.toLowerCase().indexOf(ql) !== -1) {
-                    results.push({ el: cell, type: 'table-cell', text: text, score: 1 });
-                }
-            });
-
-            results.sort(function (a, b) { return b.score - a.score; });
-
-            this._highlightAllMatches(query);
-
-            if (results.length) {
-                this._scrollToFirst();
             }
-
             return results;
         },
 
+        _searchAndHighlight: function (query) {
+            var allResults = [];
+            var ql = query.toLowerCase();
+            var chapters = ChapterEngine.getAllChapters();
+
+            chapters.forEach(function (ch) {
+                var chapterObj = ChapterEngine.getChapter(ch.id);
+                if (!chapterObj || !chapterObj.wrapper) return;
+                var matches = this._findMatchesInElement(chapterObj.wrapper, ql, ch.id);
+                allResults = allResults.concat(matches);
+            }, this);
+
+            allResults.sort(function (a, b) { return b.score - a.score; });
+
+            if (allResults.length) {
+                var bestResult = allResults[0];
+                var currentId = ChapterEngine.getActiveChapterId();
+
+                if (bestResult.chapterId !== currentId) {
+                    ChapterEngine.activate(bestResult.chapterId, { silent: true, noScroll: true });
+                }
+
+                var self = this;
+                setTimeout(function () {
+                    self._highlightAllMatches(query);
+                    self._scrollToFirst();
+                }, 20);
+            }
+
+            return allResults;
+        },
+
         _highlightAllMatches: function (query) {
-            if (!query || query.length < MIN_QUERY || !this._contentEl) return;
+            if (!query || query.length < MIN_QUERY) return;
+
+            var activeCh = ChapterEngine.getActiveChapter();
+            if (!activeCh || !activeCh.wrapper) return;
 
             var textNodes = [];
             var walker = document.createTreeWalker(
-                this._contentEl,
+                activeCh.wrapper,
                 NodeFilter.SHOW_TEXT,
                 null,
                 false
@@ -643,32 +1083,43 @@
         },
 
         _scrollToFirst: function () {
-            var first = qs('.zuno-docs-highlight-first', this._contentEl);
+            var activeCh = ChapterEngine.getActiveChapter();
+            if (!activeCh || !activeCh.wrapper) return;
+            var first = qs('.zuno-docs-highlight-first', activeCh.wrapper);
+            if (!first) first = qs('.zuno-docs-highlight', activeCh.wrapper);
             if (!first) return;
-            var offset = _activeWrapper && _activeWrapper.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
+            var offset = getTopOffset(_activeWrapper);
             var top = first.getBoundingClientRect().top + window.pageYOffset - offset - 10;
             window.scrollTo({ top: top, behavior: 'smooth' });
         }
     };
 
     /* ===================================================================
-     * Reading Progress Bar
+     * Reading Progress Bar — per-chapter
      * =================================================================== */
     function initReadingProgress(wrapEl) {
         var bar = qs('.zuno-docs-progress-bar-fill', wrapEl);
         if (!bar) return;
 
         var update = function () {
-            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-            bar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+            var pct = ChapterEngine.getActiveChapterScrollPercent();
+            bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
         };
 
         window.addEventListener('scroll', update, { passive: true });
         window.addEventListener('resize', update, { passive: true });
+        ChapterEngine.onAfterChange(update);
         update();
     }
+
+    var ReadingProgress = {
+        reset: function () {
+            var bar = _activeWrapper ? qs('.zuno-docs-progress-bar-fill', _activeWrapper) : null;
+            if (bar) {
+                bar.style.width = '0%';
+            }
+        }
+    };
 
     /* ===================================================================
      * Breadcrumbs
@@ -917,7 +1368,7 @@
     }
 
     /* ===================================================================
-     * AJAX search fallback (for large indexes)
+     * AJAX search fallback
      * =================================================================== */
     function ajaxSearch(query, callback) {
         var restUrl = CFG.restUrl;
@@ -966,7 +1417,7 @@
     }
 
     /* ===================================================================
-     * Admin bar offset + class
+     * Admin bar offset
      * =================================================================== */
     function initAdminBarOffset(wrapEl) {
         var bar = document.getElementById('wpadminbar');
@@ -986,27 +1437,36 @@
     }
 
     /* ===================================================================
-     * Hash handler — scoped to wrapper
+     * Hash handler — chapter-aware
      * =================================================================== */
     function handleInitialHash(wrapEl) {
         var hash = window.location.hash.slice(1);
-        if (!hash) return;
-        var target = qs('#' + CSS.escape(hash), wrapEl);
-        if (!target) {
-            target = document.getElementById(hash);
+        if (!hash) {
+            var chapters = ChapterEngine.getAllChapters();
+            if (chapters.length) {
+                ChapterEngine.activate(chapters[0].id);
+            }
+            return;
         }
-        if (target) {
+
+        var chapter = ChapterEngine.getChapter(hash);
+        if (chapter) {
+            ChapterEngine.activate(chapter.id);
             setTimeout(function () {
-                var offset = wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
-                var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                window.scrollTo({ top: top, behavior: 'smooth' });
-                ScrollSpy.activateHeading(hash);
+                var offset = getTopOffset(wrapEl);
+                var top = chapter.wrapper.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({ top: top > 0 ? top : 0, behavior: 'smooth' });
             }, 150);
+        } else {
+            var allChapters = ChapterEngine.getAllChapters();
+            if (allChapters.length) {
+                ChapterEngine.activate(allChapters[0].id);
+            }
         }
     }
 
     /* ===================================================================
-     * Mobile TOC — floating card with overlay behavior
+     * Mobile TOC — floating card with overlay
      * =================================================================== */
     function initMobileToc(wrapEl) {
         var mobileToc = qs('.zuno-docs-mobile-toc', wrapEl);
@@ -1021,9 +1481,6 @@
 
         var position = mobileToc.dataset.mobileTocPosition || 'top';
 
-        /* Boundary detection for floating positions (left/right/bottom) —
-         * switch from position:fixed to position:absolute when the
-         * documentation bottom edge passes the trigger's screen position. */
         if (position !== 'top') {
             var boundaryBottom;
 
@@ -1063,7 +1520,7 @@
 
         function getScrollOffset() {
             if (position === 'top') {
-                return wrapEl.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
+                return getTopOffset(wrapEl);
             }
             return 0;
         }
@@ -1076,7 +1533,6 @@
                 document.body.classList.add('zuno-docs-toc-open');
             }
 
-            /* If the panel is empty, clone the sidebar TOC + search into it */
             if (panelBody && sidebar && !panelBody.querySelector('.zuno-docs-toc') && !panelBody.querySelector('.zuno-docs-search-wrap')) {
                 var searchWrap = qs('.zuno-docs-search-wrap', sidebar);
                 var tocNav = qs('.zuno-docs-toc', sidebar);
@@ -1117,26 +1573,19 @@
                 if (tocNav) {
                     var tocClone = tocNav.cloneNode(true);
                     panelBody.appendChild(tocClone);
-                    /* Wire up the cloned TOC links to navigate */
                     qsa('.zuno-docs-toc-link', panelBody).forEach(function (link) {
                         link.addEventListener('click', function (e) {
                             e.preventDefault();
                             var id = link.dataset.tocId;
                             if (id) {
                                 closeToc();
-                                var target = qs('#' + CSS.escape(id), wrapEl);
-                                if (target) {
-                                    var top = target.getBoundingClientRect().top + window.pageYOffset - getScrollOffset();
-                                    window.scrollTo({ top: top, behavior: 'smooth' });
-                                    ScrollSpy.activateHeading(id);
-                                }
+                                ChapterEngine.activate(id);
                             }
                         });
                     });
                 }
             }
 
-            /* Sync search input from sidebar to panel */
             var sidebarInput = qs('.zuno-docs-search-input', sidebar);
             var panelInput = qs('.zuno-docs-search-input', panelBody);
             if (sidebarInput && panelInput) {
@@ -1173,14 +1622,12 @@
             });
         }
 
-        /* Close on Escape key */
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && mobileToc.classList.contains('is-open')) {
                 closeToc();
             }
         });
 
-        /* Close TOC on TOC link click (smooth) */
         if (panelBody) {
             panelBody.addEventListener('click', function (e) {
                 var link = e.target.closest('.zuno-docs-toc-link');
@@ -1188,23 +1635,15 @@
                     var id = link.dataset.tocId;
                     if (id) {
                         closeToc();
-                        var target = qs('#' + CSS.escape(id), wrapEl);
-                        if (target) {
-                            setTimeout(function () {
-                                var top = target.getBoundingClientRect().top + window.pageYOffset - getScrollOffset();
-                                window.scrollTo({ top: top, behavior: 'smooth' });
-                                ScrollSpy.activateHeading(id);
-                            }, 250);
-                        }
+                        ChapterEngine.activate(id);
                     }
                 }
             });
         }
 
-        /* Scroll active heading into view within the TOC panel */
-        var origUpdateActiveLinks = ScrollSpy._updateActiveLinks;
-        ScrollSpy._updateActiveLinks = function (id) {
-            origUpdateActiveLinks.call(ScrollSpy, id);
+        var origSetActive = TocBuilder.setActive;
+        TocBuilder.setActive = function (id) {
+            origSetActive.call(TocBuilder, id);
             if (isMobile() && panelBody && id) {
                 var activeLink = qs('.zuno-docs-toc-link.is-active', panelBody);
                 if (activeLink) {
@@ -1213,214 +1652,12 @@
             }
         };
 
-        /* Close on resize to desktop */
         window.addEventListener('resize', function () {
             if (!isMobile() && mobileToc.classList.contains('is-open')) {
                 closeToc();
             }
         }, { passive: true });
     }
-
-    /* ===================================================================
-     * Navigation Rail
-     * =================================================================== */
-    var NavRail = {
-        _el: null,
-        _wrapper: null,
-        _items: [],
-        _observer: null,
-        _boundaryObserver: null,
-        _activeId: null,
-        _suppressObserver: false,
-        _topOffset: 20,
-
-        init: function (wrapEl) {
-            this._el = qs('.zuno-docs-nav-rail', wrapEl);
-            this._wrapper = wrapEl;
-            var contentEl = qs('.zuno-docs-content', wrapEl);
-            if (!this._el || !contentEl) return;
-
-            var display = CFG.display || {};
-            if (!display.show_navigation_rail) return;
-
-            var headings = qsa('h1[id]', contentEl);
-            if (!headings.length) {
-                this._el.style.display = 'none';
-                return;
-            }
-
-            this._topOffset = _activeWrapper && _activeWrapper.classList.contains('zuno-docs-has-admin-bar') ? ADMIN_BAR_H + 20 : 20;
-
-            this._el.innerHTML = '';
-
-            this._buildIndicators(headings);
-            this._buildPanel(headings);
-            this._initObserver(headings);
-            this._initBoundary(contentEl);
-        },
-
-        _buildIndicators: function (headings) {
-            var wrap = document.createElement('div');
-            wrap.className = 'zuno-docs-nav-indicators';
-            wrap.setAttribute('aria-hidden', 'true');
-
-            headings.forEach(function (h) {
-                var dot = document.createElement('div');
-                dot.className = 'zuno-docs-nav-indicator';
-                dot.dataset.target = h.id;
-                wrap.appendChild(dot);
-            });
-
-            this._el.appendChild(wrap);
-        },
-
-        _buildPanel: function (headings) {
-            var panel = document.createElement('div');
-            panel.className = 'zuno-docs-nav-panel';
-            panel.setAttribute('role', 'dialog');
-            panel.setAttribute('aria-label', 'Section navigation');
-
-            var header = document.createElement('div');
-            header.className = 'zuno-docs-nav-panel-header';
-
-            var icon = document.createElement('span');
-            icon.className = 'zuno-docs-nav-panel-icon';
-            icon.setAttribute('aria-hidden', 'true');
-            icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>';
-
-            header.appendChild(icon);
-            header.appendChild(document.createTextNode('On this page'));
-            panel.appendChild(header);
-
-            var list = document.createElement('ul');
-            list.className = 'zuno-docs-nav-list';
-            list.setAttribute('role', 'list');
-
-            var self = this;
-
-            headings.forEach(function (h) {
-                var li = document.createElement('li');
-                li.className = 'zuno-docs-nav-item';
-
-                var link = document.createElement('a');
-                link.className = 'zuno-docs-nav-link';
-                link.href = '#' + h.id;
-                link.textContent = h.textContent.trim();
-                link.dataset.target = h.id;
-
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    var target = document.getElementById(h.id);
-                    if (!target) return;
-                    var top = target.getBoundingClientRect().top + window.pageYOffset - self._topOffset;
-                    window.scrollTo({ top: top, behavior: 'smooth' });
-                    self._activate(h.id);
-                    ScrollSpy.activateHeading(h.id);
-                    self._suppressObserver = true;
-                    setTimeout(function () {
-                        self._suppressObserver = false;
-                    }, 500);
-                });
-
-                li.appendChild(link);
-                list.appendChild(li);
-                self._items.push({ id: h.id, el: h, link: link });
-            }, this);
-
-            panel.appendChild(list);
-            this._el.appendChild(panel);
-
-            var indicators = qsa('.zuno-docs-nav-indicator', this._el);
-            self._items.forEach(function (item, i) {
-                item.indicator = indicators[i] || null;
-            });
-        },
-
-        _initObserver: function (headings) {
-            if (!('IntersectionObserver' in window)) return;
-
-            var visibleIds = new Set();
-            var self = this;
-            var rootMargin = '-' + this._topOffset + 'px 0px -65% 0px';
-
-            this._observer = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        visibleIds.add(entry.target.id);
-                    } else {
-                        visibleIds.delete(entry.target.id);
-                    }
-                });
-
-                if (self._suppressObserver) return;
-
-                var active = null;
-                for (var i = 0; i < self._items.length; i++) {
-                    if (visibleIds.has(self._items[i].id)) {
-                        active = self._items[i].id;
-                        break;
-                    }
-                }
-
-                if (active && active !== self._activeId) {
-                    self._activate(active);
-                }
-            }, {
-                rootMargin: rootMargin,
-                threshold: 0
-            });
-
-            headings.forEach(function (h) { self._observer.observe(h); });
-        },
-
-        _initBoundary: function (contentEl) {
-            var sentinel = document.createElement('div');
-            sentinel.className = 'zuno-docs-nav-sentinel';
-            contentEl.appendChild(sentinel);
-
-            var self = this;
-            this._boundaryObserver = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        var railRect = self._el.getBoundingClientRect();
-                        var containerRect = self._el.parentElement.getBoundingClientRect();
-                        var topPx = railRect.top - containerRect.top;
-                        self._el.style.top = topPx + 'px';
-                        self._el.classList.add('is-at-bottom');
-                    } else {
-                        self._el.style.top = '';
-                        self._el.classList.remove('is-at-bottom');
-                    }
-                });
-            }, {
-                rootMargin: '0px 0px 300px 0px',
-                threshold: 0
-            });
-
-            this._boundaryObserver.observe(sentinel);
-        },
-
-        _activate: function (id) {
-            this._activeId = id;
-            this._items.forEach(function (item) {
-                var isActive = item.id === id;
-
-                if (item.indicator) {
-                    item.indicator.classList.toggle('is-active', isActive);
-                }
-
-                item.link.classList.toggle('is-active', isActive);
-                var li = item.link.closest('.zuno-docs-nav-item');
-                if (li) li.classList.toggle('is-active', isActive);
-                item.link.setAttribute('aria-current', isActive ? 'true' : 'false');
-            });
-        },
-
-        destroy: function () {
-            if (this._observer) this._observer.disconnect();
-            if (this._boundaryObserver) this._boundaryObserver.disconnect();
-        }
-    };
 
     /* ===================================================================
      * Initialiser
@@ -1432,43 +1669,61 @@
         var tocEl = qs('.zuno-docs-toc', wrapEl);
         if (!contentEl || !tocEl) return;
 
-        var maxDepth = parseInt(wrapEl.dataset.tocDepth, 10) || 6;
+        /* 1. Build chapter structure */
+        var chapters = ChapterEngine.init(contentEl, wrapEl);
 
-        /* 1. Build TOC */
-        var headings = TocBuilder.build(contentEl, tocEl, maxDepth, wrapEl);
+        /* 2. Build TOC (flat H1 list) */
+        TocBuilder.build(chapters, tocEl, wrapEl);
 
-        /* 2. Scroll spy */
-        ScrollSpy.init(headings, wrapEl);
+        /* 3. Init scroll spy */
+        ScrollSpy.init(wrapEl);
 
-        /* 3. Breadcrumbs */
-        renderBreadcrumbs(wrapEl);
-
-        /* 4. Page nav */
-        renderPageNav(wrapEl);
-
-        /* 5. Related articles */
-        renderRelated(wrapEl);
-
-        /* 6. Reading progress bar */
-        initReadingProgress(wrapEl);
-
-        /* 7. Search */
-        initSearch(wrapEl);
-
-        /* 8. Navigation */
-        initNavigation(wrapEl);
-
-        /* 9. Admin bar offset */
-        initAdminBarOffset(wrapEl);
-
-        /* 10. Mobile TOC */
-        initMobileToc(wrapEl);
-
-        /* 11. Navigation Rail */
+        /* 4. Init NavRail */
         NavRail.init(wrapEl);
 
-        /* 12. Handle initial hash */
+        /* 5. Breadcrumbs */
+        renderBreadcrumbs(wrapEl);
+
+        /* 6. Page nav */
+        renderPageNav(wrapEl);
+
+        /* 7. Related articles */
+        renderRelated(wrapEl);
+
+        /* 8. Reading progress bar */
+        initReadingProgress(wrapEl);
+
+        /* 9. Search */
+        initSearch(wrapEl);
+
+        /* 10. Navigation */
+        initNavigation(wrapEl);
+
+        /* 11. Admin bar offset */
+        initAdminBarOffset(wrapEl);
+
+        /* 12. Mobile TOC */
+        initMobileToc(wrapEl);
+
+        /* 13. Register chapter change handler BEFORE activating */
+        ChapterEngine.onChange(function (chapterId) {
+            var ch = ChapterEngine.getChapter(chapterId);
+            ScrollSpy.rebuild(ch ? ch.sections : []);
+        });
+
+        /* 14. Activate initial chapter (from hash or first) */
         handleInitialHash(wrapEl);
+
+        /* 15. Hash change listener */
+        window.addEventListener('hashchange', function () {
+            var hash = window.location.hash.slice(1);
+            if (hash) {
+                var ch = ChapterEngine.getChapter(hash);
+                if (ch) {
+                    ChapterEngine.activate(ch.id);
+                }
+            }
+        });
     }
 
     /* ===================================================================

@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:  Zuno Docs Engine
- * Plugin URI:   https://zunulnoor.vercel.app
+ * Plugin URI:   https://github.com/ZunulNoor/Zuno-Docs-WP-Plugin
  * Description:  Full documentation CMS with custom post types, categories, TOC,
  *               client-side search, and multi-product support.
  * Version:      2.1.0
@@ -442,4 +442,50 @@ function zuno_docs_error( $message ) {
         . '<strong>[Zuno Docs Engine]</strong> %s</div>',
         esc_html( $message )
     );
+}
+
+/* -----------------------------------------------------------------------
+ * Centralized debug logger — production-safe, never outputs to browser.
+ *
+ * Usage:
+ *   zuno_docs_debug( 'Some message' );
+ *   zuno_docs_debug( $some_array );
+ *   zuno_docs_debug( $some_object, 'Optional label' );
+ *
+ * Respects WP_DEBUG and ZUNO_DOCS_DEBUG.
+ * Writes only to wp-content/debug.log (via error_log).
+ * Safe for AJAX, REST, JSON, redirects, and CLI contexts.
+ * --------------------------------------------------------------------- */
+function zuno_docs_debug( $data, $label = '' ) {
+    if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
+        return;
+    }
+    if ( defined( 'ZUNO_DOCS_DEBUG' ) && ! ZUNO_DOCS_DEBUG ) {
+        return;
+    }
+
+    $trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 1 );
+    $caller = isset( $trace[0] ) ? $trace[0] : array();
+    $file   = isset( $caller['file'] ) ? $caller['file'] : '';
+    $line   = isset( $caller['line'] ) ? $caller['line'] : '';
+
+    $message = '[Zuno Docs Debug]';
+    if ( $file ) {
+        $message .= ' ' . basename( $file );
+    }
+    if ( $line ) {
+        $message .= ':' . $line;
+    }
+    if ( $label ) {
+        $message .= ' (' . $label . ')';
+    }
+    $message .= "\n";
+
+    if ( is_string( $data ) ) {
+        $message .= $data;
+    } else {
+        $message .= print_r( $data, true );
+    }
+
+    error_log( $message );
 }

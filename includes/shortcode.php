@@ -126,21 +126,6 @@ function zuno_docs_render_shortcode( $atts ) {
     ob_start();
     include ZUNO_DOCS_TEMPLATES . 'layout.php';
 
-    /* ---------- Debug mode (admins only) ---------- */
-    if ( defined( 'ZUNO_DOCS_DEBUG' ) && ZUNO_DOCS_DEBUG && current_user_can( 'zuno_docs_manage_settings' ) ) {
-        $raw = get_option( Zuno_Docs_Settings::OPTION_NAME, array() );
-        printf(
-            "\n<!-- ZUNO DOCS DEBUG\n\n--- Settings (from DB) ---\n%s\n\n--- Localized JS Config ---\n%s\n\n-->",
-            print_r( $raw, true ),
-            print_r( $config, true )
-        );
-        echo '<div style="border:3px solid #f00;background:#fff0f0;padding:12px 16px;margin-bottom:16px;font-family:monospace;font-size:13px;border-radius:6px;color:#c00;">';
-        echo '<strong>ZUNO_DOCS_DEBUG ACTIVE</strong> — Settings source of truth:<br>';
-        echo '<pre style="margin:8px 0;white-space:pre-wrap;color:#333;">' . esc_html( print_r( $raw, true ) ) . '</pre>';
-        echo '<em>Remove <code>define( \'ZUNO_DOCS_DEBUG\', true );</code> from wp-config.php when done.</em>';
-        echo '</div>';
-    }
-
     return ob_get_clean();
 }
 
