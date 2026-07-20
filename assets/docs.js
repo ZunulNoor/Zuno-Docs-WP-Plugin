@@ -7,6 +7,7 @@
     var MAX_SUGGESTIONS = 8;
     var ADMIN_BAR_H = 32;
     var _activeWrapper = null;
+    var _mobileTocUpdateActive = null;
 
     /* ===================================================================
      * Utility helpers
@@ -598,6 +599,7 @@
 
         _updateNavLinks: function (id) {
             NavRail._activate(id, false);
+            if (_mobileTocUpdateActive) _mobileTocUpdateActive(id);
         },
 
         destroy: function () {
@@ -615,7 +617,7 @@
         _items: [],
         _itemMap: {},
         _observer: null,
-        _boundaryObserver: null,
+        _visibilityObserver: null,
         _activeId: null,
         _suppressObserver: false,
         _topOffset: 20,
@@ -626,6 +628,7 @@
             var display = CFG.display || {};
             if (!this._el || !display.show_navigation_rail) return;
             this._topOffset = getTopOffset(wrapEl);
+            this._initVisibility(wrapEl);
         },
 
         rebuild: function (chapter) {
@@ -651,7 +654,6 @@
             this._buildIndicators(flat);
             this._buildPanel(tree, flat);
             this._initObserver(flat);
-            this._initBoundary();
         },
 
         _buildIndicators: function (headings) {
@@ -832,33 +834,14 @@
             });
         },
 
-        _initBoundary: function () {
-            var contentEl = qs('.zuno-docs-content', this._wrapper);
-            if (!contentEl) return;
-            var sentinel = document.createElement('div');
-            sentinel.className = 'zuno-docs-nav-sentinel';
-            contentEl.appendChild(sentinel);
-
+        _initVisibility: function (wrapEl) {
             var self = this;
-            this._boundaryObserver = new IntersectionObserver(function (entries) {
+            this._visibilityObserver = new IntersectionObserver(function (entries) {
                 entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        var railRect = self._el.getBoundingClientRect();
-                        var containerRect = self._el.parentElement.getBoundingClientRect();
-                        var topPx = railRect.top - containerRect.top;
-                        self._el.style.top = topPx + 'px';
-                        self._el.classList.add('is-at-bottom');
-                    } else {
-                        self._el.style.top = '';
-                        self._el.classList.remove('is-at-bottom');
-                    }
+                    self._el.classList.toggle('is-visible', entry.isIntersecting);
                 });
-            }, {
-                rootMargin: '0px 0px 300px 0px',
-                threshold: 0
-            });
-
-            this._boundaryObserver.observe(sentinel);
+            }, { threshold: 0 });
+            this._visibilityObserver.observe(wrapEl);
         },
 
         /* Expand parent chain for a given node ID */
@@ -915,12 +898,6 @@
                 this._observer.disconnect();
                 this._observer = null;
             }
-            if (this._boundaryObserver) {
-                this._boundaryObserver.disconnect();
-                this._boundaryObserver = null;
-            }
-            var sentinel = qs('.zuno-docs-nav-sentinel', this._wrapper);
-            if (sentinel) sentinel.remove();
         }
     };
 
@@ -1466,7 +1443,8 @@
     }
 
     /* ===================================================================
-     * Mobile TOC — floating card with overlay
+     * Mobile TOC — hierarchical chapter navigator (H1–H6)
+     * Only one H1 expanded at a time. Replaces NavRail on mobile.
      * =================================================================== */
     function initMobileToc(wrapEl) {
         var mobileToc = qs('.zuno-docs-mobile-toc', wrapEl);
@@ -1514,17 +1492,215 @@
             }, { passive: true });
         }
 
-        function isMobile() {
-            return window.innerWidth < 768;
-        }
+        function isMobile() { return window.innerWidth < 768; }
 
         function getScrollOffset() {
-            if (position === 'top') {
-                return getTopOffset(wrapEl);
+            if (isMobile()) {
+                var triggerBar = qs('.zuno-docs-mobile-toc', wrapEl);
+                var h = triggerBar ? triggerBar.getBoundingClientRect().height : 0;
+                return h + 16;
             }
-            return 0;
+            return getTopOffset(wrapEl);
         }
 
+        /* ---------------------------------------------------------------
+         * Build hierarchical TOC tree from ChapterEngine data
+         * --------------------------------------------------------------- */
+        function renderTree(nodes) {
+            if (!nodes || !nodes.length) return null;
+            var ul = document.createElement('ul');
+            nodes.forEach(function (node) {
+                var li = document.createElement('li');
+                li.dataset.depth = node.tagLevel;
+                li.dataset.id = node.id;
+
+                var link = document.createElement('a');
+                link.href = '#' + node.id;
+                link.className = 'zuno-docs-toc-link';
+                link.dataset.target = node.id;
+                link.textContent = node.text;
+
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var target = document.getElementById(node.id);
+                    if (!target) return;
+                    var offset = getScrollOffset();
+                    var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({ top: top, behavior: 'smooth' });
+                    closeToc();
+                });
+
+                li.appendChild(link);
+
+                if (node.children && node.children.length) {
+                    li.classList.add('is-open');
+                    var childUl = renderTree(node.children);
+                    if (childUl) li.appendChild(childUl);
+                }
+
+                ul.appendChild(li);
+            });
+            return ul;
+        }
+
+        function buildMobileToc() {
+            if (!panelBody) return;
+
+            var existing = qs('.zuno-docs-toc', panelBody);
+            if (existing) existing.remove();
+
+            var chapters = ChapterEngine.getAllChapters();
+            var activeId = ChapterEngine.getActiveChapterId();
+            if (!chapters.length) return;
+
+            var tocEl = document.createElement('nav');
+            tocEl.className = 'zuno-docs-toc';
+            tocEl.setAttribute('aria-label', 'Table of Contents');
+
+            var ul = document.createElement('ul');
+
+            chapters.forEach(function (ch) {
+                var chLi = document.createElement('li');
+                chLi.dataset.depth = '1';
+                chLi.dataset.chapterId = ch.id;
+
+                var isActive = ch.id === activeId;
+
+                var chLink = document.createElement('a');
+                chLink.href = '#' + ch.id;
+                chLink.className = 'zuno-docs-toc-link';
+                chLink.dataset.target = ch.id;
+                chLink.dataset.tocId = ch.id;
+                chLink.textContent = ch.title;
+
+                if (isActive) {
+                    chLink.classList.add('is-active');
+                    chLi.classList.add('is-open');
+                }
+
+                /* Chevron toggle */
+                var toggle = document.createElement('span');
+                toggle.className = 'zuno-docs-toc-toggle';
+                toggle.setAttribute('role', 'button');
+                toggle.setAttribute('tabindex', '0');
+                toggle.setAttribute('aria-label', 'Toggle section');
+                toggle.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1l3 3-3 3"/></svg>';
+                chLink.insertBefore(toggle, chLink.firstChild);
+
+                chLink.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    ChapterEngine.activate(ch.id);
+                    closeToc();
+                });
+
+                chLi.appendChild(chLink);
+
+                /* Render children for active chapter */
+                if (isActive) {
+                    var chapter = ChapterEngine.getChapter(ch.id);
+                    var tree = chapter ? ChapterEngine.getChapterTree(ch.id) : [];
+                    var childUl = renderTree(tree);
+                    if (childUl) chLi.appendChild(childUl);
+                }
+
+                ul.appendChild(chLi);
+            });
+
+            tocEl.appendChild(ul);
+            panelBody.appendChild(tocEl);
+        }
+
+        /* ---------------------------------------------------------------
+         * Update active heading highlight in mobile TOC
+         * --------------------------------------------------------------- */
+        function updateMobileActive(id) {
+            if (!isMobile() || !panelBody) return;
+            var tocEl = qs('.zuno-docs-toc', panelBody);
+            if (!tocEl) return;
+
+            qsa('.zuno-docs-toc-link.is-active', tocEl).forEach(function (link) {
+                link.classList.remove('is-active');
+            });
+
+            var activeLink = qs('.zuno-docs-toc-link[data-target="' + id + '"]', tocEl);
+            if (activeLink) {
+                activeLink.classList.add('is-active');
+                activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+
+        _mobileTocUpdateActive = updateMobileActive;
+
+        /* ---------------------------------------------------------------
+         * Rebuild hierarchy when active chapter changes
+         * --------------------------------------------------------------- */
+        ChapterEngine.onChange(function () {
+            if (isMobile()) buildMobileToc();
+        });
+
+        /* ---------------------------------------------------------------
+         * Search filter on mobile TOC hierarchy
+         * --------------------------------------------------------------- */
+        function filterMobileToc(query) {
+            var tocEl = qs('.zuno-docs-toc', panelBody);
+            if (!tocEl) return;
+
+            var q = query.trim().toLowerCase();
+
+            /* Reset all */
+            var allLinks = qsa('.zuno-docs-toc-link', tocEl);
+            allLinks.forEach(function (link) {
+                var li = link.closest('li');
+                if (li) {
+                    li.classList.remove('zuno-docs-toc-match');
+                    li.classList.remove('zuno-docs-toc-hidden');
+                }
+            });
+
+            if (q.length < 2) return;
+
+            var matchCount = 0;
+            allLinks.forEach(function (link) {
+                var text = link.textContent.trim().toLowerCase();
+                if (text.indexOf(q) !== -1) {
+                    var li = link.closest('li');
+                    if (li) {
+                        li.classList.add('zuno-docs-toc-match');
+                        matchCount++;
+                    }
+                }
+            });
+
+            if (!matchCount) {
+                allLinks.forEach(function (link) {
+                    var li = link.closest('li');
+                    if (li) li.classList.add('zuno-docs-toc-hidden');
+                });
+                return;
+            }
+
+            allLinks.forEach(function (link) {
+                var li = link.closest('li');
+                if (li && !li.classList.contains('zuno-docs-toc-match')) {
+                    li.classList.add('zuno-docs-toc-hidden');
+                }
+            });
+
+            /* Auto-expand parent chapters for matches */
+            qsa('.zuno-docs-toc-match', tocEl).forEach(function (matchLi) {
+                var parent = matchLi.parentElement;
+                while (parent && parent !== tocEl) {
+                    if (parent.tagName === 'LI' && parent.dataset.depth === '1') {
+                        parent.classList.add('is-open');
+                    }
+                    parent = parent.parentElement;
+                }
+            });
+        }
+
+        /* ---------------------------------------------------------------
+         * Open the mobile TOC panel
+         * --------------------------------------------------------------- */
         function openToc() {
             if (!isMobile()) return;
             mobileToc.classList.add('is-open');
@@ -1533,66 +1709,62 @@
                 document.body.classList.add('zuno-docs-toc-open');
             }
 
-            if (panelBody && sidebar && !panelBody.querySelector('.zuno-docs-toc') && !panelBody.querySelector('.zuno-docs-search-wrap')) {
-                var searchWrap = qs('.zuno-docs-search-wrap', sidebar);
-                var tocNav = qs('.zuno-docs-toc', sidebar);
-                var suggestions = qs('.zuno-docs-suggestions', sidebar);
-                var noResults = qs('.zuno-docs-no-results', sidebar);
+            if (panelBody && sidebar) {
+                /* Clone search elements once */
+                if (!panelBody.querySelector('.zuno-docs-search-wrap')) {
+                    var searchWrap = qs('.zuno-docs-search-wrap', sidebar);
+                    var suggestions = qs('.zuno-docs-suggestions', sidebar);
+                    var noResults = qs('.zuno-docs-no-results', sidebar);
 
-                if (searchWrap) {
-                    var searchClone = searchWrap.cloneNode(true);
-                    panelBody.insertBefore(searchClone, panelBody.firstChild);
-                    var newInput = qs('.zuno-docs-search-input', panelBody);
-                    if (newInput) {
-                        newInput.addEventListener('input', function (e) {
-                            var sidebarInput = qs('.zuno-docs-search-input', sidebar);
-                            if (sidebarInput) {
-                                sidebarInput.value = e.target.value;
-                                sidebarInput.dispatchEvent(new Event('input', { bubbles: true }));
-                            }
-                        });
-                        newInput.addEventListener('focus', function () {
-                            var sidebarInput = qs('.zuno-docs-search-input', sidebar);
-                            if (sidebarInput) {
-                                sidebarInput.focus();
-                            }
-                        });
+                    if (searchWrap) {
+                        var searchClone = searchWrap.cloneNode(true);
+                        panelBody.insertBefore(searchClone, panelBody.firstChild);
+                        var newInput = qs('.zuno-docs-search-input', panelBody);
+                        if (newInput) {
+                            newInput.addEventListener('input', function (e) {
+                                var sidebarInput = qs('.zuno-docs-search-input', sidebar);
+                                if (sidebarInput) {
+                                    sidebarInput.value = e.target.value;
+                                    sidebarInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                }
+                                filterMobileToc(e.target.value);
+                            });
+                            newInput.addEventListener('focus', function () {
+                                var sidebarInput = qs('.zuno-docs-search-input', sidebar);
+                                if (sidebarInput) sidebarInput.focus();
+                            });
+                        }
+                    }
+
+                    if (suggestions) {
+                        var suggClone = suggestions.cloneNode(true);
+                        panelBody.appendChild(suggClone);
+                    }
+
+                    if (noResults) {
+                        var nrClone = noResults.cloneNode(true);
+                        panelBody.appendChild(nrClone);
                     }
                 }
 
-                if (suggestions) {
-                    var suggClone = suggestions.cloneNode(true);
-                    panelBody.appendChild(suggClone);
-                }
+                /* Build/rebuild hierarchical TOC */
+                buildMobileToc();
 
-                if (noResults) {
-                    var nrClone = noResults.cloneNode(true);
-                    panelBody.appendChild(nrClone);
+                /* Sync search input value */
+                var sidebarInput = qs('.zuno-docs-search-input', sidebar);
+                var panelInput = qs('.zuno-docs-search-input', panelBody);
+                if (sidebarInput && panelInput) {
+                    panelInput.value = sidebarInput.value;
+                    if (sidebarInput.value.trim().length >= 2) {
+                        filterMobileToc(sidebarInput.value);
+                    }
                 }
-
-                if (tocNav) {
-                    var tocClone = tocNav.cloneNode(true);
-                    panelBody.appendChild(tocClone);
-                    qsa('.zuno-docs-toc-link', panelBody).forEach(function (link) {
-                        link.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            var id = link.dataset.tocId;
-                            if (id) {
-                                closeToc();
-                                ChapterEngine.activate(id);
-                            }
-                        });
-                    });
-                }
-            }
-
-            var sidebarInput = qs('.zuno-docs-search-input', sidebar);
-            var panelInput = qs('.zuno-docs-search-input', panelBody);
-            if (sidebarInput && panelInput) {
-                panelInput.value = sidebarInput.value;
             }
         }
 
+        /* ---------------------------------------------------------------
+         * Close the mobile TOC panel
+         * --------------------------------------------------------------- */
         function closeToc() {
             mobileToc.classList.remove('is-open');
             trigger.setAttribute('aria-expanded', 'false');
@@ -1640,17 +1812,6 @@
                 }
             });
         }
-
-        var origSetActive = TocBuilder.setActive;
-        TocBuilder.setActive = function (id) {
-            origSetActive.call(TocBuilder, id);
-            if (isMobile() && panelBody && id) {
-                var activeLink = qs('.zuno-docs-toc-link.is-active', panelBody);
-                if (activeLink) {
-                    activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                }
-            }
-        };
 
         window.addEventListener('resize', function () {
             if (!isMobile() && mobileToc.classList.contains('is-open')) {

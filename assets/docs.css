@@ -461,6 +461,26 @@
     border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
 }
 
+.zuno-docs-toc li[data-depth="6"]>.zuno-docs-toc-link {
+    padding-left: 104px;
+    font-size: 12px;
+}
+
+.zuno-docs-toc li[data-depth="6"]>.zuno-docs-toc-link:hover {
+    background: var(--zuno-docs-toc-hover, transparent);
+    color: var(--zuno-primary);
+    border-left-color: var(--zuno-primary);
+    padding-left: 106px;
+}
+
+.zuno-docs-toc li[data-depth="6"]>.zuno-docs-toc-link.is-active,
+.zuno-docs-toc li[data-depth="6"]>.zuno-docs-toc-link.is-active:hover {
+    padding: 10px 14px;
+    background: var(--zuno-docs-toc-active-bg, rgba(var(--zuno-primary-rgb), 0.10));
+    color: var(--zuno-docs-toc-active-text, var(--zuno-text));
+    border-left: 3px solid var(--zuno-docs-toc-active-bar, var(--zuno-primary));
+}
+
 /* ---------- Collapsible sections ---------- */
 .zuno-docs-toc li>ul {
     overflow: hidden;
@@ -1152,7 +1172,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
         font-size: 16px;
     }
 
-    /* ---------- Mobile TOC Trigger ---------- */
+    /* ---------- Mobile TOC (normal document flow) ---------- */
     .zuno-docs-mobile-toc {
         display: block;
         position: sticky;
@@ -1517,6 +1537,19 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     gap: 8px;
     pointer-events: auto;
     will-change: transform;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 200ms ease,
+        visibility 0ms 200ms;
+}
+
+.zuno-docs-nav-rail.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity 200ms ease,
+        visibility 0ms 0ms;
 }
 
 /* Admin-bar centering: shift down by half the bar height */
@@ -1667,7 +1700,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     transition: max-height 250ms ease;
 }
 
-.zuno-docs-nav-expanded > .zuno-docs-nav-sublist {
+.zuno-docs-nav-expanded>.zuno-docs-nav-sublist {
     max-height: 9999px;
 }
 
@@ -1700,28 +1733,28 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     padding-left: 12px;
 }
 
-.zuno-docs-nav-item[data-tag-level="2"] > .zuno-docs-nav-link {
+.zuno-docs-nav-item[data-tag-level="2"]>.zuno-docs-nav-link {
     padding-left: 12px;
     font-weight: 500;
     font-size: 13px;
 }
 
-.zuno-docs-nav-item[data-tag-level="3"] > .zuno-docs-nav-link {
+.zuno-docs-nav-item[data-tag-level="3"]>.zuno-docs-nav-link {
     padding-left: 28px;
     font-size: 12.5px;
 }
 
-.zuno-docs-nav-item[data-tag-level="4"] > .zuno-docs-nav-link {
+.zuno-docs-nav-item[data-tag-level="4"]>.zuno-docs-nav-link {
     padding-left: 44px;
     font-size: 12.5px;
 }
 
-.zuno-docs-nav-item[data-tag-level="5"] > .zuno-docs-nav-link {
+.zuno-docs-nav-item[data-tag-level="5"]>.zuno-docs-nav-link {
     padding-left: 60px;
     font-size: 12px;
 }
 
-.zuno-docs-nav-item[data-tag-level="6"] > .zuno-docs-nav-link {
+.zuno-docs-nav-item[data-tag-level="6"]>.zuno-docs-nav-link {
     padding-left: 76px;
     font-size: 12px;
 }
@@ -1766,13 +1799,13 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     opacity: 0.7;
 }
 
-.zuno-docs-nav-expanded > .zuno-docs-nav-link > .zuno-docs-nav-toggle {
+.zuno-docs-nav-expanded>.zuno-docs-nav-link>.zuno-docs-nav-toggle {
     transform: rotate(90deg);
     opacity: 0.5;
 }
 
 /* ---------- Active state for items ---------- */
-.zuno-docs-nav-item.zuno-docs-nav-active > .zuno-docs-nav-link.is-active {
+.zuno-docs-nav-item.zuno-docs-nav-active>.zuno-docs-nav-link.is-active {
     background: var(--zuno-primary);
     color: #ffffff;
     font-weight: 500;
@@ -1783,31 +1816,10 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     .zuno-docs-nav-sublist {
         transition: none !important;
     }
+
     .zuno-docs-nav-toggle {
         transition: none !important;
     }
-}
-
-/* ===================================================================
- * DOCUMENT BOUNDARY — rail scrolls away at content end
- * =================================================================== */
-.zuno-docs-nav-sentinel {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 1px;
-    height: 1px;
-    pointer-events: none;
-    opacity: 0;
-}
-
-.zuno-docs-nav-rail.is-at-bottom {
-    position: absolute;
-    transform: none;
-}
-
-.zuno-docs-nav-rail.is-at-bottom .zuno-docs-nav-panel {
-    display: none;
 }
 
 /* ===================================================================
@@ -1851,6 +1863,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
         opacity: 0;
         transform: translateY(6px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1858,7 +1871,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 /* Ensure first heading in active chapter has proper scroll-margin */
-.zuno-docs-chapter-active > h1:first-child {
+.zuno-docs-chapter-active>h1:first-child {
     scroll-margin-top: calc(var(--zuno-offset, 0px) + 24px);
 }
 
