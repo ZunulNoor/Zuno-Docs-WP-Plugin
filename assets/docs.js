@@ -4,7 +4,7 @@
     var CFG = window.ZUNODocsConfig || {};
     var DEBOUNCE_MS = 150;
     var MIN_QUERY = 2;
-    var MAX_SUGGESTIONS = 8;
+    var MAX_SUGGESTIONS = 10;
     var ADMIN_BAR_H = 32;
     var _activeWrapper = null;
     var _mobileTocUpdateActive = null;
@@ -40,7 +40,7 @@
     }
 
     function getTopOffset(wrapper) {
-        var offset = 20;
+        var offset = 10;
         if (wrapper && wrapper.classList.contains('zuno-docs-has-admin-bar')) {
             var bar = document.getElementById('wpadminbar');
             if (bar) offset += bar.getBoundingClientRect().height;
@@ -123,7 +123,7 @@
             this._el.innerHTML = '';
             this._noResultsEl.classList.add('zuno-docs-hidden');
 
-            if (!results.length) {
+            if (!results || !results.length) {
                 this._el.classList.add('zuno-docs-hidden');
                 this._noResultsEl.classList.remove('zuno-docs-hidden');
                 return;
@@ -131,21 +131,105 @@
 
             var frag = document.createDocumentFragment();
             results.forEach(function (r) {
+                if (r._separator) {
+                    var sep = document.createElement('div');
+                    sep.className = 'zuno-docs-suggestion-separator';
+                    frag.appendChild(sep);
+                    return;
+                }
+
+                var isLocal = r.chapterTitle !== undefined;
                 var item = document.createElement('button');
                 item.className = 'zuno-docs-suggestion-item';
                 item.setAttribute('role', 'option');
-                item.setAttribute('data-doc-id', r.id);
 
-                var titleHtml = r.title;
-                if (query) {
-                    var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-                    titleHtml = r.title.replace(re, '<mark class="zuno-docs-suggestion-mark">$1</mark>');
+                if (isLocal) {
+                    item.dataset.local = 'true';
+                    item.dataset.headingId = r.headingId || '';
+                    item.dataset.chapterId = r.chapterId || '';
+
+                    var inner = '<span class="zuno-docs-suggestion-chapter">' + escapeHtml(r.chapterTitle) + '</span>';
+
+                    /* Show full heading chain (H2 → H3 → …) when available */
+                    var chain = r.headingChain || [];
+                    var subChain = chain.slice(1); // skip H1 (same as chapterTitle)
+                    if (subChain.length) {
+                        inner += '<span class="zuno-docs-suggestion-heading">' + escapeHtml(subChain.join(' → ')) + '</span>';
+                    } else if (r.heading) {
+                        inner += '<span class="zuno-docs-suggestion-heading">' + escapeHtml(r.heading) + '</span>';
+                    }
+
+                    if (r.snippet) {
+                        inner += '<span class="zuno-docs-suggestion-snippet">' + r.snippet + '</span>';
+                    }
+
+                    item.innerHTML = inner;
+
+                    item.addEventListener('click', this._onSelectLocal.bind(this, r));
+                } else {
+                    item.dataset.docId = r.id;
+
+                    var titleHtml = r.title;
+                    if (query) {
+                        var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                        titleHtml = r.title.replace(re, '<mark class="zuno-docs-suggestion-mark">$1</mark>');
+                    }
+
+                    item.innerHTML = '<span class="zuno-docs-suggestion-title">' + titleHtml + '</span>' +
+                        (r.excerpt ? '<span class="zuno-docs-suggestion-excerpt">' + escapeHtml(r.excerpt.slice(0, 80)) + '</span>' : '');
+
+                    item.addEventListener('click', this._onSelect.bind(this, r));
                 }
 
-                item.innerHTML = '<span class="zuno-docs-suggestion-title">' + titleHtml + '</span>' +
-                    (r.excerpt ? '<span class="zuno-docs-suggestion-excerpt">' + escapeHtml(r.excerpt.slice(0, 80)) + '</span>' : '');
+                frag.appendChild(item);
+            }, this);
 
-                item.addEventListener('click', this._onSelect.bind(this, r));
+            this._el.appendChild(frag);
+            this._el.classList.remove('zuno-docs-hidden');
+        },
+
+        showLocal: function (results, query) {
+            if (!this._el || !this._searchInput) return;
+            this._el.innerHTML = '';
+            this._noResultsEl.classList.add('zuno-docs-hidden');
+
+            if (!results || !results.length) {
+                this._el.classList.add('zuno-docs-hidden');
+                this._noResultsEl.classList.remove('zuno-docs-hidden');
+                return;
+            }
+
+            var frag = document.createDocumentFragment();
+            var self = this;
+
+            results.forEach(function (r) {
+                var item = document.createElement('button');
+                item.className = 'zuno-docs-suggestion-item';
+                item.setAttribute('role', 'option');
+                item.dataset.local = 'true';
+                item.dataset.headingId = r.headingId || '';
+                item.dataset.chapterId = r.chapterId || '';
+
+                var inner = '<span class="zuno-docs-suggestion-chapter">' + escapeHtml(r.chapterTitle) + '</span>';
+
+                var chain = r.headingChain || [];
+                var subChain = chain.slice(1);
+                if (subChain.length) {
+                    inner += '<span class="zuno-docs-suggestion-heading">' + escapeHtml(subChain.join(' → ')) + '</span>';
+                } else if (r.heading) {
+                    inner += '<span class="zuno-docs-suggestion-heading">' + escapeHtml(r.heading) + '</span>';
+                }
+
+                if (r.snippet) {
+                    inner += '<span class="zuno-docs-suggestion-snippet">' + r.snippet + '</span>';
+                }
+
+                item.innerHTML = inner;
+
+                item.addEventListener('click', function () {
+                    self._onSelectLocal(r);
+                });
+
                 frag.appendChild(item);
             }, this);
 
@@ -157,6 +241,35 @@
             if (this._el) {
                 this._el.classList.add('zuno-docs-hidden');
                 this._el.innerHTML = '';
+            }
+        },
+
+        _onSelectLocal: function (result) {
+            this.hide();
+            if (this._searchInput) {
+                this._searchInput.value = result.heading || result.chapterTitle;
+                this._searchInput.blur();
+            }
+
+            var el = result.el;
+            if (!el) return;
+
+            /* Activate chapter without auto-scroll (we scroll to element below) */
+            var currentId = ChapterEngine.getActiveChapterId();
+            if (result.chapterId && result.chapterId !== currentId) {
+                ChapterEngine.activate(result.chapterId, { noScroll: true, silent: true, force: true });
+            }
+
+            /* Scroll to element */
+            var offset = getTopOffset(_activeWrapper);
+            var top = el.getBoundingClientRect().top + window.pageYOffset - offset - 10;
+            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+
+            /* Update active states */
+            if (result.headingId) {
+                NavRail._activate(result.headingId, true);
+                ScrollSpy.activateHeading(result.headingId);
+                if (_mobileTocUpdateActive) _mobileTocUpdateActive(result.headingId);
             }
         },
 
@@ -462,7 +575,7 @@
             }
         },
 
-        filterByQuery: function (query) {
+        filterByQuery: function (query, hasContentMatch) {
             var q = query.trim().toLowerCase();
             if (q.length < MIN_QUERY) {
                 this.resetFilter();
@@ -486,9 +599,15 @@
                 }
             });
 
+            /* Only show "No matching sections found" when BOTH the TOC
+               headings AND the document content have no matches. */
             if (!matchCount) {
                 lis.forEach(function (li) { li.classList.add('zuno-docs-toc-hidden'); });
-                this._showNoResults(q);
+                if (!hasContentMatch) {
+                    this._showNoResults(q);
+                } else {
+                    this._hideNoResults();
+                }
                 return;
             }
 
@@ -640,10 +759,9 @@
             this._activeId = null;
             this.destroy();
 
-            var tree = chapter ? ChapterEngine.getChapterTree(chapter.id) : [];
             var flat = chapter ? chapter.sections : [];
 
-            if (!tree.length) {
+            if (!flat.length) {
                 this._el.style.display = 'none';
                 return;
             }
@@ -652,7 +770,7 @@
             this._topOffset = getTopOffset(this._wrapper);
 
             this._buildIndicators(flat);
-            this._buildPanel(tree, flat);
+            this._buildPanel(flat);
             this._initObserver(flat);
         },
 
@@ -671,31 +789,28 @@
             this._el.appendChild(wrap);
         },
 
-        _renderNode: function (node, container, depth) {
+        _renderFlatItem: function (heading, container) {
             var self = this;
             var li = document.createElement('li');
             li.className = 'zuno-docs-nav-item';
-            li.dataset.tagLevel = node.tagLevel;
-            li.dataset.id = node.id;
-
-            var hasChildren = node.children && node.children.length > 0;
-            var isH2 = node.tagLevel === 2;
+            li.dataset.tagLevel = heading.tagLevel;
+            li.dataset.id = heading.id;
 
             var link = document.createElement('a');
             link.className = 'zuno-docs-nav-link';
-            link.href = '#' + node.id;
-            link.textContent = node.text;
-            link.dataset.target = node.id;
+            link.href = '#' + heading.id;
+            link.textContent = heading.text;
+            link.dataset.target = heading.id;
 
             link.addEventListener('click', function (e) {
                 e.preventDefault();
-                var target = document.getElementById(node.id);
+                var target = document.getElementById(heading.id);
                 if (!target) return;
                 var offset = getTopOffset(self._wrapper);
                 var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
                 window.scrollTo({ top: top, behavior: 'smooth' });
-                self._activate(node.id, true);
-                ScrollSpy.activateHeading(node.id);
+                self._activate(heading.id, true);
+                ScrollSpy.activateHeading(heading.id);
                 self._suppressObserver = true;
                 setTimeout(function () {
                     self._suppressObserver = false;
@@ -704,62 +819,14 @@
 
             li.appendChild(link);
 
-            /* Expand/collapse toggle — only for H2 */
-            if (isH2 && hasChildren) {
-                var toggle = document.createElement('span');
-                toggle.className = 'zuno-docs-nav-toggle';
-                toggle.setAttribute('role', 'button');
-                toggle.setAttribute('tabindex', '0');
-                toggle.setAttribute('aria-label', 'Toggle section');
-                toggle.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1l3 3-3 3"/></svg>';
-
-                toggle.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    var isOpen = li.classList.toggle('zuno-docs-nav-expanded');
-                    toggle.setAttribute('aria-expanded', String(isOpen));
-                    var sublist = qs('.zuno-docs-nav-sublist', li);
-                    if (sublist) {
-                        sublist.style.maxHeight = isOpen ? sublist.scrollHeight + 'px' : '0';
-                    }
-                });
-
-                toggle.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        var isOpen = li.classList.toggle('zuno-docs-nav-expanded');
-                        this.setAttribute('aria-expanded', String(isOpen));
-                        var sublist = qs('.zuno-docs-nav-sublist', li);
-                        if (sublist) {
-                            sublist.style.maxHeight = isOpen ? sublist.scrollHeight + 'px' : '0';
-                        }
-                    }
-                });
-
-                link.insertBefore(toggle, link.firstChild);
-                li.classList.add('zuno-docs-nav-expanded');
-                toggle.setAttribute('aria-expanded', 'true');
-            }
-
-            /* Register flat item for observer + activation */
-            var itemEntry = { id: node.id, el: node.el, link: link, li: li };
+            var itemEntry = { id: heading.id, el: heading.el, link: link, li: li };
             self._items.push(itemEntry);
-            self._itemMap[node.id] = itemEntry;
-
-            /* Render children recursively */
-            if (hasChildren) {
-                var sublist = document.createElement('ul');
-                sublist.className = 'zuno-docs-nav-sublist';
-                node.children.forEach(function (child) {
-                    self._renderNode(child, sublist, depth + 1);
-                });
-                li.appendChild(sublist);
-            }
+            self._itemMap[heading.id] = itemEntry;
 
             container.appendChild(li);
         },
 
-        _buildPanel: function (tree, flat) {
+        _buildPanel: function (flat) {
             var panel = document.createElement('div');
             panel.className = 'zuno-docs-nav-panel';
             panel.setAttribute('role', 'dialog');
@@ -780,9 +847,10 @@
             var list = document.createElement('ul');
             list.className = 'zuno-docs-nav-list';
 
+            /* Render flat list from chapter.sections — no tree, no expand/collapse */
             var self = this;
-            tree.forEach(function (node) {
-                self._renderNode(node, list, 1);
+            flat.forEach(function (heading) {
+                self._renderFlatItem(heading, list);
             });
 
             panel.appendChild(list);
@@ -1072,15 +1140,314 @@
     };
 
     /* ===================================================================
+     * Content Index — indexes ALL readable content with full heading-chain
+     * context (H1→H2→H3…).  Single TreeWalker scan on page load.
+     * Supports partial-word matching via morphological term expansion
+     * (e.g. "delivery" → "deliveries", "manage" → "managing").
+     * =================================================================== */
+    var ContentIndex = {
+        _items: [],
+
+        /* ------------------------------------------------------------------
+         * Build — walks every chapter wrapper ONCE, recording every heading
+         * and content element with its full heading ancestry.
+         * ------------------------------------------------------------------ */
+        build: function () {
+            this._items = [];
+            var chapters = ChapterEngine.getAllChapters();
+            var self = this;
+            var globalPos = 0;
+
+            chapters.forEach(function (ch) {
+                var chapter = ChapterEngine.getChapter(ch.id);
+                if (!chapter || !chapter.wrapper) return;
+
+                var chTitle = chapter.title;
+                var chId = chapter.id;
+                var headingChain = [];
+
+                var walker = document.createTreeWalker(
+                    chapter.wrapper,
+                    NodeFilter.SHOW_ELEMENT,
+                    {
+                        acceptNode: function (node) {
+                            var tag = node.tagName;
+
+                            if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NAV' ||
+                                tag === 'BUTTON' || tag === 'FOOTER' || tag === 'INPUT' ||
+                                tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'ASIDE') {
+                                return NodeFilter.FILTER_REJECT;
+                            }
+
+                            if (/^H[1-6]$/.test(tag)) {
+                                return NodeFilter.FILTER_ACCEPT;
+                            }
+
+                            if (tag === 'P' || tag === 'LI' || tag === 'TD' || tag === 'TH' ||
+                                tag === 'BLOCKQUOTE' || tag === 'FIGCAPTION' || tag === 'DT' ||
+                                tag === 'DD' || tag === 'CAPTION') {
+                                return NodeFilter.FILTER_ACCEPT;
+                            }
+
+                            if (tag === 'DIV' && /callout|note|tip|warning|info|alert|highlight|notice/i.test(node.className || '')) {
+                                return NodeFilter.FILTER_ACCEPT;
+                            }
+
+                            return NodeFilter.FILTER_SKIP;
+                        }
+                    }
+                );
+
+                while (walker.nextNode()) {
+                    var node = walker.currentNode;
+                    var tag = node.tagName;
+                    var text = node.textContent.replace(/\s+/g, ' ').trim();
+                    if (!text) continue;
+
+                    if (/^H[1-6]$/.test(tag)) {
+                        var level = parseInt(tag[1], 10);
+                        while (headingChain.length && headingChain[headingChain.length - 1].level >= level) {
+                            headingChain.pop();
+                        }
+                        headingChain.push({
+                            level: level,
+                            text: text,
+                            id: node.id || ''
+                        });
+
+                        self._items.push({
+                            type: 'heading',
+                            chapterTitle: chTitle,
+                            chapterId: chId,
+                            heading: text,
+                            headingId: node.id || '',
+                            headingChain: headingChain.map(function (h) { return h.text; }),
+                            text: text,
+                            textLower: text.toLowerCase(),
+                            el: node,
+                            pos: globalPos++
+                        });
+                        continue;
+                    }
+
+                    if (text.length < 15) continue;
+
+                    self._items.push({
+                        type: 'content',
+                        chapterTitle: chTitle,
+                        chapterId: chId,
+                        heading: headingChain.length ? headingChain[headingChain.length - 1].text : '',
+                        headingId: headingChain.length ? headingChain[headingChain.length - 1].id : '',
+                        headingChain: headingChain.map(function (h) { return h.text; }),
+                        text: text,
+                        textLower: text.toLowerCase(),
+                        el: node,
+                        pos: globalPos++
+                    });
+                }
+            });
+        },
+
+        /* ------------------------------------------------------------------
+         * _expandTerm — generates morphological variants of a query term
+         * so that e.g. "manage" matches "managing", "management", etc.
+         * ------------------------------------------------------------------ */
+        _expandTerm: function (term) {
+            var ex = [term];
+            var t = term;
+
+            ex.push(t + 's');
+            ex.push(t + 'es');
+
+            if (t.endsWith('e')) {
+                ex.push(t + 'd');           // manage → managed
+                ex.push(t.slice(0, -1) + 'ing');  // manage → managing
+                ex.push(t.slice(0, -1) + 'er');   // manage → manager
+                ex.push(t.slice(0, -1) + 'ion');  // automate → automati… → no, automate → automation
+                ex.push(t.slice(0, -1) + 'tion'); // automate → automation
+                ex.push(t.slice(0, -1) + 'ally'); // automatic → automatically
+            } else {
+                ex.push(t + 'ed');
+                ex.push(t + 'ing');
+                ex.push(t + 'er');
+                ex.push(t + 'tion');
+            }
+
+            if (t.endsWith('y')) {
+                ex.push(t.slice(0, -1) + 'ies');  // delivery → deliveries
+                ex.push(t.slice(0, -1) + 'ied');
+            }
+
+            ex.push(t + 'ment');
+            ex.push(t + 'ly');
+            ex.push(t + 'or');
+
+            return ex.filter(function (v, i, a) { return a.indexOf(v) === i; });
+        },
+
+        /* ------------------------------------------------------------------
+         * _matchCount — how many times any expansion of the query appears
+         * in the lowercased item text.
+         * ------------------------------------------------------------------ */
+        _matchCount: function (textLower, termSets) {
+            var count = 0;
+            termSets.forEach(function (expansions) {
+                expansions.forEach(function (exp) {
+                    var idx = -1;
+                    while ((idx = textLower.indexOf(exp, idx + 1)) !== -1) {
+                        count++;
+                    }
+                });
+            });
+            return count;
+        },
+
+        /* ------------------------------------------------------------------
+         * Search — case-insensitive, partial-word via term expansion,
+         * multi-term (AND), scored, deduplicated.
+         * ------------------------------------------------------------------ */
+        search: function (query) {
+            var q = query.trim();
+            if (q.length < MIN_QUERY) return [];
+
+            var ql = q.toLowerCase();
+            var rawTerms = ql.split(/\s+/).filter(function (t) { return t.length >= 2; });
+            if (!rawTerms.length) return [];
+
+            /* Build expansion sets for each raw term */
+            var termSets = rawTerms.map(function (t) { return this._expandTerm(t); }, this);
+
+            var scored = [];
+            var seen = new Set();
+            var totalItems = this._items.length || 1;
+
+            this._items.forEach(function (item) {
+                var lower = item.textLower;
+                var bestMatch = null; // { pos, len }
+
+                var allMatch = true;
+                termSets.forEach(function (expansions) {
+                    var termMatched = false;
+                    expansions.forEach(function (exp) {
+                        var idx = lower.indexOf(exp);
+                        if (idx !== -1) {
+                            termMatched = true;
+                            if (!bestMatch || idx < bestMatch.pos) {
+                                bestMatch = { pos: idx, len: exp.length };
+                            }
+                        }
+                    });
+                    if (!termMatched) allMatch = false;
+                });
+                if (!allMatch || !bestMatch) return;
+
+                /* Deduplicate: chain + text prefix */
+                var chainKey = (item.headingChain || []).join('|');
+                var key = chainKey + '|' + item.text.substring(0, 100);
+                if (seen.has(key)) return;
+                seen.add(key);
+
+                /* ----------------------------------------------------------
+                 * SCORE — heading exact > heading starts > heading contains
+                 *        > content early > content deep.
+                 *        + frequency bonus + position bonus.
+                 * ---------------------------------------------------------- */
+                var score = 0;
+                var isHeading = item.type === 'heading';
+
+                if (isHeading) {
+                    if (lower === ql) score = 100;
+                    else if (lower.indexOf(ql) === 0) score = 92;
+                    else if (bestMatch.pos === 0) score = 82;
+                    else score = 62;
+                } else {
+                    if (bestMatch.pos === 0) score = 50;
+                    else if (bestMatch.pos < 20) score = 40;
+                    else score = 28;
+
+                    /* Conciseness bonus (shorter = more relevant) */
+                    score += Math.max(0, 12 - Math.floor(item.text.length / 80));
+                }
+
+                /* Frequency bonus (up to +6) */
+                var freq = this._matchCount(lower, termSets);
+                if (freq > 1) score += Math.min(freq, 6);
+
+                /* Position bonus (earlier in doc = slightly higher) */
+                score += Math.max(0, 1 - item.pos / totalItems) * 4;
+
+                scored.push({
+                    item: item,
+                    score: score,
+                    matchStart: bestMatch.pos,
+                    matchEnd: bestMatch.pos + bestMatch.len
+                });
+            }, this);
+
+            scored.sort(function (a, b) {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.item.pos - b.item.pos;
+            });
+
+            var self = this;
+            return scored.slice(0, MAX_SUGGESTIONS + 2).map(function (s) {
+                var item = s.item;
+                var snippet = self._buildSnippet(item.text, s.matchStart, s.matchEnd);
+                return {
+                    chapterTitle: item.chapterTitle,
+                    chapterId: item.chapterId,
+                    heading: item.heading,
+                    headingId: item.headingId,
+                    headingChain: item.headingChain,
+                    snippet: snippet,
+                    el: item.el,
+                    type: item.type
+                };
+            });
+        },
+
+        _buildSnippet: function (text, matchStart, matchEnd) {
+            var ctx = 55;
+            var start = Math.max(0, matchStart - ctx);
+            var end = Math.min(text.length, matchEnd + ctx);
+            var prefix = start > 0 ? '…' : '';
+            var suffix = end < text.length ? '…' : '';
+            var before = text.substring(start, matchStart);
+            var matched = text.substring(matchStart, matchEnd);
+            var after = text.substring(matchEnd, end);
+            return prefix + escapeHtml(before) +
+                '<mark class="zuno-docs-suggestion-mark">' +
+                escapeHtml(matched) +
+                '</mark>' +
+                escapeHtml(after) + suffix;
+        },
+
+        clear: function () {
+            this._items = [];
+        }
+    };
+
+    /* ===================================================================
      * Reading Progress Bar — per-chapter
      * =================================================================== */
     function initReadingProgress(wrapEl) {
         var bar = qs('.zuno-docs-progress-bar-fill', wrapEl);
+        var navRail = qs('.zuno-docs-nav-rail', wrapEl);
         if (!bar) return;
 
         var update = function () {
             var pct = ChapterEngine.getActiveChapterScrollPercent();
             bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+
+            if (navRail) {
+                var ch = ChapterEngine.getActiveChapter();
+                var isAtEnd = false;
+                if (ch) {
+                    var totalHeight = ch.wrapper.scrollHeight - window.innerHeight;
+                    isAtEnd = totalHeight > 0 && pct >= 100;
+                }
+                navRail.classList.toggle('zuno-docs-nav-rail--at-bottom', isAtEnd);
+            }
         };
 
         window.addEventListener('scroll', update, { passive: true });
@@ -1271,9 +1638,24 @@
                 return;
             }
 
+            var localResults = ContentIndex.search(q);
+            var hasLocal = localResults && localResults.length > 0;
+
             if (searchData.docs && Object.keys(searchData.docs).length > 0) {
                 var results = SearchEngine.search(q);
-                Suggestions.show(results, q);
+                if (hasLocal) {
+                    /* Combine: show local results first, then cross-doc with a header */
+                    var combined = localResults.slice();
+                    if (results.length) {
+                        combined.push({ _separator: true });
+                        results.forEach(function (r) { combined.push(r); });
+                    }
+                    Suggestions.show(combined, q);
+                } else {
+                    Suggestions.show(results, q);
+                }
+            } else if (hasLocal) {
+                Suggestions.show(localResults, q);
             } else {
                 ajaxSearch(q, function (results) {
                     Suggestions.show(results, q);
@@ -1281,7 +1663,7 @@
             }
 
             ContentSearch.search(q);
-            TocBuilder.filterByQuery(q);
+            TocBuilder.filterByQuery(q, hasLocal);
 
             clear.classList.remove('zuno-docs-hidden');
         }
@@ -1360,13 +1742,13 @@
         fetch(url, {
             headers: { 'X-WP-Nonce': CFG.restNonce || '' }
         })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-            callback(data.results || []);
-        })
-        .catch(function () {
-            callback([]);
-        });
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                callback(data.results || []);
+            })
+            .catch(function () {
+                callback([]);
+            });
     }
 
     /* ===================================================================
@@ -1854,28 +2236,31 @@
         /* 8. Reading progress bar */
         initReadingProgress(wrapEl);
 
-        /* 9. Search */
+        /* 9. Build content index for search suggestions */
+        ContentIndex.build();
+
+        /* 10. Search */
         initSearch(wrapEl);
 
-        /* 10. Navigation */
+        /* 11. Navigation */
         initNavigation(wrapEl);
 
-        /* 11. Admin bar offset */
+        /* 12. Admin bar offset */
         initAdminBarOffset(wrapEl);
 
-        /* 12. Mobile TOC */
+        /* 13. Mobile TOC */
         initMobileToc(wrapEl);
 
-        /* 13. Register chapter change handler BEFORE activating */
+        /* 14. Register chapter change handler BEFORE activating */
         ChapterEngine.onChange(function (chapterId) {
             var ch = ChapterEngine.getChapter(chapterId);
             ScrollSpy.rebuild(ch ? ch.sections : []);
         });
 
-        /* 14. Activate initial chapter (from hash or first) */
+        /* 15. Activate initial chapter (from hash or first) */
         handleInitialHash(wrapEl);
 
-        /* 15. Hash change listener */
+        /* 16. Hash change listener */
         window.addEventListener('hashchange', function () {
             var hash = window.location.hash.slice(1);
             if (hash) {
