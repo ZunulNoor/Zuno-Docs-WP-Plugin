@@ -3,6 +3,7 @@
  * Zuno Docs Engine – Shortcode Handler
  *
  * Uses precomputed doc graph for zero-latency rendering.
+ * The `product` attribute resolves against zuno_doc_category slugs.
  *
  * @package zuno_docs
  */
@@ -30,6 +31,22 @@ function zuno_docs_render_shortcode( $atts ) {
     /* ---------- Load settings early (needed by display toggles + JS config) ---------- */
     $settings = zuno_docs_get_settings();
 
+    /* ---------- Validate category if product attribute is provided ---------- */
+    if ( $product && ! $doc_id ) {
+        $cat_exists = term_exists( $product, 'zuno_doc_category' );
+        if ( ! $cat_exists ) {
+            if ( current_user_can( 'zuno_docs_edit' ) ) {
+                return zuno_docs_error(
+                    sprintf(
+                        __( 'The category "%s" does not exist. Please create it under Zuno Docs → Categories or use a valid category slug.', 'zuno-docs' ),
+                        esc_html( $product )
+                    )
+                );
+            }
+            return '<p>' . esc_html__( 'Documentation is not available.', 'zuno-docs' ) . '</p>';
+        }
+    }
+
     /* ---------- Resolve the doc to display ---------- */
     $page_content = '';
     $page_title   = __( 'Documentation', 'zuno-docs' );
@@ -40,7 +57,7 @@ function zuno_docs_render_shortcode( $atts ) {
             $page_content = apply_filters( 'the_content', $doc_obj->post_content );
             $page_title   = get_the_title( $doc_obj );
             if ( ! $product ) {
-                $terms = wp_get_post_terms( $doc_id, 'zuno_product', array( 'fields' => 'slugs' ) );
+                $terms = wp_get_post_terms( $doc_id, 'zuno_doc_category', array( 'fields' => 'slugs' ) );
                 $product = $terms[0] ?? '';
             }
         }
@@ -130,18 +147,18 @@ function zuno_docs_render_shortcode( $atts ) {
 }
 
 /**
- * Build a lightweight search index for a specific product, optimized for JS.
+ * Build a lightweight search index for a specific category, optimized for JS.
  */
-function zuno_docs_get_product_search_data( $product_slug ) {
+function zuno_docs_get_product_search_data( $category_slug ) {
     $graph = zuno_docs_get_graph();
-    if ( ! isset( $graph['doc_tree'][ $product_slug ] ) ) {
+    if ( ! isset( $graph['doc_tree'][ $category_slug ] ) ) {
         return array(
             'docs'   => array(),
             'tokens' => array(),
         );
     }
 
-    $tree = $graph['doc_tree'][ $product_slug ];
+    $tree = $graph['doc_tree'][ $category_slug ];
     $docs = array();
 
     foreach ( $tree['flat_list'] as $id => $info ) {

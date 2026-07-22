@@ -301,3 +301,113 @@
 .zuno-docs-settings-info .button {
     margin-right: 8px;
 }
+
+/* -----------------------------------------------------------------------
+ * Disabled delete button (last category protection)
+ * --------------------------------------------------------------------- */
+.zuno-docs-btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+/* -----------------------------------------------------------------------
+ * Modal / Popup system
+ * --------------------------------------------------------------------- */
+.zuno-docs-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.zuno-docs-modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.zuno-docs-modal-overlay.is-open .zuno-docs-modal {
+    transform: scale(1) translateY(0);
+}
+
+.zuno-docs-modal {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.08);
+    max-width: 420px;
+    width: calc(100% - 32px);
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: scale(0.92) translateY(8px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* Responsive popup */
+@media (max-width: 480px) {
+    .zuno-docs-modal {
+        max-width: 100%;
+        width: calc(100% - 16px);
+        border-radius: 12px;
+    }
+}
+
+/* -----------------------------------------------------------------------
+ * Deactivation modal — radio button custom styles
+ * --------------------------------------------------------------------- */
+.zuno-docs-deactivate-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #f6f7f7;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    border: 2px solid transparent;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.zuno-docs-deactivate-option:hover {
+    background: #f0f0f1;
+}
+
+.zuno-docs-deactivate-option.is-selected {
+    border-color: #2563EB;
+    background: #eff6ff;
+}
+
+.zuno-docs-deactivate-option input[type="radio"] {
+    margin-top: 3px;
+    accent-color: #2563EB;
+}
+
+.zuno-docs-deactivate-option strong {
+    display: block;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.zuno-docs-deactivate-option span {
+    display: block;
+    font-size: 13px;
+    color: #646970;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .zuno-docs-modal-overlay,
+    .zuno-docs-modal,
+    .zuno-docs-deactivate-option {
+        transition: none !important;
+    }
+}

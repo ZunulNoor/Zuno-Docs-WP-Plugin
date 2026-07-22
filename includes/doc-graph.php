@@ -53,16 +53,15 @@ function zuno_docs_clear_graph_cache() {
     $zuno_docs_graph_cache = null;
 }
 
-function zuno_docs_get_product_graph( $product_slug ) {
+function zuno_docs_get_product_graph( $category_slug ) {
     $graph = zuno_docs_get_graph();
-    if ( is_array( $graph ) && isset( $graph['doc_tree'][ $product_slug ] ) ) {
-        return $graph['doc_tree'][ $product_slug ];
+    if ( is_array( $graph ) && isset( $graph['doc_tree'][ $category_slug ] ) ) {
+        return $graph['doc_tree'][ $category_slug ];
     }
     return array(
-        'product_slug' => $product_slug,
-        'categories'   => array(),
-        'docs'         => array(),
-        'flat_list'    => array(),
+        'category_slug' => $category_slug,
+        'category_name' => '',
+        'flat_list'     => array(),
     );
 }
 
@@ -74,10 +73,9 @@ function zuno_docs_build_graph() {
     // request gets fresh data from the option we're about to update.
     zuno_docs_clear_graph_cache();
 
-    $products = get_terms( array(
-        'taxonomy'   => 'zuno_product',
+    $categories = get_terms( array(
+        'taxonomy'   => 'zuno_doc_category',
         'hide_empty' => false,
-        'fields'     => 'id=>slug',
     ) );
 
     $doc_tree      = array();
@@ -86,11 +84,7 @@ function zuno_docs_build_graph() {
     $category_map  = array();
 
     /* ----- Build category map ----- */
-    $cats = get_terms( array(
-        'taxonomy'   => 'zuno_doc_category',
-        'hide_empty' => false,
-    ) );
-    foreach ( $cats as $cat ) {
+    foreach ( $categories as $cat ) {
         $category_map[ $cat->term_id ] = array(
             'id'       => $cat->term_id,
             'name'     => $cat->name,
@@ -107,8 +101,8 @@ function zuno_docs_build_graph() {
     }
     unset( $cat );
 
-    /* ----- Build per-product doc tree and search index ----- */
-    foreach ( $products as $pid => $slug ) {
+    /* ----- Build per-category doc tree and search index ----- */
+    foreach ( $categories as $cat ) {
         $docs = get_posts( array(
             'post_type'      => 'zuno_doc',
             'post_status'    => 'publish',
@@ -117,19 +111,16 @@ function zuno_docs_build_graph() {
             'order'          => 'ASC',
             'tax_query'      => array(
                 array(
-                    'taxonomy' => 'zuno_product',
+                    'taxonomy' => 'zuno_doc_category',
                     'field'    => 'slug',
-                    'terms'    => $slug,
+                    'terms'    => $cat->slug,
                 ),
             ),
         ) );
 
         $flat_list   = array();
-        $cat_docs    = array();
-        $uncategorized = array();
 
         foreach ( $docs as $doc ) {
-            $doc_cats  = wp_get_post_terms( $doc->ID, 'zuno_doc_category', array( 'fields' => 'ids' ) );
             $order     = (int) get_post_meta( $doc->ID, '_zuno_doc_order', true );
             $headings  = zuno_docs_extract_headings( $doc->post_content );
             $excerpt   = wp_trim_words( wp_strip_all_tags( $doc->post_content ), 30 );
@@ -140,7 +131,9 @@ function zuno_docs_build_graph() {
                 'excerpt'   => $excerpt,
                 'slug'      => $doc->post_name,
                 'order'     => $order,
-                'category'  => $doc_cats[0] ?? 0,
+                'category'  => $cat->term_id,
+                'category_slug' => $cat->slug,
+                'category_name' => $cat->name,
                 'headings'  => $headings,
                 'url'       => add_query_arg( 'zuno_doc', $doc->ID, home_url() ),
             );
@@ -162,47 +155,24 @@ function zuno_docs_build_graph() {
                 $weight = 1;
                 $title_lower = mb_strtolower( $doc->post_title );
                 if ( false !== mb_strpos( $title_lower, $token ) ) {
-                    $weight = 5; // title match — highest priority
+                    $weight = 5;
                 } else {
                     foreach ( $headings as $h ) {
                         if ( false !== mb_strpos( mb_strtolower( $h['text'] ), $token ) ) {
-                            $weight = 3; // heading match
+                            $weight = 3;
                             break;
                         }
                     }
                 }
                 $search_index[ $token ][] = array( 'id' => $doc->ID, 'weight' => $weight );
             }
-
-            /* ----- Organize by category ----- */
-            if ( $doc_cats ) {
-                $cat_id = $doc_cats[0];
-                if ( ! isset( $cat_docs[ $cat_id ] ) ) {
-                    $cat_docs[ $cat_id ] = array();
-                }
-                $cat_docs[ $cat_id ][ $doc->ID ] = $entry;
-            } else {
-                $uncategorized[ $doc->ID ] = $entry;
-            }
         }
 
-        /* ----- Build category tree for this product ----- */
-        $product_cats = array();
-        foreach ( $category_map as $cid => $cinfo ) {
-            if ( isset( $cat_docs[ $cid ] ) ) {
-                $product_cats[ $cid ] = array(
-                    'info' => $cinfo,
-                    'docs' => $cat_docs[ $cid ],
-                );
-            }
-        }
-
-        $doc_tree[ $slug ] = array(
-            'product_slug'  => $slug,
-            'product_name'  => zuno_docs_product_label( $slug ),
-            'categories'    => $product_cats,
-            'uncategorized' => $uncategorized,
-            'flat_list'     => $flat_list,
+        $doc_tree[ $cat->slug ] = array(
+            'category_slug'  => $cat->slug,
+            'category_name'  => $cat->name,
+            'category_id'    => $cat->term_id,
+            'flat_list'      => $flat_list,
         );
     }
 
@@ -218,8 +188,8 @@ function zuno_docs_build_graph() {
     update_option( 'zuno_docs_graph', $graph );
 
     /* ----- Clear Layer 1 transients ----- */
-    foreach ( $products as $pid => $slug ) {
-        delete_transient( 'zuno_docs_query_' . $slug );
+    foreach ( $categories as $cat ) {
+        delete_transient( 'zuno_docs_query_' . $cat->slug );
     }
 
     // Purge external page caches so the frontend renders updated content immediately.
@@ -352,7 +322,7 @@ function zuno_docs_search( $query, $product_slug = '' ) {
     // Filter by product if specified
     if ( $product_slug && ! empty( $final ) ) {
         $final = array_filter( $final, function( $d ) use ( $product_slug ) {
-            return $d['product_slug'] === $product_slug;
+            return isset( $d['product_slug'] ) && $d['product_slug'] === $product_slug;
         } );
         $final = array_values( $final );
     }
@@ -376,7 +346,7 @@ function zuno_docs_get_doc_info( $doc_id, $graph = null ) {
         if ( isset( $tree['flat_list'][ $doc_id ] ) ) {
             $info = $tree['flat_list'][ $doc_id ];
             $info['product_slug'] = $slug;
-            $info['product_name'] = $tree['product_name'];
+            $info['product_name'] = $tree['category_name'];
             return $info;
         }
     }
@@ -433,10 +403,10 @@ function zuno_docs_get_breadcrumbs( $doc_id, $graph = null ) {
     );
 
     if ( ! empty( $info['category'] ) && isset( $graph['category_map'][ $info['category'] ] ) ) {
-        $cat = $graph['category_map'][ $info['category'] ];
+        $cat_info = $graph['category_map'][ $info['category'] ];
         $crumbs[] = array(
-            'label' => $cat['name'],
-            'slug'  => $cat['slug'],
+            'label' => $cat_info['name'],
+            'slug'  => $cat_info['slug'],
         );
     }
 
@@ -451,8 +421,8 @@ function zuno_docs_get_breadcrumbs( $doc_id, $graph = null ) {
 /* -----------------------------------------------------------------------
  * Get adjacent docs for prev/next navigation
  * --------------------------------------------------------------------- */
-function zuno_docs_get_adjacent( $doc_id, $product_slug ) {
-    $tree = zuno_docs_get_product_graph( $product_slug );
+function zuno_docs_get_adjacent( $doc_id, $category_slug ) {
+    $tree = zuno_docs_get_product_graph( $category_slug );
     $list = isset( $tree['flat_list'] ) ? $tree['flat_list'] : array();
 
     if ( empty( $list ) ) {
@@ -475,23 +445,23 @@ function zuno_docs_get_adjacent( $doc_id, $product_slug ) {
 /* -----------------------------------------------------------------------
  * Related articles (same category, excluding current)
  * --------------------------------------------------------------------- */
-function zuno_docs_get_related( $doc_id, $product_slug, $max = 3 ) {
-    $tree   = zuno_docs_get_product_graph( $product_slug );
+function zuno_docs_get_related( $doc_id, $category_slug, $max = 3 ) {
+    $tree   = zuno_docs_get_product_graph( $category_slug );
     $flat   = isset( $tree['flat_list'] ) ? $tree['flat_list'] : array();
     $info   = isset( $flat[ $doc_id ] ) ? $flat[ $doc_id ] : null;
 
-    if ( ! $info || empty( $info['category'] ) ) {
+    if ( ! $info ) {
         return array();
     }
 
-    $cat_id = $info['category'];
+    $cat_id = $info['category'] ?? 0;
     $related = array();
 
     foreach ( $flat as $id => $entry ) {
         if ( $id === $doc_id ) {
             continue;
         }
-        if ( isset( $entry['category'] ) && $entry['category'] === $cat_id ) {
+        if ( $cat_id && isset( $entry['category'] ) && (int) $entry['category'] === (int) $cat_id ) {
             $related[] = $entry;
             if ( count( $related ) >= $max ) {
                 break;

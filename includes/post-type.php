@@ -166,11 +166,29 @@ function zuno_docs_register_product_taxonomy() {
 }
 
 /* -----------------------------------------------------------------------
- * Seed default product terms and categories (called on activation/upgrade)
+ * Seed default terms (called on activation/upgrade)
+ * Creates only ONE default category: "General".
  * --------------------------------------------------------------------- */
 function zuno_docs_seed_default_terms() {
 
-    /* ----- Seed product terms (shipox, express, storfox) ----- */
+    /* ----- Seed default categories: only "General" ----- */
+    $existing_cats = get_terms( array(
+        'taxonomy'   => 'zuno_doc_category',
+        'hide_empty' => false,
+        'fields'     => 'ids',
+    ) );
+
+    if ( empty( $existing_cats ) || is_wp_error( $existing_cats ) ) {
+        if ( ! term_exists( 'general', 'zuno_doc_category' ) ) {
+            wp_insert_term(
+                'General',
+                'zuno_doc_category',
+                array( 'slug' => 'general' )
+            );
+        }
+    }
+
+    /* ----- Seed product terms (shipox, express, storfox) for backward compat ----- */
     $existing_products = get_terms( array(
         'taxonomy'   => 'zuno_product',
         'hide_empty' => false,
@@ -190,25 +208,71 @@ function zuno_docs_seed_default_terms() {
             }
         }
     }
+}
 
-    /* ----- Seed default categories ----- */
-    $existing_cats = get_terms( array(
+/* -----------------------------------------------------------------------
+ * Prevent deletion of the LAST remaining category.
+ * Uses pre_delete_term action (fires BEFORE deletion) to stop the delete.
+ * --------------------------------------------------------------------- */
+add_action( 'pre_delete_term', 'zuno_docs_prevent_delete_last_category', 10, 2 );
+function zuno_docs_prevent_delete_last_category( $term, $taxonomy ) {
+    if ( 'zuno_doc_category' !== $taxonomy ) {
+        return;
+    }
+    if ( ! taxonomy_exists( 'zuno_doc_category' ) ) {
+        return;
+    }
+    $existing = get_terms( array(
         'taxonomy'   => 'zuno_doc_category',
         'hide_empty' => false,
         'fields'     => 'ids',
     ) );
+    if ( is_array( $existing ) && count( $existing ) <= 1 ) {
+        wp_die( esc_html__( 'At least one documentation category is required. Create a new category before deleting the last one.', 'zuno-docs' ) );
+    }
+}
 
-    if ( empty( $existing_cats ) || is_wp_error( $existing_cats ) ) {
-        $defaults = array(
-            'getting-started' => 'Getting Started',
-            'guides'          => 'Guides',
-            'troubleshooting' => 'Troubleshooting',
-        );
+/* -----------------------------------------------------------------------
+ * Hide the Delete action for the last remaining category in admin row actions.
+ * --------------------------------------------------------------------- */
+add_filter( 'zuno_doc_category_row_actions', 'zuno_docs_hide_delete_last_category_action', 10, 2 );
+function zuno_docs_hide_delete_last_category_action( $actions, $term ) {
+    if ( ! taxonomy_exists( 'zuno_doc_category' ) ) {
+        return $actions;
+    }
+    $existing = get_terms( array(
+        'taxonomy'   => 'zuno_doc_category',
+        'hide_empty' => false,
+        'fields'     => 'ids',
+    ) );
+    if ( is_array( $existing ) && count( $existing ) <= 1 && isset( $actions['delete'] ) ) {
+        unset( $actions['delete'] );
+    }
+    return $actions;
+}
 
-        foreach ( $defaults as $slug => $name ) {
-            if ( ! term_exists( $slug, 'zuno_doc_category' ) ) {
-                wp_insert_term( $name, 'zuno_doc_category', array( 'slug' => $slug ) );
-            }
+/* -----------------------------------------------------------------------
+ * Ensure at least one category exists — only when ZERO categories exist
+ * (fresh install or all categories removed via direct DB manipulation).
+ * NEVER recreates a default if other categories exist.
+ * --------------------------------------------------------------------- */
+add_action( 'admin_init', 'zuno_docs_ensure_default_category_exists' );
+function zuno_docs_ensure_default_category_exists() {
+    if ( ! taxonomy_exists( 'zuno_doc_category' ) ) {
+        return;
+    }
+    $existing = get_terms( array(
+        'taxonomy'   => 'zuno_doc_category',
+        'hide_empty' => false,
+        'fields'     => 'ids',
+    ) );
+    if ( empty( $existing ) || is_wp_error( $existing ) ) {
+        if ( ! term_exists( 'general', 'zuno_doc_category' ) ) {
+            wp_insert_term(
+                'General',
+                'zuno_doc_category',
+                array( 'slug' => 'general' )
+            );
         }
     }
 }

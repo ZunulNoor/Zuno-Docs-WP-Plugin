@@ -28,12 +28,15 @@ function zuno_docs_add_meta_box() {
 function zuno_docs_render_meta_box( $post ) {
     wp_nonce_field( 'zuno_docs_save_doc_settings', 'zuno_docs_doc_settings_nonce' );
 
-    /* ---- Get all terms for the two taxonomies ---- */
-    $products   = get_terms( array( 'taxonomy' => 'zuno_product', 'hide_empty' => false ) );
-    $categories = get_terms( array( 'taxonomy' => 'zuno_doc_category', 'hide_empty' => false ) );
+    /* ---- Get all categories ---- */
+    $categories = get_terms( array(
+        'taxonomy'   => 'zuno_doc_category',
+        'hide_empty' => false,
+        'orderby'    => 'name',
+        'order'      => 'ASC',
+    ) );
 
     /* ---- Current values ---- */
-    $current_products   = wp_get_post_terms( $post->ID, 'zuno_product', array( 'fields' => 'ids' ) );
     $current_categories = wp_get_post_terms( $post->ID, 'zuno_doc_category', array( 'fields' => 'ids' ) );
     $current_order      = get_post_meta( $post->ID, '_zuno_doc_order', true );
     ?>
@@ -54,18 +57,6 @@ function zuno_docs_render_meta_box( $post ) {
             width: 100%;
         }
     </style>
-
-    <div class="zuno-docs-mb-field">
-        <label for="zuno-docs-mb-product"><?php esc_html_e( 'Product', 'zuno-docs' ); ?></label>
-        <select id="zuno-docs-mb-product" name="zuno_docs_product">
-            <option value=""><?php esc_html_e( '— Select Product —', 'zuno-docs' ); ?></option>
-            <?php foreach ( $products as $p ) : ?>
-                <option value="<?php echo esc_attr( $p->term_id ); ?>" <?php selected( in_array( $p->term_id, $current_products, true ) ); ?>>
-                    <?php echo esc_html( $p->name ); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
 
     <div class="zuno-docs-mb-field">
         <label for="zuno-docs-mb-category"><?php esc_html_e( 'Category', 'zuno-docs' ); ?></label>
@@ -116,14 +107,6 @@ function zuno_docs_save_meta_box( $post_id ) {
     }
     if ( 'zuno_doc' !== ( $_POST['post_type'] ?? '' ) ) {
         return;
-    }
-
-    /* ---- Save product term ---- */
-    $product_id = (int) ( $_POST['zuno_docs_product'] ?? 0 );
-    if ( $product_id && term_exists( $product_id, 'zuno_product' ) ) {
-        wp_set_object_terms( $post_id, array( $product_id ), 'zuno_product' );
-    } else {
-        wp_set_object_terms( $post_id, array(), 'zuno_product' );
     }
 
     /* ---- Save category term ---- */

@@ -61,6 +61,7 @@ function zuno_docs_admin_settings_page() {
                     <a href="#zuno-docs-tab-highlight"><?php esc_html_e( 'Highlight', 'zuno-docs' ); ?></a>
                     <a href="#zuno-docs-tab-behavior"><?php esc_html_e( 'Behavior', 'zuno-docs' ); ?></a>
                     <a href="#zuno-docs-tab-display"><?php esc_html_e( 'Display', 'zuno-docs' ); ?></a>
+                    <a href="#zuno-docs-tab-advanced"><?php esc_html_e( 'Advanced', 'zuno-docs' ); ?></a>
                 </nav>
 
                 <!-- APPEARANCE -->
@@ -201,8 +202,25 @@ function zuno_docs_admin_settings_page() {
 
                 <!-- TOC COLORS -->
                 <section id="zuno-docs-tab-toc" class="zuno-docs-tab-panel">
-                    <h2><?php esc_html_e( 'TOC Colors', 'zuno-docs' ); ?></h2>
-                    <p class="description"><?php esc_html_e( 'Customize the sidebar table of contents appearance.', 'zuno-docs' ); ?></p>
+                    <h2><?php esc_html_e( 'TOC Settings', 'zuno-docs' ); ?></h2>
+                    <p class="description"><?php esc_html_e( 'Customize the sidebar table of contents appearance and behavior.', 'zuno-docs' ); ?></p>
+
+                    <h3 style="margin-top:24px;"><?php esc_html_e( 'Display Mode', 'zuno-docs' ); ?></h3>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Show Subheadings as Hierarchy', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_toc_hierarchical" value="yes" <?php checked( $settings->get( 'zuno_docs_toc_hierarchical' ), 'yes' ); ?> />
+                                        <?php esc_html_e( 'Display subheadings in a collapsible tree structure (H2 nested under H1, H3 nested under H2). When disabled, headings appear in a flat column with subtle indentation.', 'zuno-docs' ); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <h3 style="margin-top:24px;"><?php esc_html_e( 'Colors', 'zuno-docs' ); ?></h3>
 
                     <table class="form-table">
                         <tr>
@@ -407,6 +425,29 @@ function zuno_docs_admin_settings_page() {
                         </tr>
                     </table>
                 </section>
+
+                <!-- ADVANCED -->
+                <section id="zuno-docs-tab-advanced" class="zuno-docs-tab-panel">
+                    <h2><?php esc_html_e( 'Advanced', 'zuno-docs' ); ?></h2>
+                    <p class="description"><?php esc_html_e( 'Data persistence and advanced plugin behavior.', 'zuno-docs' ); ?></p>
+
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Keep Data After Uninstall', 'zuno-docs' ); ?></th>
+                            <td>
+                                <fieldset>
+                                    <label>
+                                        <input type="checkbox" name="zuno_docs_preserve_data" value="yes" <?php checked( $settings->get( 'zuno_docs_preserve_data' ), 'yes' ); ?> />
+                                        <?php esc_html_e( 'Keep plugin data after uninstall', 'zuno-docs' ); ?>
+                                    </label>
+                                    <p class="description">
+                                        <?php esc_html_e( 'When enabled, uninstalling ZUNO Docs will remove only the plugin files while preserving all documentation, categories, settings, and configuration in the database. Reinstalling the plugin later allows restoring the previous data.', 'zuno-docs' ); ?>
+                                    </p>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>
+                </section>
             </div>
 
             <p class="submit">
@@ -423,7 +464,7 @@ function zuno_docs_admin_settings_page() {
                 <?php esc_html_e( 'The', 'zuno-docs' ); ?>
                 <code>product</code>
                 <?php esc_html_e( 'attribute matches a', 'zuno-docs' ); ?>
-                <code>zuno_product</code>
+                <code>zuno_doc_category</code>
                 <?php esc_html_e( 'term slug. Use', 'zuno-docs' ); ?>
                 <code>doc_id="123"</code>
                 <?php esc_html_e( 'to show a specific doc by ID.', 'zuno-docs' ); ?>
@@ -434,7 +475,6 @@ function zuno_docs_admin_settings_page() {
                 <tr><td><strong><?php esc_html_e( 'Version', 'zuno-docs' ); ?></strong></td><td><?php echo esc_html( ZUNO_DOCS_VERSION ); ?></td></tr>
                 <tr><td><strong><?php esc_html_e( 'Post Type', 'zuno-docs' ); ?></strong></td><td><code>zuno_doc</code></td></tr>
                 <tr><td><strong><?php esc_html_e( 'Categories', 'zuno-docs' ); ?></strong></td><td><code>zuno_doc_category</code></td></tr>
-                <tr><td><strong><?php esc_html_e( 'Products', 'zuno-docs' ); ?></strong></td><td><code>zuno_product</code></td></tr>
                 <tr><td><strong><?php esc_html_e( 'PHP Required', 'zuno-docs' ); ?></strong></td><td>7.4+</td></tr>
             </table>
 
@@ -461,6 +501,16 @@ function zuno_docs_admin_settings_page() {
             </form>
         </div>
     </div>
+
+    <style>
+        .zuno-docs-tab-nav a:hover {
+            color: <?php echo esc_attr( $settings->get( 'zuno_docs_theme_color' ) ); ?>;
+        }
+        .zuno-docs-tab-nav a.zuno-docs-tab-active {
+            color: <?php echo esc_attr( $settings->get( 'zuno_docs_theme_color' ) ); ?>;
+            border-bottom-color: <?php echo esc_attr( $settings->get( 'zuno_docs_theme_color' ) ); ?>;
+        }
+    </style>
 
     <script>
     (function() {

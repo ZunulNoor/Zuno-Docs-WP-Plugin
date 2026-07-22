@@ -67,6 +67,58 @@ function zuno_docs_activate() {
     zuno_docs_register_capabilities();
     update_option( 'zuno_docs_version', ZUNO_DOCS_VERSION );
     flush_rewrite_rules();
+
+    // Set transient for reinstallation detection.
+    if ( zuno_docs_has_previous_data() ) {
+        set_transient( 'zuno_docs_show_reinstall_notice', true, 300 );
+    }
+
+    // Flag for post-activation redirect.
+    set_transient( 'zuno_docs_activation_redirect', true, 30 );
+}
+
+/**
+ * Post-activation redirect.
+ *
+ * Fires on the first admin page load after activation.
+ * Fresh install  -> ZUNO Docs Dashboard
+ * Re-activation  -> ZUNO Docs Dashboard (preserves existing session)
+ */
+add_action( 'admin_init', 'zuno_docs_activation_redirect_handler' );
+function zuno_docs_activation_redirect_handler() {
+    if ( ! get_transient( 'zuno_docs_activation_redirect' ) ) {
+        return;
+    }
+
+    delete_transient( 'zuno_docs_activation_redirect' );
+
+    // Skip if multiple plugins activated at once.
+    if ( is_network_admin() || isset( $_GET['activate-multi'] ) ) {
+        return;
+    }
+
+    wp_safe_redirect( admin_url( 'admin.php?page=zuno-docs' ) );
+    exit;
+}
+
+/**
+ * Check if previous Zuno Docs data exists in the database.
+ */
+function zuno_docs_has_previous_data() {
+    $settings = get_option( 'zuno_docs_settings', array() );
+    if ( is_array( $settings ) && ! empty( $settings ) ) {
+        $defaults = Zuno_Docs_Settings::get_defaults();
+        foreach ( $defaults as $key => $default_val ) {
+            if ( isset( $settings[ $key ] ) && $settings[ $key ] !== $default_val ) {
+                return true;
+            }
+        }
+    }
+    $doc_count = wp_count_posts( 'zuno_doc' );
+    if ( $doc_count && ( ( $doc_count->publish ?? 0 ) > 0 || ( $doc_count->draft ?? 0 ) > 0 ) ) {
+        return true;
+    }
+    return false;
 }
 
 register_deactivation_hook( __FILE__, 'zuno_docs_deactivate' );
@@ -171,6 +223,9 @@ function zuno_docs_version_upgrade() {
         }
     }
 
+    // Migrate zuno_product terms to zuno_doc_category for existing docs.
+    zuno_docs_migrate_products_to_categories();
+
     update_option( 'zuno_docs_version', ZUNO_DOCS_VERSION );
     flush_rewrite_rules();
 }
@@ -243,6 +298,146 @@ function zuno_docs_register_admin_menu() {
 }
 
 /* -----------------------------------------------------------------------
+ * Reinstallation detection — checks for existing data on plugin load
+ * --------------------------------------------------------------------- */
+add_action( 'admin_notices', 'zuno_docs_reinstall_notice' );
+function zuno_docs_reinstall_notice() {
+    if ( ! current_user_can( 'zuno_docs_read' ) ) {
+        return;
+    }
+
+    // Only show if transient was set during activation (lasts 5 minutes).
+    if ( ! get_transient( 'zuno_docs_show_reinstall_notice' ) ) {
+        return;
+    }
+
+    // Only show on Zuno Docs admin pages or plugins page.
+    $screen = get_current_screen();
+    if ( ! $screen ) {
+        return;
+    }
+    $is_zuno_page = $screen && strpos( $screen->id, 'zuno-docs' ) !== false;
+    $is_plugins   = $screen && 'plugins' === $screen->base;
+    if ( ! $is_zuno_page && ! $is_plugins ) {
+        return;
+    }
+
+    if ( ! zuno_docs_has_previous_data() ) {
+        delete_transient( 'zuno_docs_show_reinstall_notice' );
+        return;
+    }
+
+    // Handle actions.
+    $action = isset( $_GET['zuno_docs_reinstall_action'] ) ? sanitize_key( $_GET['zuno_docs_reinstall_action'] ) : '';
+    if ( $action ) {
+        check_admin_referer( 'zuno_docs_reinstall_action' );
+
+        if ( 'fresh' === $action ) {
+            update_option( 'zuno_docs_settings', Zuno_Docs_Settings::get_defaults() );
+            Zuno_Docs_Settings::get_instance()->reload();
+            delete_transient( 'zuno_docs_show_reinstall_notice' );
+            return;
+        }
+
+        if ( 'restore' === $action ) {
+            delete_transient( 'zuno_docs_show_reinstall_notice' );
+            zuno_docs_rebuild_graph();
+            return;
+        }
+    }
+
+    $restore_url = wp_nonce_url(
+        add_query_arg( 'zuno_docs_reinstall_action', 'restore' ),
+        'zuno_docs_reinstall_action'
+    );
+    $fresh_url = wp_nonce_url(
+        add_query_arg( 'zuno_docs_reinstall_action', 'fresh' ),
+        'zuno_docs_reinstall_action'
+    );
+    ?>
+    <div class="notice notice-info is-dismissible zuno-docs-reinstall-notice">
+        <p><strong><?php esc_html_e( 'Zuno Docs Engine', 'zuno-docs' ); ?>:</strong>
+        <?php esc_html_e( 'We found existing ZUNO Docs data from a previous installation.', 'zuno-docs' ); ?></p>
+        <p>
+            <a href="<?php echo esc_url( $restore_url ); ?>" class="button button-primary">
+                <?php esc_html_e( 'Restore Previous Data', 'zuno-docs' ); ?>
+            </a>
+            <a href="<?php echo esc_url( $fresh_url ); ?>" class="button">
+                <?php esc_html_e( 'Start Fresh', 'zuno-docs' ); ?>
+            </a>
+        </p>
+    </div>
+    <?php
+}
+
+/* -----------------------------------------------------------------------
+ * Migrate existing zuno_product terms to zuno_doc_category.
+ * Runs once when upgrading to a version that uses category-based organization.
+ * --------------------------------------------------------------------- */
+function zuno_docs_migrate_products_to_categories() {
+    $done = get_option( 'zuno_docs_migrated_product_cats', false );
+    if ( $done ) {
+        return;
+    }
+
+    // Ensure taxonomies are registered.
+    if ( ! taxonomy_exists( 'zuno_product' ) || ! taxonomy_exists( 'zuno_doc_category' ) ) {
+        return;
+    }
+
+    $docs = get_posts( array(
+        'post_type'      => 'zuno_doc',
+        'post_status'    => 'any',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'tax_query'      => array(
+            array(
+                'taxonomy' => 'zuno_product',
+                'operator' => 'EXISTS',
+            ),
+        ),
+    ) );
+
+    foreach ( $docs as $doc_id ) {
+        // Skip docs that already have a category.
+        $existing_cats = wp_get_post_terms( $doc_id, 'zuno_doc_category', array( 'fields' => 'ids' ) );
+        if ( ! empty( $existing_cats ) ) {
+            continue;
+        }
+
+        // Get first product term.
+        $products = wp_get_post_terms( $doc_id, 'zuno_product', array( 'fields' => 'id=>slug' ) );
+        if ( empty( $products ) || is_wp_error( $products ) ) {
+            continue;
+        }
+
+        $term_id = key( $products );
+        $slug    = reset( $products );
+
+        // Check if a category with this slug exists.
+        $existing_cat = get_term_by( 'slug', $slug, 'zuno_doc_category' );
+        if ( $existing_cat ) {
+            wp_set_object_terms( $doc_id, array( (int) $existing_cat->term_id ), 'zuno_doc_category' );
+        } else {
+            $product_term = get_term( $term_id, 'zuno_product' );
+            if ( $product_term && ! is_wp_error( $product_term ) ) {
+                $new_cat = wp_insert_term(
+                    $product_term->name,
+                    'zuno_doc_category',
+                    array( 'slug' => $slug )
+                );
+                if ( ! is_wp_error( $new_cat ) ) {
+                    wp_set_object_terms( $doc_id, array( (int) $new_cat['term_id'] ), 'zuno_doc_category' );
+                }
+            }
+        }
+    }
+
+    update_option( 'zuno_docs_migrated_product_cats', true );
+    zuno_docs_rebuild_graph();
+}
+
+/* -----------------------------------------------------------------------
  * Register front-end assets (deferred — only enqueued when shortcode fires)
  * --------------------------------------------------------------------- */
 add_action( 'wp_enqueue_scripts', 'zuno_docs_register_assets' );
@@ -278,18 +473,106 @@ function zuno_docs_admin_enqueue( $hook ) {
         array(),
         ZUNO_DOCS_VERSION
     );
+
+    wp_enqueue_script(
+        'zuno-docs-admin',
+        ZUNO_DOCS_ASSETS . 'admin.js',
+        array(),
+        ZUNO_DOCS_VERSION,
+        true
+    );
+
+    wp_localize_script( 'zuno-docs-admin', 'ZUNO_DOCS_ADMIN', array(
+        'themeColor' => zuno_docs_get_settings()['zuno_docs_theme_color'] ?? '#2563EB',
+        'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+        'i18n'       => array(
+            'deactivationTitle' => __( 'Leaving ZUNO Docs?', 'zuno-docs' ),
+            'deactivationDesc'  => __( 'Would you like to keep your documentation and settings for future use?', 'zuno-docs' ),
+            'keepData'          => __( 'Keep my documentation and settings', 'zuno-docs' ),
+            'keepDataDesc'      => __( 'Database will remain intact for future use.', 'zuno-docs' ),
+            'removeData'        => __( 'Remove all plugin data', 'zuno-docs' ),
+            'removeDataDesc'    => __( 'All documentation, categories, and settings will be deleted on uninstall.', 'zuno-docs' ),
+            'cancel'            => __( 'Cancel', 'zuno-docs' ),
+            'deactivate'        => __( 'Deactivate Plugin', 'zuno-docs' ),
+        ),
+    ) );
+}
+
+/**
+ * Enqueue admin JS on plugins page for deactivation flow.
+ */
+add_action( 'admin_enqueue_scripts', 'zuno_docs_plugins_page_enqueue' );
+function zuno_docs_plugins_page_enqueue( $hook ) {
+    if ( 'plugins.php' !== $hook ) {
+        return;
+    }
+
+    wp_enqueue_script(
+        'zuno-docs-admin',
+        ZUNO_DOCS_ASSETS . 'admin.js',
+        array(),
+        ZUNO_DOCS_VERSION,
+        true
+    );
+
+    wp_localize_script( 'zuno-docs-admin', 'ZUNO_DOCS_ADMIN', array(
+        'themeColor'       => zuno_docs_get_settings()['zuno_docs_theme_color'] ?? '#2563EB',
+        'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
+        'deactivationNonce' => wp_create_nonce( 'zuno_docs_deactivation_nonce' ),
+        'i18n'             => array(
+            'deactivationTitle' => __( 'Leaving ZUNO Docs?', 'zuno-docs' ),
+            'deactivationDesc'  => __( 'Would you like to keep your documentation and settings for future use?', 'zuno-docs' ),
+            'keepData'          => __( 'Keep my documentation and settings', 'zuno-docs' ),
+            'keepDataDesc'      => __( 'Database will remain intact for future use.', 'zuno-docs' ),
+            'removeData'        => __( 'Remove all plugin data', 'zuno-docs' ),
+            'removeDataDesc'    => __( 'All documentation, categories, and settings will be deleted on uninstall.', 'zuno-docs' ),
+            'cancel'            => __( 'Cancel', 'zuno-docs' ),
+            'deactivate'        => __( 'Deactivate Plugin', 'zuno-docs' ),
+        ),
+    ) );
+}
+
+/**
+ * AJAX handler: save deactivation preference.
+ */
+add_action( 'wp_ajax_zuno_docs_set_deactivation_pref', 'zuno_docs_ajax_set_deactivation_pref' );
+function zuno_docs_ajax_set_deactivation_pref() {
+    if ( ! current_user_can( 'deactivate_plugins' ) ) {
+        wp_die( '0' );
+    }
+
+    check_ajax_referer( 'zuno_docs_deactivation_nonce', '_wpnonce' );
+
+    $action = isset( $_POST['deactivate_action'] ) ? sanitize_text_field( $_POST['deactivate_action'] ) : 'keep';
+
+    if ( 'remove' === $action ) {
+        update_option( 'zuno_docs_preserve_data', 'no' );
+        $settings = get_option( 'zuno_docs_settings', array() );
+        if ( is_array( $settings ) ) {
+            $settings['zuno_docs_preserve_data'] = 'no';
+            update_option( 'zuno_docs_settings', $settings );
+        }
+    } else {
+        update_option( 'zuno_docs_preserve_data', 'yes' );
+        $settings = get_option( 'zuno_docs_settings', array() );
+        if ( is_array( $settings ) ) {
+            $settings['zuno_docs_preserve_data'] = 'yes';
+            update_option( 'zuno_docs_settings', $settings );
+        }
+    }
+
+    wp_die( '1' );
 }
 
 /* -----------------------------------------------------------------------
- * Helper: get product label
+ * Helper: get category label from slug
  * --------------------------------------------------------------------- */
-function zuno_docs_product_label( $product ) {
-    $labels = array(
-        'shipox'  => 'Shipox',
-        'express' => 'Shipox Express',
-        'storfox' => 'Storfox',
-    );
-    return isset( $labels[ $product ] ) ? $labels[ $product ] : 'Shipox';
+function zuno_docs_product_label( $slug ) {
+    $term = get_term_by( 'slug', $slug, 'zuno_doc_category' );
+    if ( $term && ! is_wp_error( $term ) ) {
+        return $term->name;
+    }
+    return ucfirst( str_replace( array( '-', '_' ), ' ', $slug ) );
 }
 
 /* -----------------------------------------------------------------------
@@ -421,6 +704,7 @@ function zuno_docs_rest_search( $request ) {
         return new WP_REST_Response( array( 'results' => array() ), 200 );
     }
 
+    // Map product param to category slug for search.
     $results = zuno_docs_search( $query, $product );
 
     return new WP_REST_Response( array(

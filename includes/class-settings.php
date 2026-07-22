@@ -75,10 +75,11 @@ class Zuno_Docs_Settings {
             'zuno_docs_google_font' => '',
 
             // Layout
-            'toc_depth'       => 6,
-            'toc_position'    => 'left',
-            'sidebar_width'   => 30,
-            'mobile_toc_position' => 'top',
+            'toc_depth'             => 6,
+            'toc_position'          => 'left',
+            'sidebar_width'         => 30,
+            'mobile_toc_position'   => 'top',
+            'zuno_docs_toc_hierarchical' => 'no',
 
             // TOC Colors
             'toc_bg'           => '#f8f9fb',
@@ -109,6 +110,9 @@ class Zuno_Docs_Settings {
             'zuno_docs_show_categories'      => 'yes',
             'zuno_docs_show_related_articles'  => 'yes',
             'zuno_docs_show_navigation_rail'   => 'yes',
+
+            // Data persistence
+            'zuno_docs_preserve_data'        => 'yes',
         );
     }
 
@@ -131,6 +135,8 @@ class Zuno_Docs_Settings {
             'zuno_docs_show_categories',
             'zuno_docs_show_related_articles',
             'zuno_docs_show_navigation_rail',
+            'zuno_docs_preserve_data',
+            'zuno_docs_toc_hierarchical',
         );
     }
 
@@ -141,12 +147,13 @@ class Zuno_Docs_Settings {
     public static function get_display_settings() {
         $settings = self::get_instance()->all();
         return array(
-            'show_breadcrumbs' => 'yes' === $settings['zuno_docs_show_breadcrumbs'],
-            'show_previous'    => 'yes' === $settings['zuno_docs_show_previous'],
-            'show_next'        => 'yes' === $settings['zuno_docs_show_next'],
-            'show_navigation'  => 'yes' === $settings['zuno_docs_show_navigation'],
-            'show_related'         => 'yes' === $settings['zuno_docs_show_related_articles'],
-            'show_navigation_rail' => 'yes' === $settings['zuno_docs_show_navigation_rail'],
+            'show_breadcrumbs'      => 'yes' === $settings['zuno_docs_show_breadcrumbs'],
+            'show_previous'         => 'yes' === $settings['zuno_docs_show_previous'],
+            'show_next'             => 'yes' === $settings['zuno_docs_show_next'],
+            'show_navigation'       => 'yes' === $settings['zuno_docs_show_navigation'],
+            'show_related'          => 'yes' === $settings['zuno_docs_show_related_articles'],
+            'show_navigation_rail'  => 'yes' === $settings['zuno_docs_show_navigation_rail'],
+            'toc_hierarchical'      => 'yes' === $settings['zuno_docs_toc_hierarchical'],
         );
     }
 

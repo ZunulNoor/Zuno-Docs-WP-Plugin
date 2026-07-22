@@ -17,6 +17,12 @@ if ( defined( 'ZUNO_DOCS_PRESERVE_DATA' ) && ZUNO_DOCS_PRESERVE_DATA ) {
     return;
 }
 
+// Check the plugin's own preserve_data setting.
+$zuno_settings = get_option( 'zuno_docs_settings', array() );
+if ( ! empty( $zuno_settings['zuno_docs_preserve_data'] ) && 'yes' === $zuno_settings['zuno_docs_preserve_data'] ) {
+    return;
+}
+
 /* -----------------------------------------------------------------------
  * Clean up custom role and capabilities
  * --------------------------------------------------------------------- */

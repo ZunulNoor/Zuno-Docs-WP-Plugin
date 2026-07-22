@@ -58,7 +58,7 @@ function zuno_docs_admin_categories_page() {
         }
     }
 
-    // Delete category
+    // Delete category — pre_delete_term filter in post-type.php handles last-category protection
     if ( $can_manage && isset( $_GET['action'], $_GET['cat_id'] ) && 'delete' === $_GET['action'] ) {
         $cat_id = (int) $_GET['cat_id'];
         if ( $cat_id && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'delete_cat_' . $cat_id ) ) {
@@ -155,21 +155,27 @@ function zuno_docs_admin_categories_page() {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ( $categories as $cat ) :
+                            <?php $total_cats = count( $categories ); ?>
+                            <?php foreach ( $categories as $index => $cat ) :
                                 $edit_link   = admin_url( 'admin.php?page=zuno-docs-categories&action=edit&cat_id=' . $cat->term_id );
                                 $delete_link = wp_nonce_url(
                                     admin_url( 'admin.php?page=zuno-docs-categories&action=delete&cat_id=' . $cat->term_id ),
                                     'delete_cat_' . $cat->term_id
                                 );
+                                $is_last = $total_cats <= 1;
                             ?>
                             <tr>
                                 <td><strong><?php echo esc_html( $cat->name ); ?></strong></td>
                                 <td><code><?php echo esc_html( $cat->slug ); ?></code></td>
                                 <td><?php echo esc_html( $cat->count ); ?></td>
                                 <?php if ( $can_manage ) : ?>
-                                <td>
+                                <td class="zuno-docs-actions">
                                     <a href="<?php echo esc_url( $edit_link ); ?>" class="button button-small"><?php esc_html_e( 'Edit', 'zuno-docs' ); ?></a>
-                                    <a href="<?php echo esc_url( $delete_link ); ?>" class="button button-small button-link-delete" onclick="return confirm('<?php esc_attr_e( 'Delete this category?', 'zuno-docs' ); ?>');"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></a>
+                                    <?php if ( $is_last ) : ?>
+                                        <span class="button button-small button-link-delete zuno-docs-btn-disabled" title="<?php esc_attr_e( 'At least one documentation category is required.', 'zuno-docs' ); ?>"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></span>
+                                    <?php else : ?>
+                                        <a href="<?php echo esc_url( $delete_link ); ?>" class="button button-small button-link-delete zuno-docs-delete-cat" data-confirm="<?php esc_attr_e( 'Delete this category? This action cannot be undone.', 'zuno-docs' ); ?>"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></a>
+                                    <?php endif; ?>
                                 </td>
                                 <?php endif; ?>
                             </tr>

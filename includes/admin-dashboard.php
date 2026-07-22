@@ -25,7 +25,6 @@ function zuno_docs_admin_dashboard() {
     }
 
     /* ----- Filter values ----- */
-    $filter_product  = isset( $_GET['zuno_product'] ) ? sanitize_key( $_GET['zuno_product'] ) : '';
     $filter_category = isset( $_GET['zuno_category'] ) ? (int) $_GET['zuno_category'] : 0;
 
     /* ----- Build query args ----- */
@@ -37,26 +36,14 @@ function zuno_docs_admin_dashboard() {
         'order'          => 'DESC',
     );
 
-    $tax_query = array( 'relation' => 'AND' );
-
-    if ( $filter_product ) {
-        $tax_query[] = array(
-            'taxonomy' => 'zuno_product',
-            'field'    => 'slug',
-            'terms'    => $filter_product,
-        );
-    }
-
     if ( $filter_category ) {
-        $tax_query[] = array(
-            'taxonomy' => 'zuno_doc_category',
-            'field'    => 'term_id',
-            'terms'    => $filter_category,
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'zuno_doc_category',
+                'field'    => 'term_id',
+                'terms'    => $filter_category,
+            ),
         );
-    }
-
-    if ( count( $tax_query ) > 1 ) {
-        $args['tax_query'] = $tax_query;
     }
 
     $query = new WP_Query( $args );
@@ -84,9 +71,13 @@ function zuno_docs_admin_dashboard() {
         }
     }
 
-    /* ----- Taxonomy terms for filter dropdowns ----- */
-    $products   = get_terms( array( 'taxonomy' => 'zuno_product', 'hide_empty' => false ) );
-    $categories = get_terms( array( 'taxonomy' => 'zuno_doc_category', 'hide_empty' => false ) );
+    /* ----- Taxonomy terms for filter dropdown ----- */
+    $categories = get_terms( array(
+        'taxonomy'   => 'zuno_doc_category',
+        'hide_empty' => false,
+        'orderby'    => 'name',
+        'order'      => 'ASC',
+    ) );
     ?>
     <div class="wrap zuno-docs-dashboard">
         <h1>
@@ -123,18 +114,6 @@ function zuno_docs_admin_dashboard() {
             <form method="get" action="">
                 <input type="hidden" name="page" value="zuno-docs" />
 
-                <label for="zuno-docs-filter-product" class="zuno-docs-sr-admin">
-                    <?php esc_html_e( 'Filter by product', 'zuno-docs' ); ?>
-                </label>
-                <select id="zuno-docs-filter-product" name="zuno_product">
-                    <option value=""><?php esc_html_e( 'All Products', 'zuno-docs' ); ?></option>
-                    <?php foreach ( $products as $p ) : ?>
-                        <option value="<?php echo esc_attr( $p->slug ); ?>" <?php selected( $filter_product, $p->slug ); ?>>
-                            <?php echo esc_html( $p->name ); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-
                 <label for="zuno-docs-filter-category" class="zuno-docs-sr-admin">
                     <?php esc_html_e( 'Filter by category', 'zuno-docs' ); ?>
                 </label>
@@ -149,7 +128,7 @@ function zuno_docs_admin_dashboard() {
 
                 <button type="submit" class="button"><?php esc_html_e( 'Filter', 'zuno-docs' ); ?></button>
 
-                <?php if ( $filter_product || $filter_category ) : ?>
+                <?php if ( $filter_category ) : ?>
                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=zuno-docs' ) ); ?>" class="button">
                         <?php esc_html_e( 'Clear', 'zuno-docs' ); ?>
                     </a>
@@ -171,7 +150,6 @@ function zuno_docs_admin_dashboard() {
                     <thead>
                         <tr>
                             <th scope="col" class="column-title"><?php esc_html_e( 'Title', 'zuno-docs' ); ?></th>
-                            <th scope="col"><?php esc_html_e( 'Product', 'zuno-docs' ); ?></th>
                             <th scope="col"><?php esc_html_e( 'Category', 'zuno-docs' ); ?></th>
                             <th scope="col"><?php esc_html_e( 'Status', 'zuno-docs' ); ?></th>
                             <th scope="col"><?php esc_html_e( 'Order', 'zuno-docs' ); ?></th>
@@ -181,7 +159,6 @@ function zuno_docs_admin_dashboard() {
                     </thead>
                     <tbody>
                         <?php foreach ( $docs as $doc ) :
-                            $doc_products = wp_get_post_terms( $doc->ID, 'zuno_product', array( 'fields' => 'names' ) );
                             $doc_cats     = wp_get_post_terms( $doc->ID, 'zuno_doc_category', array( 'fields' => 'names' ) );
                             $doc_order    = get_post_meta( $doc->ID, '_zuno_doc_order', true );
                             $status_label = 'publish' === $doc->post_status ? __( 'Published', 'zuno-docs' ) : ucfirst( $doc->post_status );
@@ -197,7 +174,6 @@ function zuno_docs_admin_dashboard() {
                             <td class="column-title">
                                 <strong><a href="<?php echo esc_url( $edit_link ); ?>"><?php echo esc_html( $doc->post_title ); ?></a></strong>
                             </td>
-                            <td><?php echo esc_html( $doc_products ? implode( ', ', $doc_products ) : '—' ); ?></td>
                             <td><?php echo esc_html( $doc_cats ? implode( ', ', $doc_cats ) : '—' ); ?></td>
                             <td><span class="zuno-docs-status-badge <?php echo esc_attr( $status_class ); ?>"><?php echo esc_html( $status_label ); ?></span></td>
                             <td><?php echo esc_html( $doc_order ?: '—' ); ?></td>
@@ -206,7 +182,7 @@ function zuno_docs_admin_dashboard() {
                                 <a href="<?php echo esc_url( $edit_link ); ?>" class="button button-small"><?php esc_html_e( 'Edit', 'zuno-docs' ); ?></a>
                                 <a href="<?php echo esc_url( $view_link ); ?>" class="button button-small" target="_blank"><?php esc_html_e( 'View', 'zuno-docs' ); ?></a>
                                 <?php if ( current_user_can( 'zuno_docs_delete' ) ) : ?>
-                                    <a href="<?php echo esc_url( $delete_link ); ?>" class="button button-small button-link-delete" onclick="return confirm('<?php esc_attr_e( 'Delete this doc permanently?', 'zuno-docs' ); ?>');"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></a>
+                                    <a href="<?php echo esc_url( $delete_link ); ?>" class="button button-small button-link-delete zuno-docs-delete-doc" data-confirm="<?php esc_attr_e( 'Delete this doc permanently?', 'zuno-docs' ); ?>"><?php esc_html_e( 'Delete', 'zuno-docs' ); ?></a>
                                 <?php endif; ?>
                             </td>
                         </tr>
