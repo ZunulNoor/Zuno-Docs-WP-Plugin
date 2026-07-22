@@ -1,6 +1,6 @@
 # Zuno Docs Engine
 
-**Version:** 2.1.0  
+**Version:** 2.2.0  
 **Author:** Zun Ul Noor  
 **URI:** [https://zunulnoor.vercel.app](https://zunulnoor.vercel.app)  
 **License:** GPL-2.0+  
@@ -10,36 +10,38 @@
 
 ---
 
-A standalone documentation CMS for WordPress that lets you create, manage, and display product documentation — powered by custom post types, taxonomies, client-side search, a sticky table of contents, and a fully themeable frontend. No page builders, no jQuery, no external dependencies.
+A standalone documentation CMS for WordPress that lets you create, manage, and display product documentation — powered by custom post types, taxonomies, client-side search, a sticky table of contents, a ChatGPT-style navigation rail, and a fully themeable frontend. No page builders, no jQuery, no external dependencies.
 
 ---
 
 ## Features
 
 - **Custom Post Type** (`zuno_doc`) — dedicated docs content type, independent of WordPress Pages
-- **Product Taxonomies** (`zuno_product`) — tag docs by product (e.g., Shipox, Storfox)
-- **Category Taxonomies** (`zuno_doc_category`) — organize docs into sections (Getting Started, Guides, Troubleshooting)
+- **Category Taxonomies** (`zuno_doc_category`) — organize docs into sections (Getting Started, Guides, Troubleshooting) with default "General" category protection
 - **Precomputed Doc Graph** — hierarchical tree + inverted search index cached in `wp_options`, zero-latency frontend
-- **Client-Side Search** — instant suggestions, in-content highlighting with TreeWalker, TOC filtering, AJAX fallback
+- **Client-Side Search** — instant suggestions with keyboard navigation, in-content highlighting via TreeWalker, TOC filtering, REST API fallback for large indexes
 - **Hierarchical Table of Contents** — auto-generated from heading tags, collapsible sections, scroll-spy with IntersectionObserver
-- **Admin Dashboard** — stats cards, product/category filters, full doc table with Edit/View/Delete
-- **Categories CRUD** — add, edit, delete categories with nonce verification
-- **Tabbed Settings Panel** — appearance, typography, layout, TOC colors, highlight, behavior, display toggles
-- **Meta Box** — assign Product, Category, and Order directly in the Gutenberg/post editor
-- **Dynamic CSS** — settings-driven CSS variables injected inline, no rebuild required
-- **Reading Progress Bar** — optional progress indicator at the top of each doc
-- **Breadcrumbs** — automatic product > category > doc navigation
-- **Prev / Next Navigation** — sequential doc navigation through the product tree
+- **Navigation Rail** — fixed-position floating rail with group indicators, hover preview panel, and dynamic content-boundary visibility (never overlaps footer)
+- **Admin Dashboard** — stats cards, category filter, paginated doc table with Edit/View/Delete
+- **Categories CRUD** — add, rename, delete categories with nonce verification and default category protection
+- **Tabbed Settings Panel** — 8 tabs: appearance, typography, layout, TOC colors, highlight, behavior, display, advanced
+- **Meta Box** — assign category and custom order directly in the Gutenberg/post editor
+- **Dynamic CSS** — settings-driven CSS custom properties injected inline, no rebuild required
+- **Reading Progress Bar** — optional per-chapter progress indicator at the top of each doc
+- **Breadcrumbs** — automatic category > doc navigation
+- **Prev / Next Navigation** — sequential doc navigation through the category tree
 - **Related Articles** — auto-suggested same-category docs
+- **Chapter Engine** — H1-based chapter management with smooth transitions, URL hash updates, and independent scroll tracking
 - **REST API** — `GET /wp-json/zuno-docs/v1/search?q=term&product=slug`
-- **Centralized Settings** — singleton service class with lazy loading, backward compatible
+- **Centralized Settings** — singleton service class with lazy loading, per-key sanitization, backward compatible
 - **Version Upgrade Support** — automated migration callbacks (1.0.0 → 2.0.0+)
-- **Uninstall Cleanup** — full data removal on plugin deletion, with `ZUNO_DOCS_PRESERVE_DATA` constant
+- **Uninstall Cleanup** — full data removal on plugin deletion, with `ZUNO_DOCS_PRESERVE_DATA` constant or settings toggle
+- **Deactivation Flow** — branded modal with Keep Data / Remove All Data options
 - **Full CSS Namespace Isolation** — all styles scoped under `.zuno-docs`, zero conflicts with themes or page builders
-- **Premium Mobile TOC** — floating sticky card with overlay panel, backdrop blur, body scroll lock, smooth animations
+- **Mobile TOC** — floating trigger card with overlay panel, backdrop blur, body scroll lock, independent scrolling, smooth animations
 - **Google Font Support** — choose between theme-inherited font or any Google Font via settings
-- **Mobile Responsive** — collapsible sidebar drawer, full-width content on smaller screens
-- **Accessibility** — ARIA labels, keyboard-navigable search, focus management, screen reader support
+- **Mobile Responsive** — collapsible sidebar drawer, full-width content on smaller screens, adaptive nav rail
+- **Accessibility** — ARIA labels, keyboard-navigable search and modals, focus management, reduced-motion support, screen reader compatibility
 - **No Dependencies** — zero jQuery, zero external libraries, zero page builders
 
 ---
@@ -115,6 +117,19 @@ By default, all plugin data is removed on deletion. To preserve data, define `de
 
 ## Changelog
 
+### 2.2.0
+- **Navigation Rail** — new ChatGPT-style side rail with dot indicators, hover preview panel, smooth slide transitions, dynamic content-boundary detection (never overlaps footer/related content)
+- **Activation Redirect** — automatic redirect to Zuno Docs Dashboard after plugin activation
+- **Deactivation Flow** — branded modal dialog with Keep Data / Remove All Data options and AJAX preference storage
+- **Admin Modal System** — custom `ZunoDocsPopup` with alert, confirm, and deactivation flows, replaces native `confirm()` across admin
+- **Custom Capabilities** — new `zuno_docs_editor` role, fine-grained `zuno_docs_create`/`zuno_docs_read`/`zuno_docs_edit`/`zuno_docs_delete`/`zuno_docs_manage_settings` caps
+- **Security Hardening** — stored XSS fix in search suggestions (`escapeHtml` before regex), nonce sanitization with `sanitize_key()`, POST filtering via `array_intersect_key()`, output escaping with `wp_kses_post()`
+- **Memory Leak Fixes** — resolved keydown listener accumulation in admin modals, ChapterEngine callback arrays reset on init
+- **Performance** — N+1 database query elimination in graph builder (single `WP_Query` instead of per-category queries), dashboard pagination (20 per page), `wp_count_posts()` for stats
+- **Dashboard Pagination** — doc table now paginated with `paginate_links()`, safe for thousands of docs
+- **Dead Code Removal** — removed unused `get_default()` method, empty `doc_index` field from graph, orphaned transient cleanup
+- **CSS Slide Transitions** — nav rail hidden state uses `translateX(10px)` with smooth `transform 300ms` transition
+
 ### 2.1.0
 - **Full CSS Namespace Isolation** — every selector prefixed under `.zuno-docs`, no leakage to/from themes or plugins
 - **JavaScript Isolation** — all DOM queries scoped to plugin wrapper, delegated events, no globals
@@ -168,25 +183,27 @@ The plugin follows WordPress coding standards and is compatible with PHP 7.4+.
 ```
 zuno-docs-engine/
 ├── assets/
-│   ├── admin.css              # Admin dashboard & settings styles
-│   ├── docs.css               # Frontend documentation styles
-│   └── docs.js                # Frontend JS (TOC, search, scroll spy, mobile)
+│   ├── admin.css              # Admin dashboard, settings, modal, & deactivation styles
+│   ├── admin.js               # Admin JS (modal popup, delete confirmations, deactivation flow)
+│   ├── docs.css               # Frontend documentation styles (21+ sections, responsive)
+│   └── docs.js                # Frontend JS (ChapterEngine, TocBuilder, ScrollSpy, NavRail, Search)
 ├── includes/
-│   ├── class-settings.php     # Centralized settings service (Zuno_Docs_Settings)
-│   ├── post-type.php          # CPT & taxonomy registration
-│   ├── doc-graph.php          # Precomputed doc graph builder & search index
-│   ├── shortcode.php          # Shortcode handler, JS config, rendering
-│   ├── admin-dashboard.php    # Dashboard with stats & doc table
-│   ├── admin-new-doc.php      # Add New Doc page
-│   ├── admin-categories.php   # Categories CRUD admin page
-│   ├── admin-settings.php     # Settings panel
-│   └── admin-meta-box.php     # Doc Settings meta box
+│   ├── class-settings.php     # Centralized settings service (Zuno_Docs_Settings singleton)
+│   ├── class-capabilities.php # Custom roles and capability registration
+│   ├── post-type.php          # CPT & taxonomy registration, default category protection
+│   ├── doc-graph.php          # Precomputed doc graph builder & inverted search index
+│   ├── shortcode.php          # Shortcode handler, JS config localization, layout rendering
+│   ├── admin-dashboard.php    # Dashboard with stats cards, category filter, paginated doc table
+│   ├── admin-new-doc.php      # Add New Doc quick-create form
+│   ├── admin-categories.php   # Categories CRUD admin page with delete protection
+│   ├── admin-settings.php     # Tabbed settings panel (8 tabs), cache rebuild
+│   └── admin-meta-box.php     # Doc Settings meta box for Gutenberg editor
 ├── templates/
-│   └── layout.php             # Frontend two-column layout template
-├── uninstall.php              # Full data cleanup on plugin deletion
+│   └── layout.php             # Frontend two-column layout template with dynamic CSS vars
+├── uninstall.php              # Full data cleanup on plugin deletion (preserve-aware)
 ├── readme.txt                 # WordPress.org plugin readme
 ├── README.md
-└── zuno-docs-engine.php       # Main plugin bootstrap
+└── zuno-docs-engine.php       # Main plugin bootstrap, activation, REST API, AJAX, helpers
 ```
 
 ---
