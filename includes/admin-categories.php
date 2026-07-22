@@ -83,7 +83,7 @@ function zuno_docs_admin_categories_page() {
     ?>
     <div class="wrap zuno-docs-categories">
         <h1><?php esc_html_e( 'Doc Categories', 'zuno-docs' ); ?></h1>
-        <?php echo $message; ?>
+        <?php echo wp_kses_post( $message ); ?>
 
         <div class="zuno-docs-cats-layout">
             <?php if ( $can_manage ) : ?>

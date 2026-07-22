@@ -4,7 +4,7 @@
  * Plugin URI:   https://github.com/ZunulNoor/Zuno-Docs-WP-Plugin
  * Description:  Full documentation CMS with custom post types, categories, TOC,
  *               client-side search, and multi-product support.
- * Version:      2.1.0
+ * Version:      2.2.0
  * Author:       Zun Ul Noor
  * Author URI:   https://zunulnoor.vercel.app
  * Text Domain:  zuno-docs
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /* -----------------------------------------------------------------------
  * Constants
  * --------------------------------------------------------------------- */
-define( 'ZUNO_DOCS_VERSION',     '2.1.0' );
+define( 'ZUNO_DOCS_VERSION',     '2.2.0' );
 define( 'ZUNO_DOCS_DIR',         plugin_dir_path( __FILE__ ) );
 define( 'ZUNO_DOCS_URL',         plugin_dir_url( __FILE__ ) );
 define( 'ZUNO_DOCS_ASSETS',      ZUNO_DOCS_URL . 'assets/' );
