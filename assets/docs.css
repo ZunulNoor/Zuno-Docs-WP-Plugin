@@ -519,6 +519,24 @@
     max-height: 9999px;
 }
 
+/* ---------- Flat mode: accordion collapse (only active H1 open) ---------- */
+.zuno-docs-toc-mode-flat li>ul {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--zuno-transition-slow, 250ms) ease;
+}
+
+.zuno-docs-toc-mode-flat li.is-open>ul {
+    max-height: 9999px;
+    overflow: visible;
+} 
+
+/* Flat mode: H3 items use data-depth="2" so they share the same pad-left as H2 */
+.zuno-docs-toc-mode-flat li[data-depth="2"]>.zuno-docs-toc-link {
+    padding-left: 24px;
+    font-size: 14px;
+}
+
 /* ---------- TOC toggle chevron ---------- */
 .zuno-docs-toc-toggle {
     flex-shrink: 0;
@@ -1554,7 +1572,7 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 .zuno-docs-nav-rail {
     position: fixed;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) translateX(10px);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -1568,14 +1586,17 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     visibility: hidden;
     transition:
         opacity 200ms ease,
+        transform 300ms ease,
         visibility 0ms 200ms;
 }
 
 .zuno-docs-nav-rail.is-visible {
     opacity: 1;
     visibility: visible;
+    transform: translateY(-50%) translateX(0);
     transition:
         opacity 200ms ease,
+        transform 300ms ease,
         visibility 0ms 0ms;
 }
 
@@ -1666,8 +1687,9 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
     transform-origin: left center;
 }
 
-/* Show panel on hover over rail OR panel itself */
-.zuno-docs-nav-rail:hover .zuno-docs-nav-panel {
+/* Show panel on hover over the rail itself */
+.zuno-docs-nav-rail:hover .zuno-docs-nav-panel,
+.zuno-docs-nav-rail:hover .zuno-docs-nav-panel:hover {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -1848,14 +1870,16 @@ li.is-open>.zuno-docs-toc-link .zuno-docs-toc-toggle {
 }
 
 /* ===================================================================
- * NavRail — boundary (synced with Reading Progress, prevents footer overlap)
+ * NavRail — hidden when content does not extend below viewport
  * =================================================================== */
 .zuno-docs-nav-rail--at-bottom {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
+    transform: translateY(-50%) translateX(10px) !important;
     transition:
         opacity 200ms ease,
+        transform 300ms ease,
         visibility 0ms 200ms !important;
 }
 
