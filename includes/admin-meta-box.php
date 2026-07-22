@@ -96,7 +96,7 @@ function zuno_docs_save_meta_box( $post_id ) {
     if ( ! isset( $_POST['zuno_docs_doc_settings_nonce'] ) ) {
         return;
     }
-    if ( ! wp_verify_nonce( $_POST['zuno_docs_doc_settings_nonce'], 'zuno_docs_save_doc_settings' ) ) {
+    if ( ! wp_verify_nonce( wp_unslash( $_POST['zuno_docs_doc_settings_nonce'] ), 'zuno_docs_save_doc_settings' ) ) {
         return;
     }
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -105,12 +105,12 @@ function zuno_docs_save_meta_box( $post_id ) {
     if ( ! current_user_can( 'edit_post', $post_id ) ) {
         return;
     }
-    if ( 'zuno_doc' !== ( $_POST['post_type'] ?? '' ) ) {
+    if ( 'zuno_doc' !== ( wp_unslash( $_POST['post_type'] ?? '' ) ) ) {
         return;
     }
 
     /* ---- Save category term ---- */
-    $category_id = (int) ( $_POST['zuno_docs_category'] ?? 0 );
+    $category_id = (int) ( wp_unslash( $_POST['zuno_docs_category'] ?? 0 ) );
     if ( $category_id && term_exists( $category_id, 'zuno_doc_category' ) ) {
         wp_set_object_terms( $post_id, array( $category_id ), 'zuno_doc_category' );
     } else {
@@ -118,6 +118,6 @@ function zuno_docs_save_meta_box( $post_id ) {
     }
 
     /* ---- Save order ---- */
-    $order = (int) ( $_POST['zuno_docs_order'] ?? 0 );
+    $order = (int) ( wp_unslash( $_POST['zuno_docs_order'] ?? 0 ) );
     update_post_meta( $post_id, '_zuno_doc_order', max( 0, $order ) );
 }

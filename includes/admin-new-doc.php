@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 function zuno_docs_admin_new_doc_page() {
     if ( ! current_user_can( 'zuno_docs_create' ) ) {
-        wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
+                wp_die( esc_html__( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
     }
 
     $categories = get_terms( array(
@@ -20,13 +20,13 @@ function zuno_docs_admin_new_doc_page() {
     /* ----- Handle form submission ----- */
     $saved = false;
     if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['zuno_docs_new_doc_nonce'] ) ) {
-        if ( wp_verify_nonce( $_POST['zuno_docs_new_doc_nonce'], 'zuno_docs_new_doc' ) ) {
+        if ( wp_verify_nonce( wp_unslash( $_POST['zuno_docs_new_doc_nonce'] ), 'zuno_docs_new_doc' ) ) {
             if ( ! current_user_can( 'zuno_docs_publish' ) ) {
-                wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
             }
-            $title   = sanitize_text_field( $_POST['zuno_docs_title'] ?? '' );
-            $content = wp_kses_post( $_POST['zuno_docs_content'] ?? '' );
-            $cat_id  = (int) ( $_POST['zuno_docs_category'] ?? 0 );
+            $title   = sanitize_text_field( wp_unslash( $_POST['zuno_docs_title'] ?? '' ) );
+            $content = wp_kses_post( wp_unslash( $_POST['zuno_docs_content'] ?? '' ) );
+            $cat_id  = (int) ( wp_unslash( $_POST['zuno_docs_category'] ?? 0 ) );
 
             if ( $title ) {
                 $post_id = wp_insert_post( array(

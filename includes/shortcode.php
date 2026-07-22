@@ -38,6 +38,7 @@ function zuno_docs_render_shortcode( $atts ) {
             if ( current_user_can( 'zuno_docs_edit' ) ) {
                 return zuno_docs_error(
                     sprintf(
+                        /* translators: %s: category slug */
                         __( 'The category "%s" does not exist. Please create it under Zuno Docs → Categories or use a valid category slug.', 'zuno-docs-engine' ),
                         esc_html( $product )
                     )
@@ -54,7 +55,7 @@ function zuno_docs_render_shortcode( $atts ) {
     if ( $doc_id ) {
         $doc_obj = get_post( $doc_id );
         if ( $doc_obj && 'publish' === $doc_obj->post_status && 'zuno_doc' === $doc_obj->post_type ) {
-            $page_content = apply_filters( 'the_content', $doc_obj->post_content );
+            $page_content = apply_filters( 'the_content', $doc_obj->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
             $page_title   = get_the_title( $doc_obj );
             if ( ! $product ) {
                 $terms = wp_get_post_terms( $doc_id, 'zuno_doc_category', array( 'fields' => 'slugs' ) );
@@ -68,7 +69,7 @@ function zuno_docs_render_shortcode( $atts ) {
             $first = reset( $list );
             $doc_obj = get_post( $first['id'] );
             if ( $doc_obj && 'publish' === $doc_obj->post_status ) {
-                $page_content = apply_filters( 'the_content', $doc_obj->post_content );
+                $page_content = apply_filters( 'the_content', $doc_obj->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
                 $page_title   = get_the_title( $doc_obj );
                 $doc_id       = $first['id'];
             }

@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+
 /* ---------- Resolve display settings ---------- */
 $show_search          = 'yes' === $settings['zuno_docs_show_search'];
 $show_breadcrumbs     = 'yes' === $settings['zuno_docs_show_breadcrumbs'];
@@ -170,6 +172,7 @@ $show_sidebar          = $show_search || $show_toc;
                         <?php
                         if ( $product ) {
                             printf(
+                                /* translators: %s: product label */
                                 esc_html__( 'Documentation for "%s" is coming soon.', 'zuno-docs-engine' ),
                                 esc_html( zuno_docs_product_label( $product ) )
                             );
@@ -185,6 +188,7 @@ $show_sidebar          = $show_search || $show_toc;
                         <p class="zuno-docs-admin-hint">
                             <?php
                             printf(
+                                /* translators: %s: product slug */
                                 esc_html__( 'Create a doc tagged with product "%s" (Zuno Docs → Add New) to populate this section.', 'zuno-docs-engine' ),
                                 esc_html( $product )
                             );

@@ -9,16 +9,16 @@ defined( 'ABSPATH' ) || exit;
 
 function zuno_docs_admin_dashboard() {
     if ( ! current_user_can( 'zuno_docs_read' ) ) {
-        wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
     }
 
     /* ----- Handle delete ----- */
     if ( isset( $_GET['action'], $_GET['doc'] ) && 'delete' === $_GET['action'] ) {
         if ( ! current_user_can( 'zuno_docs_delete' ) ) {
-            wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
         }
         $doc_id = (int) $_GET['doc'];
-        if ( $doc_id && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'delete_doc_' . $doc_id ) ) {
+        if ( $doc_id && wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ?? '' ), 'delete_doc_' . $doc_id ) ) {
             wp_delete_post( $doc_id, true );
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Doc deleted.', 'zuno-docs-engine' ) . '</p></div>';
         }
@@ -54,7 +54,7 @@ function zuno_docs_admin_dashboard() {
     );
 
     if ( $filter_category ) {
-        $args['tax_query'] = array(
+        $args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             array(
                 'taxonomy' => 'zuno_doc_category',
                 'field'    => 'term_id',
@@ -189,7 +189,7 @@ function zuno_docs_admin_dashboard() {
                     <div class="tablenav bottom">
                         <div class="tablenav-pages">
                             <?php
-                            echo paginate_links( array(
+                            echo wp_kses_post( paginate_links( array(
                                 'base'      => add_query_arg( 'paged', '%#%' ),
                                 'format'    => '',
                                 'prev_text' => '&laquo;',
@@ -197,7 +197,7 @@ function zuno_docs_admin_dashboard() {
                                 'total'     => $total_pages,
                                 'current'   => $paged,
                                 'type'      => 'plain',
-                            ) );
+                            ) ) );
                             ?>
                         </div>
                     </div>

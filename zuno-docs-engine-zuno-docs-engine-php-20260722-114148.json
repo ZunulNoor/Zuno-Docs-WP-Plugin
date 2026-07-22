@@ -1,0 +1,744 @@
+{
+    "generated_at": "2026-07-22 11:41:48",
+    "plugin": "Zuno Docs Engine",
+    "results": {
+        "includes/admin-settings.php": [
+            {
+                "message": "All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
+                "code": "WordPress.Security.EscapeOutput.OutputNotEscaped",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-settings.php&line=26",
+                "docs": "https://developer.wordpress.org/apis/security/escaping/#escaping-functions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 26,
+                "column": 17
+            },
+            {
+                "message": "A function call to __() with texts containing placeholders was found, but was not accompanied by a \"translators:\" comment on the line above to clarify the meaning of the placeholders.",
+                "code": "WordPress.WP.I18n.MissingTranslatorsComment",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-settings.php&line=184",
+                "docs": "https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#descriptions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 184,
+                "column": 75
+            }
+        ],
+        "includes/shortcode.php": [
+            {
+                "message": "A function call to __() with texts containing placeholders was found, but was not accompanied by a \"translators:\" comment on the line above to clarify the meaning of the placeholders.",
+                "code": "WordPress.WP.I18n.MissingTranslatorsComment",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fshortcode.php&line=41",
+                "docs": "https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#descriptions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 41,
+                "column": 25
+            },
+            {
+                "message": "Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;the_content&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fshortcode.php&line=57",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 57,
+                "column": 44
+            },
+            {
+                "message": "Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;the_content&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fshortcode.php&line=71",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 71,
+                "column": 48
+            }
+        ],
+        "templates/layout.php": [
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_search&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=11",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 11,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_breadcrumbs&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=12",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 12,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_previous&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=13",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 13,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_next&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=14",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 14,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_navigation&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=15",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 15,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_toc&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=16",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 16,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_categories&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=17",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 17,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_related&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=18",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 18,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_reading_progress&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=19",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 19,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_nav_rail&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=20",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 20,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$toc_position&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=21",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 21,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$rail_side&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=22",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 22,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$mobile_toc_position&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=23",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 23,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_sidebar&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=24",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 24,
+                "column": 1
+            },
+            {
+                "message": "A function call to esc_html__() with texts containing placeholders was found, but was not accompanied by a \"translators:\" comment on the line above to clarify the meaning of the placeholders.",
+                "code": "WordPress.WP.I18n.MissingTranslatorsComment",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=173",
+                "docs": "https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#descriptions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 173,
+                "column": 33
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$show_hint&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=182",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 182,
+                "column": 21
+            },
+            {
+                "message": "A function call to esc_html__() with texts containing placeholders was found, but was not accompanied by a \"translators:\" comment on the line above to clarify the meaning of the placeholders.",
+                "code": "WordPress.WP.I18n.MissingTranslatorsComment",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Ftemplates%2Flayout.php&line=188",
+                "docs": "https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#descriptions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 188,
+                "column": 33
+            }
+        ],
+        "includes/admin-categories.php": [
+            {
+                "message": "All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
+                "code": "WordPress.Security.EscapeOutput.OutputNotEscaped",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=12",
+                "docs": "https://developer.wordpress.org/apis/security/escaping/#escaping-functions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 12,
+                "column": 17
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_add_cat_nonce&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=22",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 22,
+                "column": 88
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_add_cat_nonce&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=22",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 22,
+                "column": 88
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_cat_name&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=23",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 23,
+                "column": 38
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_cat_slug&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=24",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 24,
+                "column": 33
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_cat_parent&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=25",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 25,
+                "column": 27
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_cat_parent&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=25",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 25,
+                "column": 27
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_edit_cat_nonce&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=42",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 42,
+                "column": 89
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_edit_cat_nonce&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=42",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 42,
+                "column": 89
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_cat_id&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=43",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 43,
+                "column": 27
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_cat_id&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=43",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 43,
+                "column": 27
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_cat_name&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=44",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 44,
+                "column": 40
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_cat_slug&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=45",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 45,
+                "column": 35
+            },
+            {
+                "message": "$_GET[&#039;_wpnonce&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=64",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 64,
+                "column": 42
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_GET[&#039;_wpnonce&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-categories.php&line=64",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 64,
+                "column": 42
+            }
+        ],
+        "includes/admin-dashboard.php": [
+            {
+                "message": "All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
+                "code": "WordPress.Security.EscapeOutput.OutputNotEscaped",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-dashboard.php&line=12",
+                "docs": "https://developer.wordpress.org/apis/security/escaping/#escaping-functions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 12,
+                "column": 17
+            },
+            {
+                "message": "All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
+                "code": "WordPress.Security.EscapeOutput.OutputNotEscaped",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-dashboard.php&line=18",
+                "docs": "https://developer.wordpress.org/apis/security/escaping/#escaping-functions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 18,
+                "column": 21
+            },
+            {
+                "message": "$_GET[&#039;_wpnonce&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-dashboard.php&line=21",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 21,
+                "column": 42
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_GET[&#039;_wpnonce&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-dashboard.php&line=21",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 21,
+                "column": 42
+            },
+            {
+                "message": "Detected usage of tax_query, possible slow query.",
+                "code": "WordPress.DB.SlowDBQuery.slow_db_query_tax_query",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-dashboard.php&line=57",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 57,
+                "column": 15
+            },
+            {
+                "message": "All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found 'paginate_links'.",
+                "code": "WordPress.Security.EscapeOutput.OutputNotEscaped",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-dashboard.php&line=192",
+                "docs": "https://developer.wordpress.org/apis/security/escaping/#escaping-functions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 192,
+                "column": 34
+            }
+        ],
+        "includes/admin-new-doc.php": [
+            {
+                "message": "All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
+                "code": "WordPress.Security.EscapeOutput.OutputNotEscaped",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=12",
+                "docs": "https://developer.wordpress.org/apis/security/escaping/#escaping-functions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 12,
+                "column": 17
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_new_doc_nonce&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=23",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 23,
+                "column": 31
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_new_doc_nonce&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=23",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 23,
+                "column": 31
+            },
+            {
+                "message": "All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
+                "code": "WordPress.Security.EscapeOutput.OutputNotEscaped",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=25",
+                "docs": "https://developer.wordpress.org/apis/security/escaping/#escaping-functions",
+                "severity": 5,
+                "type": "ERROR",
+                "line": 25,
+                "column": 25
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_title&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=27",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 27,
+                "column": 45
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_content&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=28",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 28,
+                "column": 38
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_category&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=29",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 29,
+                "column": 32
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_category&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-new-doc.php&line=29",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 29,
+                "column": 32
+            }
+        ],
+        "includes/admin-meta-box.php": [
+            {
+                "message": "$_POST[&#039;zuno_docs_doc_settings_nonce&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=99",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 99,
+                "column": 29
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_doc_settings_nonce&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=99",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 99,
+                "column": 29
+            },
+            {
+                "message": "$_POST[&#039;post_type&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=108",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 108,
+                "column": 27
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;post_type&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=108",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 108,
+                "column": 27
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_category&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=113",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 113,
+                "column": 28
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_category&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=113",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 113,
+                "column": 28
+            },
+            {
+                "message": "$_POST[&#039;zuno_docs_order&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=121",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 121,
+                "column": 22
+            },
+            {
+                "message": "Detected usage of a non-sanitized input variable: $_POST[&#039;zuno_docs_order&#039;]",
+                "code": "WordPress.Security.ValidatedSanitizedInput.InputNotSanitized",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fincludes%2Fadmin-meta-box.php&line=121",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 121,
+                "column": 22
+            }
+        ],
+        "zuno-docs-engine.php": [
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$file&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fzuno-docs-engine.php&line=45",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 45,
+                "column": 34
+            },
+            {
+                "message": "Processing form data without nonce verification.",
+                "code": "WordPress.Security.NonceVerification.Recommended",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fzuno-docs-engine.php&line=98",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 98,
+                "column": 39
+            },
+            {
+                "message": "Detected usage of tax_query, possible slow query.",
+                "code": "WordPress.DB.SlowDBQuery.slow_db_query_tax_query",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fzuno-docs-engine.php&line=395",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 395,
+                "column": 9
+            },
+            {
+                "message": "$_POST[&#039;deactivate_action&#039;] not unslashed before sanitization. Use wp_unslash() or similar",
+                "code": "WordPress.Security.ValidatedSanitizedInput.MissingUnslash",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fzuno-docs-engine.php&line=548",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 548,
+                "column": 75
+            },
+            {
+                "message": "debug_backtrace() found. Debug code should not normally be used in production.",
+                "code": "WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fzuno-docs-engine.php&line=753",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 753,
+                "column": 14
+            },
+            {
+                "message": "print_r() found. Debug code should not normally be used in production.",
+                "code": "WordPress.PHP.DevelopmentFunctions.error_log_print_r",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fzuno-docs-engine.php&line=773",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 773,
+                "column": 21
+            },
+            {
+                "message": "error_log() found. Debug code should not normally be used in production.",
+                "code": "WordPress.PHP.DevelopmentFunctions.error_log_error_log",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Fzuno-docs-engine.php&line=776",
+                "docs": "",
+                "severity": 5,
+                "type": "WARNING",
+                "line": 776,
+                "column": 5
+            }
+        ],
+        "uninstall.php": [
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$role_name&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Funinstall.php&line=47",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 47,
+                "column": 31
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$role_info&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Funinstall.php&line=47",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 47,
+                "column": 45
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$cap&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Funinstall.php&line=50",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 50,
+                "column": 33
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$taxonomies&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Funinstall.php&line=85",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 85,
+                "column": 1
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$terms&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Funinstall.php&line=88",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 88,
+                "column": 5
+            },
+            {
+                "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$term_id&quot;.",
+                "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+                "link": "https://playground.wordpress.net/scope:clever-busy-river/wp-admin/plugin-editor.php?plugin=zuno-docs-engine%2Fzuno-docs-engine.php&file=zuno-docs-engine%2Funinstall.php&line=95",
+                "docs": "",
+                "severity": 6,
+                "type": "WARNING",
+                "line": 95,
+                "column": 29
+            }
+        ]
+    }
+}

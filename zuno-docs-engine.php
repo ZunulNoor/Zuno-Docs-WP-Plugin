@@ -42,8 +42,8 @@ $zuno_docs_includes = array(
     'admin-meta-box.php',
 );
 
-foreach ( $zuno_docs_includes as $file ) {
-    $path = ZUNO_DOCS_INCLUDES . $file;
+foreach ( $zuno_docs_includes as $zuno_docs_file ) {
+    $path = ZUNO_DOCS_INCLUDES . $zuno_docs_file;
     if ( file_exists( $path ) ) {
         require_once $path;
     }
@@ -95,7 +95,7 @@ function zuno_docs_activation_redirect_handler() {
     delete_transient( 'zuno_docs_activation_redirect' );
 
     // Skip if multiple plugins activated at once.
-    if ( is_network_admin() || isset( $_GET['activate-multi'] ) ) {
+    if ( is_network_admin() || isset( $_GET['activate-multi'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         return;
     }
 
@@ -392,6 +392,7 @@ function zuno_docs_migrate_products_to_categories() {
         'post_status'    => 'any',
         'posts_per_page' => -1,
         'fields'         => 'ids',
+        'no_found_rows'  => true,
         'tax_query'      => array(
             array(
                 'taxonomy' => 'zuno_product',
@@ -545,7 +546,7 @@ function zuno_docs_ajax_set_deactivation_pref() {
 
     check_ajax_referer( 'zuno_docs_deactivation_nonce', '_wpnonce' );
 
-    $action = isset( $_POST['deactivate_action'] ) ? sanitize_text_field( $_POST['deactivate_action'] ) : 'keep';
+    $action = isset( $_POST['deactivate_action'] ) ? sanitize_text_field( wp_unslash( $_POST['deactivate_action'] ) ) : 'keep';
 
     if ( 'remove' === $action ) {
         update_option( 'zuno_docs_preserve_data', 'no' );
@@ -730,48 +731,4 @@ function zuno_docs_error( $message ) {
     );
 }
 
-/* -----------------------------------------------------------------------
- * Centralized debug logger — production-safe, never outputs to browser.
- *
- * Usage:
- *   zuno_docs_debug( 'Some message' );
- *   zuno_docs_debug( $some_array );
- *   zuno_docs_debug( $some_object, 'Optional label' );
- *
- * Respects WP_DEBUG and ZUNO_DOCS_DEBUG.
- * Writes only to wp-content/debug.log (via error_log).
- * Safe for AJAX, REST, JSON, redirects, and CLI contexts.
- * --------------------------------------------------------------------- */
-function zuno_docs_debug( $data, $label = '' ) {
-    if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
-        return;
-    }
-    if ( defined( 'ZUNO_DOCS_DEBUG' ) && ! ZUNO_DOCS_DEBUG ) {
-        return;
-    }
 
-    $trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 1 );
-    $caller = isset( $trace[0] ) ? $trace[0] : array();
-    $file   = isset( $caller['file'] ) ? $caller['file'] : '';
-    $line   = isset( $caller['line'] ) ? $caller['line'] : '';
-
-    $message = '[Zuno Docs Debug]';
-    if ( $file ) {
-        $message .= ' ' . basename( $file );
-    }
-    if ( $line ) {
-        $message .= ':' . $line;
-    }
-    if ( $label ) {
-        $message .= ' (' . $label . ')';
-    }
-    $message .= "\n";
-
-    if ( is_string( $data ) ) {
-        $message .= $data;
-    } else {
-        $message .= print_r( $data, true );
-    }
-
-    error_log( $message );
-}

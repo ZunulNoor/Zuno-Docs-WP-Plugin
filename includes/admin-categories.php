@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 function zuno_docs_admin_categories_page() {
     if ( ! current_user_can( 'zuno_docs_read' ) ) {
-        wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
     }
 
     $can_manage = current_user_can( 'zuno_docs_manage_categories' );
@@ -19,10 +19,10 @@ function zuno_docs_admin_categories_page() {
     $message = '';
 
     // Add category
-    if ( $can_manage && isset( $_POST['zuno_docs_add_cat_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_add_cat_nonce'], 'zuno_docs_add_cat' ) ) {
-        $name = sanitize_text_field( $_POST['zuno_docs_cat_name'] ?? '' );
-        $slug = sanitize_title( $_POST['zuno_docs_cat_slug'] ?? '' );
-        $parent = (int) ( $_POST['zuno_docs_cat_parent'] ?? 0 );
+    if ( $can_manage && isset( $_POST['zuno_docs_add_cat_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['zuno_docs_add_cat_nonce'] ), 'zuno_docs_add_cat' ) ) {
+        $name = sanitize_text_field( wp_unslash( $_POST['zuno_docs_cat_name'] ?? '' ) );
+        $slug = sanitize_title( wp_unslash( $_POST['zuno_docs_cat_slug'] ?? '' ) );
+        $parent = (int) ( wp_unslash( $_POST['zuno_docs_cat_parent'] ?? 0 ) );
 
         if ( $name ) {
             $args = array( 'slug' => $slug ?: sanitize_title( $name ) );
@@ -39,10 +39,10 @@ function zuno_docs_admin_categories_page() {
     }
 
     // Edit category
-    if ( $can_manage && isset( $_POST['zuno_docs_edit_cat_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_edit_cat_nonce'], 'zuno_docs_edit_cat' ) ) {
-        $cat_id = (int) ( $_POST['zuno_docs_cat_id'] ?? 0 );
-        $name   = sanitize_text_field( $_POST['zuno_docs_cat_name'] ?? '' );
-        $slug   = sanitize_title( $_POST['zuno_docs_cat_slug'] ?? '' );
+    if ( $can_manage && isset( $_POST['zuno_docs_edit_cat_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['zuno_docs_edit_cat_nonce'] ), 'zuno_docs_edit_cat' ) ) {
+        $cat_id = (int) ( wp_unslash( $_POST['zuno_docs_cat_id'] ?? 0 ) );
+        $name   = sanitize_text_field( wp_unslash( $_POST['zuno_docs_cat_name'] ?? '' ) );
+        $slug   = sanitize_title( wp_unslash( $_POST['zuno_docs_cat_slug'] ?? '' ) );
 
         if ( $cat_id && $name ) {
             $args = array( 'name' => $name );
@@ -61,7 +61,7 @@ function zuno_docs_admin_categories_page() {
     // Delete category — pre_delete_term filter in post-type.php handles last-category protection
     if ( $can_manage && isset( $_GET['action'], $_GET['cat_id'] ) && 'delete' === $_GET['action'] ) {
         $cat_id = (int) $_GET['cat_id'];
-        if ( $cat_id && wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'delete_cat_' . $cat_id ) ) {
+        if ( $cat_id && wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ?? '' ), 'delete_cat_' . $cat_id ) ) {
             $result = wp_delete_term( $cat_id, $taxonomy );
             if ( is_wp_error( $result ) ) {
                 $message = '<div class="notice notice-error"><p>' . esc_html( $result->get_error_message() ) . '</p></div>';

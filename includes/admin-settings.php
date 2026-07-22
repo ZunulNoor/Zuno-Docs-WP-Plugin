@@ -23,7 +23,7 @@ function zuno_docs_register_settings() {
  * --------------------------------------------------------------------- */
 function zuno_docs_admin_settings_page() {
     if ( ! current_user_can( 'zuno_docs_manage_settings' ) ) {
-        wp_die( __( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions.', 'zuno-docs-engine' ) );
     }
 
     $saved_notice = '';
@@ -181,7 +181,7 @@ function zuno_docs_admin_settings_page() {
                                 <select id="toc_depth" name="toc_depth">
                                     <?php for ( $i = 2; $i <= 6; $i++ ) : ?>
                                         <option value="<?php echo esc_attr( $i ); ?>" <?php selected( $settings->get( 'toc_depth' ), $i ); ?>>
-                                            <?php echo esc_html( sprintf( __( 'H1–H%s', 'zuno-docs-engine' ), $i ) ); ?>
+                                            <?php /* translators: %s: heading level number */ echo esc_html( sprintf( __( 'H1–H%s', 'zuno-docs-engine' ), $i ) ); ?>
                                         </option>
                                     <?php endfor; ?>
                                 </select>
