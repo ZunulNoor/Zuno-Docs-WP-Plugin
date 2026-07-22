@@ -61,7 +61,7 @@ A standalone documentation CMS for WordPress that lets you create, manage, and d
 ### Shortcode
 
 ```
-[zuno_docs product="shipox"]
+[zuno_docs product="category-slug"]
 ```
 
 | Attribute  | Description                                        | Default |
@@ -170,7 +170,7 @@ By default, all plugin data is removed on deletion. To preserve data, define `de
 - Transient caching
 - Dynamic CSS via CSS custom properties
 - Mobile-responsive layout
-- Seed terms: Shipox, Shipox Express, Storfox
+- Seed terms: Default for now
 
 ---
 

@@ -188,7 +188,7 @@ function zuno_docs_seed_default_terms() {
         }
     }
 
-    /* ----- Seed product terms (shipox, express, storfox) for backward compat ----- */
+    /* ----- Seed product terms for backward compat ----- */
     $existing_products = get_terms( array(
         'taxonomy'   => 'zuno_product',
         'hide_empty' => false,
@@ -197,9 +197,7 @@ function zuno_docs_seed_default_terms() {
 
     if ( empty( $existing_products ) || is_wp_error( $existing_products ) ) {
         $products = array(
-            'shipox'  => 'Shipox',
-            'express' => 'Shipox Express',
-            'storfox' => 'Storfox',
+            'default'  => 'Default',
         );
 
         foreach ( $products as $slug => $name ) {

@@ -29,7 +29,7 @@ Zuno Docs Engine transforms WordPress into a full-featured documentation platfor
 * **Prev / Next Navigation** — Sequential doc navigation through the category tree.
 * **Related Articles** — Auto-suggested related docs from the same category.
 * **Fully Customizable** — Theme color, typography, sidebar width, TOC depth, TOC colors, all adjustable from 8-tab Settings panel.
-* **Shortcode** — Simple `[zuno_docs product="shipox"]` embeds documentation anywhere.
+* **Shortcode** — Simple `[zuno_docs product="category-slug"]` embeds documentation anywhere.
 * **Gutenberg Compatible** — Full block editor support for rich doc content.
 * **REST API** — Public search endpoint for headless or AJAX integration.
 * **Custom Capabilities** — Fine-grained roles: `zuno_docs_editor` role, read/create/edit/delete/manage permissions.
@@ -40,7 +40,7 @@ Zuno Docs Engine transforms WordPress into a full-featured documentation platfor
 
 = Shortcode Examples =
 
-`[zuno_docs product="shipox"]`
+`[zuno_docs product="category-slug"]`
 `[zuno_docs product="express" doc_id="123"]`
 `[zuno_docs product="storfox" toc_depth="4"]`
 
@@ -53,7 +53,7 @@ This plugin does not collect or transmit any personal data. All data stays on yo
 1. Upload the `zuno-docs-engine` folder to `/wp-content/plugins/` or install via WordPress plugin admin.
 2. Activate the plugin through the 'Plugins' screen.
 3. Go to Zuno Docs → Settings to configure appearance.
-4. Use `[zuno_docs product="shipox"]` shortcode on any page/post to display documentation.
+4. Use `[zuno_docs product="category-slug"]` shortcode on any page/post to display documentation.
 5. Create docs under Zuno Docs → Add New, assign product tags.
 
 == Frequently Asked Questions ==

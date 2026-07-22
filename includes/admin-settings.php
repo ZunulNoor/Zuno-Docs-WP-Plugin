@@ -461,7 +461,7 @@ function zuno_docs_admin_settings_page() {
 
         <div class="zuno-docs-settings-info">
             <h2><?php esc_html_e( 'Shortcode Usage', 'zuno-docs-engine' ); ?></h2>
-            <pre><code>[zuno_docs product="shipox"]</code></pre>
+            <pre><code>[zuno_docs product="category-slug"]</code></pre>
             <p>
                 <?php esc_html_e( 'The', 'zuno-docs-engine' ); ?>
                 <code>product</code>
