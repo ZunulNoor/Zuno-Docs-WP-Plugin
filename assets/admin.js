@@ -283,6 +283,7 @@
             overlay.style.opacity = '0';
             overlay.style.visibility = 'hidden';
             modal.style.transform = 'scale(0.92) translateY(8px)';
+            document.removeEventListener('keydown', escHandler);
             setTimeout(function () {
                 if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
             }, 200);

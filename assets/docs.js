@@ -8,6 +8,13 @@
     var ADMIN_BAR_H = 32;
     var _activeWrapper = null;
     var _mobileTocUpdateActive = null;
+    var _listenerCleanups = [];
+
+    function _addCleanup(fn) { _listenerCleanups.push(fn); }
+    function _runCleanups() {
+        _listenerCleanups.forEach(function (fn) { fn(); });
+        _listenerCleanups = [];
+    }
 
     /* ===================================================================
      * Utility helpers
@@ -1254,9 +1261,12 @@
             };
 
             this._scrollBoundaryHandler = updateVisibility;
+            this._boundaryListeners = [];
 
             window.addEventListener('scroll', updateVisibility, { passive: true });
+            this._boundaryListeners.push(function () { window.removeEventListener('scroll', updateVisibility); });
             window.addEventListener('resize', updateVisibility, { passive: true });
+            this._boundaryListeners.push(function () { window.removeEventListener('resize', updateVisibility); });
 
             updateVisibility();
         },
@@ -1310,6 +1320,10 @@
             if (this._observer) {
                 this._observer.disconnect();
                 this._observer = null;
+            }
+            if (this._boundaryListeners) {
+                this._boundaryListeners.forEach(function (fn) { fn(); });
+                this._boundaryListeners = [];
             }
         }
     };
@@ -1785,7 +1799,9 @@
         };
 
         window.addEventListener('scroll', update, { passive: true });
+        _addCleanup(function () { window.removeEventListener('scroll', update); });
         window.addEventListener('resize', update, { passive: true });
+        _addCleanup(function () { window.removeEventListener('resize', update); });
         ChapterEngine.onAfterChange(update);
         update();
     }
@@ -2126,7 +2142,9 @@
         };
 
         update();
-        window.addEventListener('resize', debounce(update, 100), { passive: true });
+        var debounced = debounce(update, 100);
+        window.addEventListener('resize', debounced, { passive: true });
+        _addCleanup(function () { window.removeEventListener('resize', debounced); });
     }
 
     /* ===================================================================
@@ -2195,17 +2213,21 @@
             updateBoundary();
 
             var scrollTick;
-            window.addEventListener('scroll', function () {
+            var onScroll = function () {
                 if (!isMobile()) return;
                 cancelAnimationFrame(scrollTick);
                 scrollTick = requestAnimationFrame(updateBoundary);
-            }, { passive: true });
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            _addCleanup(function () { window.removeEventListener('scroll', onScroll); });
 
-            window.addEventListener('resize', function () {
+            var onResize = function () {
                 if (!isMobile()) return;
                 calcBoundary();
                 updateBoundary();
-            }, { passive: true });
+            };
+            window.addEventListener('resize', onResize, { passive: true });
+            _addCleanup(function () { window.removeEventListener('resize', onResize); });
         }
 
         function isMobile() { return window.innerWidth < 768; }
@@ -2511,11 +2533,13 @@
             });
         }
 
-        document.addEventListener('keydown', function (e) {
+        var onEscape = function (e) {
             if (e.key === 'Escape' && mobileToc.classList.contains('is-open')) {
                 closeToc();
             }
-        });
+        };
+        document.addEventListener('keydown', onEscape);
+        _addCleanup(function () { document.removeEventListener('keydown', onEscape); });
 
         if (panelBody) {
             panelBody.addEventListener('click', function (e) {
@@ -2530,11 +2554,13 @@
             });
         }
 
-        window.addEventListener('resize', function () {
+        var onMobileResize = function () {
             if (!isMobile() && mobileToc.classList.contains('is-open')) {
                 closeToc();
             }
-        }, { passive: true });
+        };
+        window.addEventListener('resize', onMobileResize, { passive: true });
+        _addCleanup(function () { window.removeEventListener('resize', onMobileResize); });
     }
 
     /* ===================================================================
@@ -2542,6 +2568,7 @@
      * =================================================================== */
     function initInstance(wrapEl) {
         _activeWrapper = wrapEl;
+        _runCleanups();
 
         var contentEl = qs('.zuno-docs-content', wrapEl);
         var tocEl = qs('.zuno-docs-toc', wrapEl);
@@ -2554,9 +2581,11 @@
         TocBuilder.build(chapters, tocEl, wrapEl);
 
         /* 3. Init scroll spy */
+        ScrollSpy.destroy();
         ScrollSpy.init(wrapEl);
 
         /* 4. Init NavRail */
+        NavRail.destroy();
         NavRail.init(wrapEl);
 
         /* 5. Breadcrumbs */
@@ -2596,7 +2625,7 @@
         handleInitialHash(wrapEl);
 
         /* 16. Hash change listener */
-        window.addEventListener('hashchange', function () {
+        var onHashChange = function () {
             var hash = window.location.hash.slice(1);
             if (hash) {
                 var ch = ChapterEngine.getChapter(hash);
@@ -2604,7 +2633,9 @@
                     ChapterEngine.activate(ch.id);
                 }
             }
-        });
+        };
+        window.addEventListener('hashchange', onHashChange);
+        _addCleanup(function () { window.removeEventListener('hashchange', onHashChange); });
     }
 
     /* ===================================================================

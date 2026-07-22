@@ -100,14 +100,27 @@ function zuno_docs_build_graph() {
     }
     unset( $cat );
 
-    /* ----- Build per-category doc tree and search index (single query) ----- */
-    $all_docs = get_posts( array(
-        'post_type'      => 'zuno_doc',
-        'post_status'    => 'publish',
-        'posts_per_page' => -1,
-        'orderby'        => 'menu_order title',
-        'order'          => 'ASC',
-    ) );
+    /* ----- Build per-category doc tree and search index (batched) ----- */
+    $all_docs = array();
+    $page = 1;
+    do {
+        $batch = get_posts( array(
+            'post_type'      => 'zuno_doc',
+            'post_status'    => 'publish',
+            'posts_per_page' => 500,
+            'paged'          => $page,
+            'orderby'        => 'menu_order title',
+            'order'          => 'ASC',
+            'no_found_rows'  => true,
+            'suppress_filters' => true,
+        ) );
+        if ( empty( $batch ) ) {
+            break;
+        }
+        update_meta_cache( 'post', wp_list_pluck( $batch, 'ID' ) );
+        $all_docs = array_merge( $all_docs, $batch );
+        $page++;
+    } while ( count( $batch ) === 500 );
 
     /* Pre-group docs by category slug */
     $docs_by_category = array();

@@ -8,7 +8,7 @@
  * Author:       Zun Ul Noor
  * Author URI:   https://zunulnoor.vercel.app
  * Text Domain:  zuno-docs-engine
- * License:      GPLv2 or later
+ * License:      GPL-2.0-or-later
  * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
  * Requires at least: 5.8
  * Requires PHP: 7.4
@@ -686,11 +686,16 @@ function zuno_docs_register_search_route() {
     register_rest_route( 'zuno-docs/v1', '/search', array(
         'methods'             => WP_REST_Server::READABLE,
         'callback'            => 'zuno_docs_rest_search',
-        'permission_callback' => '__return_true',
+        'permission_callback' => function () {
+            return current_user_can( 'read' );
+        },
         'args'                => array(
             'q' => array(
                 'required'          => true,
                 'sanitize_callback' => 'sanitize_text_field',
+                'validate_callback' => function ( $value ) {
+                    return is_string( $value ) && mb_strlen( trim( $value ) ) >= 2;
+                },
             ),
             'product' => array(
                 'sanitize_callback' => 'sanitize_key',
@@ -703,11 +708,18 @@ function zuno_docs_rest_search( $request ) {
     $query   = $request->get_param( 'q' );
     $product = $request->get_param( 'product' );
 
-    if ( mb_strlen( trim( $query ) ) < 2 ) {
-        return new WP_REST_Response( array( 'results' => array() ), 200 );
+    if ( ! is_string( $query ) || mb_strlen( trim( $query ) ) < 2 ) {
+        return new WP_Error( 'invalid_query', __( 'Search query must be at least 2 characters.', 'zuno-docs-engine' ), array( 'status' => 400 ) );
     }
 
-    // Map product param to category slug for search.
+    $remote_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '127.0.0.1';
+    $throttle_key = 'zuno_docs_search_' . md5( $remote_ip );
+    $throttled = get_transient( $throttle_key );
+    if ( $throttled ) {
+        return new WP_Error( 'rate_limited', __( 'Too many requests. Please wait before searching again.', 'zuno-docs-engine' ), array( 'status' => 429 ) );
+    }
+    set_transient( $throttle_key, 1, 5 );
+
     $results = zuno_docs_search( $query, $product );
 
     return new WP_REST_Response( array(
