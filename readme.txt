@@ -3,7 +3,7 @@ Contributors: zunulnoor
 Donate link: https://zunulnoor.vercel.app
 Tags: documentation, docs, knowledge base, documentation management, docs engine
 Requires at least: 5.8
-Tested up to: 6.7
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 2.2.0
 License: GPLv2 or later
@@ -72,7 +72,7 @@ Yes. All visual settings are available under Zuno Docs → Settings, including t
 
 = Is it translation-ready? =
 
-Yes. All frontend strings use WordPress i18n functions and the `zuno-docs` text domain.
+Yes. All frontend strings use WordPress i18n functions and the `zuno-docs-engine` text domain.
 
 == Screenshots ==
 
