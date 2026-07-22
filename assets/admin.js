@@ -246,27 +246,27 @@
 
         modal.innerHTML =
             '<div style="padding:24px 24px 0;text-align:center;">' +
-                '<div style="width:48px;height:48px;margin:0 auto 12px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#F59E0B;">' +
-                    '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
-                '</div>' +
-                '<h2 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1d2327;">' + (CFG.i18n.deactivationTitle || 'Leaving ZUNO Docs?') + '</h2>' +
-                '<p style="margin:0 0 20px;font-size:14px;color:#50575e;line-height:1.5;">' + (CFG.i18n.deactivationDesc || 'Would you like to keep your documentation and settings for future use?') + '</p>' +
+            '<div style="width:48px;height:48px;margin:0 auto 12px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#F59E0B;">' +
+            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            '</div>' +
+            '<h2 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1d2327;">' + (CFG.i18n.deactivationTitle || 'Leaving ZUNO Docs?') + '</h2>' +
+            '<p style="margin:0 0 20px;font-size:14px;color:#50575e;line-height:1.5;">' + (CFG.i18n.deactivationDesc || 'Would you like to keep your documentation and settings for future use?') + '</p>' +
             '</div>' +
             '<div style="padding:0 24px 20px;">' +
-                '<label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#f6f7f7;border-radius:10px;cursor:pointer;margin-bottom:8px;border:2px solid ' + THEME_COLOR + ';" id="zuno-docs-deactivate-keep">' +
-                    '<input type="radio" name="zuno_docs_deactivate_action" value="keep" checked style="margin-top:3px;accent-color:' + THEME_COLOR + ';">' +
-                    '<div><strong style="display:block;font-size:14px;color:#1d2327;">' + (CFG.i18n.keepData || 'Keep my documentation and settings') + '</strong>' +
-                    '<span style="font-size:13px;color:#646970;">' + (CFG.i18n.keepDataDesc || 'Database will remain intact for future use.') + '</span></div>' +
-                '</label>' +
-                '<label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#f6f7f7;border-radius:10px;cursor:pointer;border:2px solid transparent;" id="zuno-docs-deactivate-remove">' +
-                    '<input type="radio" name="zuno_docs_deactivate_action" value="remove" style="margin-top:3px;accent-color:' + THEME_COLOR + ';">' +
-                    '<div><strong style="display:block;font-size:14px;color:#1d2327;">' + (CFG.i18n.removeData || 'Remove all plugin data') + '</strong>' +
-                    '<span style="font-size:13px;color:#646970;">' + (CFG.i18n.removeDataDesc || 'All documentation, categories, and settings will be deleted on uninstall.') + '</span></div>' +
-                '</label>' +
+            '<label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#f6f7f7;border-radius:10px;cursor:pointer;margin-bottom:8px;border:2px solid ' + THEME_COLOR + ';" id="zuno-docs-deactivate-keep">' +
+            '<input type="radio" name="zuno_docs_deactivate_action" value="keep" checked style="margin-top:3px;accent-color:' + THEME_COLOR + ';">' +
+            '<div><strong style="display:block;font-size:14px;color:#1d2327;">' + (CFG.i18n.keepData || 'Keep my documentation and settings') + '</strong>' +
+            '<span style="font-size:13px;color:#646970;">' + (CFG.i18n.keepDataDesc || 'Database will remain intact for future use.') + '</span></div>' +
+            '</label>' +
+            '<label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#f6f7f7;border-radius:10px;cursor:pointer;border:2px solid transparent;" id="zuno-docs-deactivate-remove">' +
+            '<input type="radio" name="zuno_docs_deactivate_action" value="remove" style="margin-top:3px;accent-color:' + THEME_COLOR + ';">' +
+            '<div><strong style="display:block;font-size:14px;color:#1d2327;">' + (CFG.i18n.removeData || 'Remove all plugin data') + '</strong>' +
+            '<span style="font-size:13px;color:#646970;">' + (CFG.i18n.removeDataDesc || 'All documentation, categories, and settings will be deleted on uninstall.') + '</span></div>' +
+            '</label>' +
             '</div>' +
             '<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid #f0f0f1;">' +
-                '<button class="button" id="zuno-docs-deactivate-cancel" style="min-height:36px;padding:6px 16px;border-radius:8px;">' + (CFG.i18n.cancel || 'Cancel') + '</button>' +
-                '<button class="button button-primary" id="zuno-docs-deactivate-confirm" style="min-height:36px;padding:6px 20px;border-radius:8px;border:none;background:' + THEME_COLOR + ';color:#fff;font-weight:500;cursor:pointer;">' + (CFG.i18n.deactivate || 'Deactivate Plugin') + '</button>' +
+            '<button class="button" id="zuno-docs-deactivate-cancel" style="min-height:36px;padding:6px 16px;border-radius:8px;">' + (CFG.i18n.cancel || 'Cancel') + '</button>' +
+            '<button class="button button-primary" id="zuno-docs-deactivate-confirm" style="min-height:36px;padding:6px 20px;border-radius:8px;border:none;background:' + THEME_COLOR + ';color:#fff;font-weight:500;cursor:pointer;">' + (CFG.i18n.deactivate || 'Deactivate Plugin') + '</button>' +
             '</div>';
 
         overlay.appendChild(modal);
@@ -283,7 +283,12 @@
             overlay.style.opacity = '0';
             overlay.style.visibility = 'hidden';
             modal.style.transform = 'scale(0.92) translateY(8px)';
-            document.removeEventListener('keydown', escHandler);
+            document.addEventListener('keydown', function escHandler(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                    document.removeEventListener('keydown', escHandler);
+                }
+            });
             setTimeout(function () {
                 if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
             }, 200);
