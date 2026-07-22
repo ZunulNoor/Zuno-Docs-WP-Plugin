@@ -29,14 +29,16 @@ function zuno_docs_admin_settings_page() {
     $saved_notice = '';
 
     /* ----- Rebuild cache ----- */
-    if ( current_user_can( 'zuno_docs_manage_settings' ) && isset( $_POST['zuno_docs_rebuild_cache'] ) && wp_verify_nonce( $_POST['zuno_docs_rebuild_cache_nonce'], 'zuno_docs_rebuild_cache' ) ) {
+    $rebuild_nonce = isset( $_POST['zuno_docs_rebuild_cache_nonce'] ) ? sanitize_key( $_POST['zuno_docs_rebuild_cache_nonce'] ) : '';
+    if ( current_user_can( 'zuno_docs_manage_settings' ) && isset( $_POST['zuno_docs_rebuild_cache'] ) && wp_verify_nonce( $rebuild_nonce, 'zuno_docs_rebuild_cache' ) ) {
         zuno_docs_rebuild_graph();
         $saved_notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Documentation cache rebuilt successfully.', 'zuno-docs' ) . '</p></div>';
     }
 
     /* ----- Save settings ----- */
-    if ( current_user_can( 'zuno_docs_manage_settings' ) && isset( $_POST['zuno_docs_settings_nonce'] ) && wp_verify_nonce( $_POST['zuno_docs_settings_nonce'], 'zuno_docs_save_settings' ) ) {
-        Zuno_Docs_Settings::get_instance()->save( $_POST );
+    $settings_nonce = isset( $_POST['zuno_docs_settings_nonce'] ) ? sanitize_key( $_POST['zuno_docs_settings_nonce'] ) : '';
+    if ( current_user_can( 'zuno_docs_manage_settings' ) && isset( $_POST['zuno_docs_settings_nonce'] ) && wp_verify_nonce( $settings_nonce, 'zuno_docs_save_settings' ) ) {
+        Zuno_Docs_Settings::get_instance()->save( array_intersect_key( $_POST, Zuno_Docs_Settings::get_defaults() ) );
         $saved_notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'zuno-docs' ) . '</p></div>';
     }
 
@@ -47,7 +49,7 @@ function zuno_docs_admin_settings_page() {
     ?>
     <div class="wrap zuno-docs-settings-page">
         <h1><?php esc_html_e( 'Zuno Docs Settings', 'zuno-docs' ); ?></h1>
-        <?php echo $saved_notice; ?>
+        <?php echo wp_kses_post( $saved_notice ); ?>
 
         <form method="post" action="">
             <?php wp_nonce_field( 'zuno_docs_save_settings', 'zuno_docs_settings_nonce' ); ?>
@@ -475,7 +477,7 @@ function zuno_docs_admin_settings_page() {
                 <tr><td><strong><?php esc_html_e( 'Version', 'zuno-docs' ); ?></strong></td><td><?php echo esc_html( ZUNO_DOCS_VERSION ); ?></td></tr>
                 <tr><td><strong><?php esc_html_e( 'Post Type', 'zuno-docs' ); ?></strong></td><td><code>zuno_doc</code></td></tr>
                 <tr><td><strong><?php esc_html_e( 'Categories', 'zuno-docs' ); ?></strong></td><td><code>zuno_doc_category</code></td></tr>
-                <tr><td><strong><?php esc_html_e( 'PHP Required', 'zuno-docs' ); ?></strong></td><td>7.4+</td></tr>
+                <tr><td><strong><?php esc_html_e( 'PHP Required', 'zuno-docs' ); ?></strong></td><td><?php echo esc_html( '7.4+' ); ?></td></tr>
             </table>
 
             <h2><?php esc_html_e( 'Documentation Cache', 'zuno-docs' ); ?></h2>

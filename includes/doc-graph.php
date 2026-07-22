@@ -79,7 +79,6 @@ function zuno_docs_build_graph() {
     ) );
 
     $doc_tree      = array();
-    $doc_index     = array();
     $search_index  = array();
     $category_map  = array();
 
@@ -101,23 +100,31 @@ function zuno_docs_build_graph() {
     }
     unset( $cat );
 
-    /* ----- Build per-category doc tree and search index ----- */
-    foreach ( $categories as $cat ) {
-        $docs = get_posts( array(
-            'post_type'      => 'zuno_doc',
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'orderby'        => 'menu_order title',
-            'order'          => 'ASC',
-            'tax_query'      => array(
-                array(
-                    'taxonomy' => 'zuno_doc_category',
-                    'field'    => 'slug',
-                    'terms'    => $cat->slug,
-                ),
-            ),
-        ) );
+    /* ----- Build per-category doc tree and search index (single query) ----- */
+    $all_docs = get_posts( array(
+        'post_type'      => 'zuno_doc',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'orderby'        => 'menu_order title',
+        'order'          => 'ASC',
+    ) );
 
+    /* Pre-group docs by category slug */
+    $docs_by_category = array();
+    foreach ( $categories as $cat ) {
+        $docs_by_category[ $cat->slug ] = array();
+    }
+    foreach ( $all_docs as $doc ) {
+        $doc_cats = wp_get_post_terms( $doc->ID, 'zuno_doc_category', array( 'fields' => 'slugs' ) );
+        foreach ( $doc_cats as $slug ) {
+            if ( isset( $docs_by_category[ $slug ] ) ) {
+                $docs_by_category[ $slug ][] = $doc;
+            }
+        }
+    }
+
+    foreach ( $categories as $cat ) {
+        $docs = $docs_by_category[ $cat->slug ];
         $flat_list   = array();
 
         foreach ( $docs as $doc ) {
@@ -179,18 +186,12 @@ function zuno_docs_build_graph() {
     /* ----- Store everything ----- */
     $graph = array(
         'doc_tree'      => $doc_tree,
-        'doc_index'     => $doc_index,
         'search_index'  => $search_index,
         'category_map'  => $category_map,
         'built'         => time(),
     );
 
     update_option( 'zuno_docs_graph', $graph );
-
-    /* ----- Clear Layer 1 transients ----- */
-    foreach ( $categories as $cat ) {
-        delete_transient( 'zuno_docs_query_' . $cat->slug );
-    }
 
     // Purge external page caches so the frontend renders updated content immediately.
     zuno_docs_purge_page_cache();

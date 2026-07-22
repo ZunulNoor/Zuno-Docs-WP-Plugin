@@ -169,10 +169,10 @@
                 } else {
                     item.dataset.docId = r.id;
 
-                    var titleHtml = r.title;
+                    var titleHtml = escapeHtml(r.title);
                     if (query) {
                         var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-                        titleHtml = r.title.replace(re, '<mark class="zuno-docs-suggestion-mark">$1</mark>');
+                        titleHtml = titleHtml.replace(re, '<mark class="zuno-docs-suggestion-mark">$1</mark>');
                     }
 
                     item.innerHTML = '<span class="zuno-docs-suggestion-title">' + titleHtml + '</span>' +
@@ -302,6 +302,8 @@
             this._wrapper = wrapper;
             this._chapters = [];
             this._activeId = null;
+            this._onChangeCallbacks = [];
+            this._onAfterChangeCallbacks = [];
 
             var children = Array.from(contentEl.childNodes);
             var currentWrapper = null;

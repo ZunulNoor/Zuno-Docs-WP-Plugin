@@ -26,12 +26,29 @@ function zuno_docs_admin_dashboard() {
 
     /* ----- Filter values ----- */
     $filter_category = isset( $_GET['zuno_category'] ) ? (int) $_GET['zuno_category'] : 0;
+    $paged           = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1;
+    $per_page        = 20;
 
-    /* ----- Build query args ----- */
+    /* ----- Stats via wp_count_posts (efficient, no full query) ----- */
+    $counts    = (array) wp_count_posts( 'zuno_doc' );
+    $total     = (int) ( $counts['publish'] ?? 0 ) + (int) ( $counts['draft'] ?? 0 ) + (int) ( $counts['pending'] ?? 0 );
+    $published = (int) ( $counts['publish'] ?? 0 );
+    $drafts    = (int) ( $counts['draft'] ?? 0 );
+
+    $graph      = zuno_docs_get_graph();
+    $graph_total = 0;
+    if ( isset( $graph['doc_tree'] ) && is_array( $graph['doc_tree'] ) ) {
+        foreach ( $graph['doc_tree'] as $slug => $tree ) {
+            $graph_total += isset( $tree['flat_list'] ) ? count( $tree['flat_list'] ) : 0;
+        }
+    }
+
+    /* ----- Build paginated query args ----- */
     $args = array(
         'post_type'      => 'zuno_doc',
         'post_status'    => array( 'publish', 'draft', 'pending' ),
-        'posts_per_page' => -1,
+        'posts_per_page' => $per_page,
+        'paged'          => $paged,
         'orderby'        => 'modified',
         'order'          => 'DESC',
     );
@@ -48,28 +65,7 @@ function zuno_docs_admin_dashboard() {
 
     $query = new WP_Query( $args );
     $docs  = $query->posts;
-
-    /* ----- Stats from precomputed graph (fast) ----- */
-    $graph      = zuno_docs_get_graph();
-    $total      = 0;
-    $published  = 0;
-    $drafts     = 0;
-
-    foreach ( $docs as $doc ) {
-        $total++;
-        if ( 'publish' === $doc->post_status ) {
-            $published++;
-        } elseif ( 'draft' === $doc->post_status ) {
-            $drafts++;
-        }
-    }
-
-    $graph_total = 0;
-    if ( isset( $graph['doc_tree'] ) && is_array( $graph['doc_tree'] ) ) {
-        foreach ( $graph['doc_tree'] as $slug => $tree ) {
-            $graph_total += isset( $tree['flat_list'] ) ? count( $tree['flat_list'] ) : 0;
-        }
-    }
+    $total_pages = $query->max_num_pages;
 
     /* ----- Taxonomy terms for filter dropdown ----- */
     $categories = get_terms( array(
@@ -189,6 +185,23 @@ function zuno_docs_admin_dashboard() {
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                <?php if ( $total_pages > 1 ) : ?>
+                    <div class="tablenav bottom">
+                        <div class="tablenav-pages">
+                            <?php
+                            echo paginate_links( array(
+                                'base'      => add_query_arg( 'paged', '%#%' ),
+                                'format'    => '',
+                                'prev_text' => '&laquo;',
+                                'next_text' => '&raquo;',
+                                'total'     => $total_pages,
+                                'current'   => $paged,
+                                'type'      => 'plain',
+                            ) );
+                            ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>

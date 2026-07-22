@@ -326,13 +326,6 @@ class Zuno_Docs_Settings {
         return $sanitized;
     }
 
-    /**
-     * Get a single default value by key.
-     */
-    public static function get_default( $key ) {
-        $defaults = self::get_defaults();
-        return isset( $defaults[ $key ] ) ? $defaults[ $key ] : null;
-    }
 }
 
 /**

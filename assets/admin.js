@@ -48,12 +48,15 @@
                 }
             });
 
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape' && self._active) {
-                    e.preventDefault();
-                    self.close(self._type === 'confirm' ? false : null);
-                }
-            });
+            if (!this._keyHandler) {
+                this._keyHandler = function (e) {
+                    if (e.key === 'Escape' && self._active) {
+                        e.preventDefault();
+                        self.close(self._type === 'confirm' ? false : null);
+                    }
+                };
+                document.addEventListener('keydown', this._keyHandler);
+            }
         },
 
         _render: function (opts) {
@@ -185,6 +188,10 @@
                 }
                 self._overlay = null;
                 self._modal = null;
+                if (self._keyHandler) {
+                    document.removeEventListener('keydown', self._keyHandler);
+                    self._keyHandler = null;
+                }
             }, 200);
         }
     };
