@@ -398,7 +398,7 @@ function zuno_docs_get_breadcrumbs( $doc_id, $graph = null ) {
 
     $crumbs = array(
         array(
-            'label' => isset( $info['product_name'] ) ? $info['product_name'] : __( 'Documentation', 'zuno-docs' ),
+            'label' => isset( $info['product_name'] ) ? $info['product_name'] : __( 'Documentation', 'zuno-docs-engine' ),
             'slug'  => isset( $info['product_slug'] ) ? $info['product_slug'] : '',
         ),
     );

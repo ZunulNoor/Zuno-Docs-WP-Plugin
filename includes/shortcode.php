@@ -38,18 +38,18 @@ function zuno_docs_render_shortcode( $atts ) {
             if ( current_user_can( 'zuno_docs_edit' ) ) {
                 return zuno_docs_error(
                     sprintf(
-                        __( 'The category "%s" does not exist. Please create it under Zuno Docs → Categories or use a valid category slug.', 'zuno-docs' ),
+                        __( 'The category "%s" does not exist. Please create it under Zuno Docs → Categories or use a valid category slug.', 'zuno-docs-engine' ),
                         esc_html( $product )
                     )
                 );
             }
-            return '<p>' . esc_html__( 'Documentation is not available.', 'zuno-docs' ) . '</p>';
+            return '<p>' . esc_html__( 'Documentation is not available.', 'zuno-docs-engine' ) . '</p>';
         }
     }
 
     /* ---------- Resolve the doc to display ---------- */
     $page_content = '';
-    $page_title   = __( 'Documentation', 'zuno-docs' );
+    $page_title   = __( 'Documentation', 'zuno-docs-engine' );
 
     if ( $doc_id ) {
         $doc_obj = get_post( $doc_id );
@@ -123,13 +123,13 @@ function zuno_docs_render_shortcode( $atts ) {
         'display'         => $display_settings,
         'settings'        => $settings,
         'i18n'            => array(
-            'searchPlaceholder' => __( 'Search documentation…', 'zuno-docs' ),
-            'noResults'         => __( 'No results found.', 'zuno-docs' ),
-            'tocLabel'          => __( 'On this page', 'zuno-docs' ),
-            'prev'              => __( 'Previous', 'zuno-docs' ),
-            'next'              => __( 'Next', 'zuno-docs' ),
-            'related'           => __( 'Related articles', 'zuno-docs' ),
-            'tocNoResults'      => __( 'No matching sections found for "{query}"', 'zuno-docs' ),
+            'searchPlaceholder' => __( 'Search documentation…', 'zuno-docs-engine' ),
+            'noResults'         => __( 'No results found.', 'zuno-docs-engine' ),
+            'tocLabel'          => __( 'On this page', 'zuno-docs-engine' ),
+            'prev'              => __( 'Previous', 'zuno-docs-engine' ),
+            'next'              => __( 'Next', 'zuno-docs-engine' ),
+            'related'           => __( 'Related articles', 'zuno-docs-engine' ),
+            'tocNoResults'      => __( 'No matching sections found for "{query}"', 'zuno-docs-engine' ),
         ),
     );
 

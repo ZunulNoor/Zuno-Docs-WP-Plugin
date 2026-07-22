@@ -7,7 +7,7 @@
  * Version:      2.2.0
  * Author:       Zun Ul Noor
  * Author URI:   https://zunulnoor.vercel.app
- * Text Domain:  zuno-docs
+ * Text Domain:  zuno-docs-engine
  * Requires at least: 5.8
  * Requires PHP: 7.4
  */
@@ -356,14 +356,14 @@ function zuno_docs_reinstall_notice() {
     );
     ?>
     <div class="notice notice-info is-dismissible zuno-docs-reinstall-notice">
-        <p><strong><?php esc_html_e( 'Zuno Docs Engine', 'zuno-docs' ); ?>:</strong>
-        <?php esc_html_e( 'We found existing ZUNO Docs data from a previous installation.', 'zuno-docs' ); ?></p>
+        <p><strong><?php esc_html_e( 'Zuno Docs Engine', 'zuno-docs-engine' ); ?>:</strong>
+        <?php esc_html_e( 'We found existing ZUNO Docs data from a previous installation.', 'zuno-docs-engine' ); ?></p>
         <p>
             <a href="<?php echo esc_url( $restore_url ); ?>" class="button button-primary">
-                <?php esc_html_e( 'Restore Previous Data', 'zuno-docs' ); ?>
+                <?php esc_html_e( 'Restore Previous Data', 'zuno-docs-engine' ); ?>
             </a>
             <a href="<?php echo esc_url( $fresh_url ); ?>" class="button">
-                <?php esc_html_e( 'Start Fresh', 'zuno-docs' ); ?>
+                <?php esc_html_e( 'Start Fresh', 'zuno-docs-engine' ); ?>
             </a>
         </p>
     </div>
@@ -486,14 +486,14 @@ function zuno_docs_admin_enqueue( $hook ) {
         'themeColor' => zuno_docs_get_settings()['zuno_docs_theme_color'] ?? '#2563EB',
         'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
         'i18n'       => array(
-            'deactivationTitle' => __( 'Leaving ZUNO Docs?', 'zuno-docs' ),
-            'deactivationDesc'  => __( 'Would you like to keep your documentation and settings for future use?', 'zuno-docs' ),
-            'keepData'          => __( 'Keep my documentation and settings', 'zuno-docs' ),
-            'keepDataDesc'      => __( 'Database will remain intact for future use.', 'zuno-docs' ),
-            'removeData'        => __( 'Remove all plugin data', 'zuno-docs' ),
-            'removeDataDesc'    => __( 'All documentation, categories, and settings will be deleted on uninstall.', 'zuno-docs' ),
-            'cancel'            => __( 'Cancel', 'zuno-docs' ),
-            'deactivate'        => __( 'Deactivate Plugin', 'zuno-docs' ),
+            'deactivationTitle' => __( 'Leaving ZUNO Docs?', 'zuno-docs-engine' ),
+            'deactivationDesc'  => __( 'Would you like to keep your documentation and settings for future use?', 'zuno-docs-engine' ),
+            'keepData'          => __( 'Keep my documentation and settings', 'zuno-docs-engine' ),
+            'keepDataDesc'      => __( 'Database will remain intact for future use.', 'zuno-docs-engine' ),
+            'removeData'        => __( 'Remove all plugin data', 'zuno-docs-engine' ),
+            'removeDataDesc'    => __( 'All documentation, categories, and settings will be deleted on uninstall.', 'zuno-docs-engine' ),
+            'cancel'            => __( 'Cancel', 'zuno-docs-engine' ),
+            'deactivate'        => __( 'Deactivate Plugin', 'zuno-docs-engine' ),
         ),
     ) );
 }
@@ -520,14 +520,14 @@ function zuno_docs_plugins_page_enqueue( $hook ) {
         'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
         'deactivationNonce' => wp_create_nonce( 'zuno_docs_deactivation_nonce' ),
         'i18n'             => array(
-            'deactivationTitle' => __( 'Leaving ZUNO Docs?', 'zuno-docs' ),
-            'deactivationDesc'  => __( 'Would you like to keep your documentation and settings for future use?', 'zuno-docs' ),
-            'keepData'          => __( 'Keep my documentation and settings', 'zuno-docs' ),
-            'keepDataDesc'      => __( 'Database will remain intact for future use.', 'zuno-docs' ),
-            'removeData'        => __( 'Remove all plugin data', 'zuno-docs' ),
-            'removeDataDesc'    => __( 'All documentation, categories, and settings will be deleted on uninstall.', 'zuno-docs' ),
-            'cancel'            => __( 'Cancel', 'zuno-docs' ),
-            'deactivate'        => __( 'Deactivate Plugin', 'zuno-docs' ),
+            'deactivationTitle' => __( 'Leaving ZUNO Docs?', 'zuno-docs-engine' ),
+            'deactivationDesc'  => __( 'Would you like to keep your documentation and settings for future use?', 'zuno-docs-engine' ),
+            'keepData'          => __( 'Keep my documentation and settings', 'zuno-docs-engine' ),
+            'keepDataDesc'      => __( 'Database will remain intact for future use.', 'zuno-docs-engine' ),
+            'removeData'        => __( 'Remove all plugin data', 'zuno-docs-engine' ),
+            'removeDataDesc'    => __( 'All documentation, categories, and settings will be deleted on uninstall.', 'zuno-docs-engine' ),
+            'cancel'            => __( 'Cancel', 'zuno-docs-engine' ),
+            'deactivate'        => __( 'Deactivate Plugin', 'zuno-docs-engine' ),
         ),
     ) );
 }

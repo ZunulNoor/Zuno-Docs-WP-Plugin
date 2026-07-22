@@ -14,7 +14,7 @@ add_action( 'add_meta_boxes', 'zuno_docs_add_meta_box' );
 function zuno_docs_add_meta_box() {
     add_meta_box(
         'zuno_docs_doc_settings',
-        __( 'Doc Settings', 'zuno-docs' ),
+        __( 'Doc Settings', 'zuno-docs-engine' ),
         'zuno_docs_render_meta_box',
         'zuno_doc',
         'side',
@@ -59,9 +59,9 @@ function zuno_docs_render_meta_box( $post ) {
     </style>
 
     <div class="zuno-docs-mb-field">
-        <label for="zuno-docs-mb-category"><?php esc_html_e( 'Category', 'zuno-docs' ); ?></label>
+        <label for="zuno-docs-mb-category"><?php esc_html_e( 'Category', 'zuno-docs-engine' ); ?></label>
         <select id="zuno-docs-mb-category" name="zuno_docs_category">
-            <option value=""><?php esc_html_e( '— Select Category —', 'zuno-docs' ); ?></option>
+            <option value=""><?php esc_html_e( '— Select Category —', 'zuno-docs-engine' ); ?></option>
             <?php foreach ( $categories as $c ) : ?>
                 <option value="<?php echo esc_attr( $c->term_id ); ?>" <?php selected( in_array( $c->term_id, $current_categories, true ) ); ?>>
                     <?php echo esc_html( $c->name ); ?>
@@ -71,7 +71,7 @@ function zuno_docs_render_meta_box( $post ) {
     </div>
 
     <div class="zuno-docs-mb-field">
-        <label for="zuno-docs-mb-order"><?php esc_html_e( 'Order', 'zuno-docs' ); ?></label>
+        <label for="zuno-docs-mb-order"><?php esc_html_e( 'Order', 'zuno-docs-engine' ); ?></label>
         <input
             type="number"
             id="zuno-docs-mb-order"
@@ -81,7 +81,7 @@ function zuno_docs_render_meta_box( $post ) {
             step="1"
         />
         <p class="description" style="margin:2px 0 0;font-size:11px;">
-            <?php esc_html_e( 'Lower numbers appear first.', 'zuno-docs' ); ?>
+            <?php esc_html_e( 'Lower numbers appear first.', 'zuno-docs-engine' ); ?>
         </p>
     </div>
     <?php

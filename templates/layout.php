@@ -50,16 +50,16 @@ $show_sidebar          = $show_search || $show_toc;
         <button
             class="zuno-docs-mobile-toc-trigger"
             aria-expanded="false"
-            aria-label="<?php esc_attr_e( 'Table of Contents', 'zuno-docs' ); ?>"
+            aria-label="<?php esc_attr_e( 'Table of Contents', 'zuno-docs-engine' ); ?>"
         >
-            <span class="zuno-docs-mobile-toc-label"><?php esc_html_e( 'Table of Contents', 'zuno-docs' ); ?></span>
+            <span class="zuno-docs-mobile-toc-label"><?php esc_html_e( 'Table of Contents', 'zuno-docs-engine' ); ?></span>
             <svg class="zuno-docs-mobile-toc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
         </button>
         <div class="zuno-docs-mobile-toc-backdrop"></div>
-        <div class="zuno-docs-mobile-toc-panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Table of Contents', 'zuno-docs' ); ?>">
+        <div class="zuno-docs-mobile-toc-panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Table of Contents', 'zuno-docs-engine' ); ?>">
             <div class="zuno-docs-mobile-toc-panel-header">
-                <h2 class="zuno-docs-mobile-toc-panel-title"><?php esc_html_e( 'Table of Contents', 'zuno-docs' ); ?></h2>
-                <button class="zuno-docs-mobile-toc-close" aria-label="<?php esc_attr_e( 'Close', 'zuno-docs' ); ?>">
+                <h2 class="zuno-docs-mobile-toc-panel-title"><?php esc_html_e( 'Table of Contents', 'zuno-docs-engine' ); ?></h2>
+                <button class="zuno-docs-mobile-toc-close" aria-label="<?php esc_attr_e( 'Close', 'zuno-docs-engine' ); ?>">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
@@ -74,15 +74,15 @@ $show_sidebar          = $show_search || $show_toc;
          SIDEBAR (desktop only on mobile, used as source for mobile TOC)
          ============================================================ -->
     <?php if ( $show_sidebar ) : ?>
-    <aside class="zuno-docs-sidebar" aria-label="<?php esc_attr_e( 'Documentation navigation', 'zuno-docs' ); ?>">
+    <aside class="zuno-docs-sidebar" aria-label="<?php esc_attr_e( 'Documentation navigation', 'zuno-docs-engine' ); ?>">
 
         <button
             class="zuno-docs-sidebar-toggle"
             aria-expanded="false"
-            aria-label="<?php esc_attr_e( 'Toggle navigation', 'zuno-docs' ); ?>"
+            aria-label="<?php esc_attr_e( 'Toggle navigation', 'zuno-docs-engine' ); ?>"
         >
             <span class="zuno-docs-toggle-icon" aria-hidden="true"></span>
-            <?php esc_html_e( 'Contents', 'zuno-docs' ); ?>
+            <?php esc_html_e( 'Contents', 'zuno-docs-engine' ); ?>
         </button>
 
         <div class="zuno-docs-sidebar-inner">
@@ -91,7 +91,7 @@ $show_sidebar          = $show_search || $show_toc;
             <!-- Search -->
             <div class="zuno-docs-search-wrap" role="search">
                 <label for="zuno-docs-search" class="zuno-docs-sr-only">
-                    <?php esc_html_e( 'Search documentation', 'zuno-docs' ); ?>
+                    <?php esc_html_e( 'Search documentation', 'zuno-docs-engine' ); ?>
                 </label>
                 <span class="zuno-docs-search-icon" aria-hidden="true">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -105,31 +105,31 @@ $show_sidebar          = $show_search || $show_toc;
                     type="search"
                     id="zuno-docs-search"
                     class="zuno-docs-search-input"
-                    placeholder="<?php esc_attr_e( 'Search documentation…', 'zuno-docs' ); ?>"
+                    placeholder="<?php esc_attr_e( 'Search documentation…', 'zuno-docs-engine' ); ?>"
                     autocomplete="off"
                     spellcheck="false"
-                    aria-label="<?php esc_attr_e( 'Search documentation', 'zuno-docs' ); ?>"
+                    aria-label="<?php esc_attr_e( 'Search documentation', 'zuno-docs-engine' ); ?>"
                     data-min-query="2"
                 />
                 <button
                     class="zuno-docs-search-clear zuno-docs-hidden"
-                    aria-label="<?php esc_attr_e( 'Clear search', 'zuno-docs' ); ?>"
+                    aria-label="<?php esc_attr_e( 'Clear search', 'zuno-docs-engine' ); ?>"
                 >✕</button>
             </div>
 
             <!-- Suggestions dropdown -->
-            <div class="zuno-docs-suggestions zuno-docs-hidden" role="listbox" aria-label="<?php esc_attr_e( 'Search suggestions', 'zuno-docs' ); ?>"></div>
+            <div class="zuno-docs-suggestions zuno-docs-hidden" role="listbox" aria-label="<?php esc_attr_e( 'Search suggestions', 'zuno-docs-engine' ); ?>"></div>
 
             <!-- No results -->
             <p class="zuno-docs-no-results zuno-docs-hidden" role="status" aria-live="polite">
-                <?php esc_html_e( 'No results found.', 'zuno-docs' ); ?>
+                <?php esc_html_e( 'No results found.', 'zuno-docs-engine' ); ?>
             </p>
             <?php endif; ?>
 
             <?php if ( $show_toc ) : ?>
             <!-- TOC -->
             <nav class="zuno-docs-toc" id="zuno-docs-toc"
-                 aria-label="<?php esc_attr_e( 'On this page', 'zuno-docs' ); ?>">
+                 aria-label="<?php esc_attr_e( 'On this page', 'zuno-docs-engine' ); ?>">
                 <p class="zuno-docs-toc-empty zuno-docs-hidden" aria-live="polite"></p>
             </nav>
             <?php endif; ?>
@@ -143,7 +143,7 @@ $show_sidebar          = $show_search || $show_toc;
          ============================================================ -->
 <?php if ( $show_nav_rail ) : ?>
 <nav class="zuno-docs-nav-rail zuno-docs-nav-rail--<?php echo esc_attr( $rail_side ); ?>"
-         aria-label="<?php esc_attr_e( 'Section navigation', 'zuno-docs' ); ?>"
+         aria-label="<?php esc_attr_e( 'Section navigation', 'zuno-docs-engine' ); ?>"
          data-rail-side="<?php echo esc_attr( $rail_side ); ?>"></nav>
     <?php endif; ?>
 
@@ -155,7 +155,7 @@ $show_sidebar          = $show_search || $show_toc;
 
             <?php if ( $show_breadcrumbs ) : ?>
             <!-- Breadcrumbs -->
-            <nav class="zuno-docs-breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb', 'zuno-docs' ); ?>">
+            <nav class="zuno-docs-breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb', 'zuno-docs-engine' ); ?>">
                 <!-- Injected by JS -->
             </nav>
             <?php endif; ?>
@@ -170,11 +170,11 @@ $show_sidebar          = $show_search || $show_toc;
                         <?php
                         if ( $product ) {
                             printf(
-                                esc_html__( 'Documentation for "%s" is coming soon.', 'zuno-docs' ),
+                                esc_html__( 'Documentation for "%s" is coming soon.', 'zuno-docs-engine' ),
                                 esc_html( zuno_docs_product_label( $product ) )
                             );
                         } else {
-                            esc_html_e( 'No documentation selected.', 'zuno-docs' );
+                            esc_html_e( 'No documentation selected.', 'zuno-docs-engine' );
                         }
                         ?>
                     </p>
@@ -185,7 +185,7 @@ $show_sidebar          = $show_search || $show_toc;
                         <p class="zuno-docs-admin-hint">
                             <?php
                             printf(
-                                esc_html__( 'Create a doc tagged with product "%s" (Zuno Docs → Add New) to populate this section.', 'zuno-docs' ),
+                                esc_html__( 'Create a doc tagged with product "%s" (Zuno Docs → Add New) to populate this section.', 'zuno-docs-engine' ),
                                 esc_html( $product )
                             );
                             ?>
@@ -198,8 +198,8 @@ $show_sidebar          = $show_search || $show_toc;
 
             <?php if ( $show_related ) : ?>
             <!-- Related articles -->
-            <div class="zuno-docs-related-wrap" aria-label="<?php esc_attr_e( 'Related articles', 'zuno-docs' ); ?>">
-                <h3 class="zuno-docs-related-title"><?php esc_html_e( 'Related articles', 'zuno-docs' ); ?></h3>
+            <div class="zuno-docs-related-wrap" aria-label="<?php esc_attr_e( 'Related articles', 'zuno-docs-engine' ); ?>">
+                <h3 class="zuno-docs-related-title"><?php esc_html_e( 'Related articles', 'zuno-docs-engine' ); ?></h3>
                 <ul class="zuno-docs-related-list"></ul>
             </div>
             <?php endif; ?>
@@ -208,7 +208,7 @@ $show_sidebar          = $show_search || $show_toc;
 
         <?php if ( $show_navigation ) : ?>
         <!-- Prev / Next footer -->
-        <footer class="zuno-docs-page-nav" aria-label="<?php esc_attr_e( 'Doc navigation', 'zuno-docs' ); ?>"
+        <footer class="zuno-docs-page-nav" aria-label="<?php esc_attr_e( 'Doc navigation', 'zuno-docs-engine' ); ?>"
                 data-show-prev="<?php echo $show_previous ? '1' : '0'; ?>"
                 data-show-next="<?php echo $show_next ? '1' : '0'; ?>">
             <!-- Injected by JS -->

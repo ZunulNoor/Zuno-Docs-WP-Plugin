@@ -4,16 +4,16 @@ defined( 'ABSPATH' ) || exit;
 
 function zuno_docs_get_all_capabilities() {
     return array(
-        'zuno_docs_read'              => __( 'Read Documentation', 'zuno-docs' ),
-        'zuno_docs_create'            => __( 'Create Documentation', 'zuno-docs' ),
-        'zuno_docs_edit'              => __( 'Edit Documentation', 'zuno-docs' ),
-        'zuno_docs_publish'           => __( 'Publish Documentation', 'zuno-docs' ),
-        'zuno_docs_delete'            => __( 'Delete Documentation', 'zuno-docs' ),
-        'zuno_docs_manage_categories' => __( 'Manage Categories', 'zuno-docs' ),
-        'zuno_docs_manage_settings'   => __( 'Manage Settings', 'zuno-docs' ),
-        'zuno_docs_import'            => __( 'Import Documentation', 'zuno-docs' ),
-        'zuno_docs_export'            => __( 'Export Documentation', 'zuno-docs' ),
-        'zuno_docs_manage_plugin'     => __( 'Manage Plugin', 'zuno-docs' ),
+        'zuno_docs_read'              => __( 'Read Documentation', 'zuno-docs-engine' ),
+        'zuno_docs_create'            => __( 'Create Documentation', 'zuno-docs-engine' ),
+        'zuno_docs_edit'              => __( 'Edit Documentation', 'zuno-docs-engine' ),
+        'zuno_docs_publish'           => __( 'Publish Documentation', 'zuno-docs-engine' ),
+        'zuno_docs_delete'            => __( 'Delete Documentation', 'zuno-docs-engine' ),
+        'zuno_docs_manage_categories' => __( 'Manage Categories', 'zuno-docs-engine' ),
+        'zuno_docs_manage_settings'   => __( 'Manage Settings', 'zuno-docs-engine' ),
+        'zuno_docs_import'            => __( 'Import Documentation', 'zuno-docs-engine' ),
+        'zuno_docs_export'            => __( 'Export Documentation', 'zuno-docs-engine' ),
+        'zuno_docs_manage_plugin'     => __( 'Manage Plugin', 'zuno-docs-engine' ),
     );
 }
 
@@ -63,7 +63,7 @@ function zuno_docs_create_editor_role() {
     } else {
         $role = add_role(
             'zuno_docs_editor',
-            __( 'Zuno Docs Editor', 'zuno-docs' ),
+            __( 'Zuno Docs Editor', 'zuno-docs-engine' ),
             array(
                 'read'         => true,
                 'upload_files' => true,
